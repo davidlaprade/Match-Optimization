@@ -1,5 +1,6 @@
 # Modified hungarian algorithm to find matches
-# Matrix_to_solve.hungarian == solution_array
+# array_to_solve.hungarian == solution_array
+# array_to_solve is an array of arrays--i.e. a matrix in array form
 # solution_array is a set of ordered pairs (n, m) such that n is the number of a row in matrix_to_solve and m is the assignment in that row
 # solution_array.measure will add all of the values of the assignments in the solution
 
@@ -33,10 +34,16 @@ def hungarian
 			cell = cell - min
 		end
 	end
-	Doesn't work in IRB for some reason!
 
+	# subtracts the lowest value in each column from each member of that column
+	col_list = Array.new(columns) { Array.new(rows)}
+	WORKING_MATRIX.each do |r|
+		r.each do |index, value|
+			col_list[index] << value
+		end
+	end
 
-
+JUST USE MATRICES! Tells you how to access matrix values, AND change them: http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
 
 
 end
@@ -45,6 +52,19 @@ end
 # Helper methods
 def number_columns
 	self[0].length
+end
+
+def column
+	columns = []
+	self.each do |row|
+
+
+def column[number]
+	column_contents = []
+	self.each do |row|
+		column_contents << row[number]
+	end
+	return column_contents
 end
 
 def number_rows
