@@ -4,7 +4,15 @@
 # solution_array is a set of ordered pairs (n, m) such that n is the number of a row in matrix_to_solve and m is the assignment in that row
 # solution_array.measure will add all of the values of the assignments in the solution
 
-# for array reference: http://www.ruby-doc.org/core-2.1.2/Array.html
+# for matrix reference http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
+require 'matrix'
+
+class Matrix
+  def []=(row, column, value)
+    @rows[row][column] = value
+  end
+end
+
 
 def hungarian
 	# going to use an array so that values can be added/removed and accessed
@@ -44,7 +52,22 @@ def hungarian
 	end
 
 JUST USE MATRICES! Tells you how to access matrix values, AND change them: http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
+	matrix.row_count = number of rows
+	matrix.column_count = number of columns
+	matrix.row(j) = outputs j-th row in matrix
+	matrix.row(j)[k] = outputs the k-th element in the j-th row, i.e. row j column k
+	matrix[j,k] = outputs element in the j-th row, in the kth column
+	matrix.column(k) = outputs k-th column
+	matrix.to_a = converts matrix into an array of arrays
+	matrix.send( :[]=,j,k,m) = saves value m to the cell in row j, column k
+	matrix.row(k).min = returns the minimum value in the kth row; use the same method on columns
+	matrix.row(k).max = returns the max value in the kth row; use the same method on columns
+	m.row(k).each_with_index do |value, index| = iterates through each index/value pair in row k, index must be listed second
 
+# this adds 1 to each value in row 1
+m.row(0).each_with_index do |value, index|
+	m.send( :[]=,0,index,value+1)
+end
 
 end
 
