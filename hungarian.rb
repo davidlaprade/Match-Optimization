@@ -28,7 +28,7 @@ def hungarian
 	max_col_assignment = (rows/columns).ceil
 	min_col_assignment = 1
 
-	# carries out first two steps of algorithm
+	# first two steps of algorithm
 	if max_row_assignment <= max_col_assignment
 		WORKING_MATRIX.zero_each_row
 		WORKING_MATRIX.zero_each_column
@@ -40,55 +40,45 @@ def hungarian
 	# third step in algorithm
 		# find problematic rows if they exist
 		
-		i = 0
-		while i < WORKING_MATRIX.column_count
-			WORKING_MATRIX.column(i).count_with_value(0)
-			if 
+
+		# outputs array of column indexes such that each column contains more zeros than could be assigned in that column
+		def columns_over_max
+			i = 0
+			columns_over = []
+			while i < self.column_count
+				# adds each column over the max number of zeros to the columns_over array
+				self.column(i).zeros_per_column.each do |index, num_zeros|
+					if num_zeros > max_col_assignment
+						columns_over_max << index
+					end
+				end
+				i = i + 1
+			end
+			return columns_over
+		end
+
+
+			You only have to look at columns that contain more zeros than max_col_assignment
+			Then check those columns to see if any of the rows that have zeros in them have no other zeros (more complicated...)
+
 
 		min_assignments = min_row_assignment * WORKING_MATRIX.row_count
 
-		# counts number of cells with the given value in a row or column
-		class Vector
-			def count_with_value(value)
-				count = 0
-					self.each do |cell|
-						count = (count + 1) unless (cell != value)
-					end
-				return count
-			end
-		end
+
+
 
 
 		# resolve problematic rows if they exist
 
 
 
-
-	# subtracts the lowest value in each row from each member of that row
+	# counts number of cells with the given value in a row or column, must call on Vector
+	def count_with_value(value)
+	# subtracts the lowest value in each row from each member of that row, must call on Matrix
 	def zero_each_row
-		i = 0
-		rows = self.row_count
-		while i < rows do
-			min = self.row(i).min
-			self.row(i).each_with_index do |value, index|
-				self.send( :[]=, i, index, value-min )
-			end
-			i = i + 1
-		end
-	end
-	
-	# subtracts the lowest value in each column from each member of that column
+	# subtracts the lowest value in each column from each member of that column, must call on Matrix
 	def zero_each_column
-		i = 0
-		columns = self.column_count
-		while i < columns do
-			min = self.column(i).min
-			self.column(i).each_with_index do |value, index|
-				self.send( :[]=, index, i, value-min )
-			end
-			i = i + 1
-		end
-	end
+
 
 
 
@@ -112,34 +102,82 @@ JUST USE MATRICES! Tells you how to access matrix values, AND change them: http:
 end
 
 
-# Helper methods
-def column
-	columns = []
-	self.each do |row|
+# HELPER METHODS
 
 
-def column[number]
-	column_contents = []
-	self.each do |row|
-		column_contents << row[number]
+
+
+class Vector
+	# counts number of cells with the given value in a row or column
+	def count_with_value(value)
+		count = 0
+			self.each do |cell|
+				count = (count + 1) unless (cell != value)
+			end
+		return count
 	end
-	return column_contents
+
 end
 
-def measure
-	SUM = 0
-	self.each do |index, value|
-		SUM = SUM + value
-	end
-	return SUM
-end
-
-# allows you to change values in matrix
-# for matrix reference http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
 class Matrix
-  def []=(row, column, value)
-    @rows[row][column] = value
-  end
+	# allows you to change values in matrix
+	# for matrix reference http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
+	def []=(row, column, value)
+		@rows[row][column] = value
+	end
+
+	#returns an array of arrays [n, m] where n is the column index and m is the number of zeros
+	def zeros_per_column
+		i = 0
+		result = []
+		while i < self.column_count
+			result << [i, self.column(i).count_with_value(0)]
+			i = i + 1
+		end
+		return result
+	end
+
+	# outputs array of column indexes for whatever columns contain more zeros than could be assigned in that column
+	def columns_over_max
+		i = 0
+		columns_over = []
+		while i < self.column_count
+			# adds each column over the max number of zeros to the columns_over array
+			self.column(i).zeros_per_column.each do |index, num_zeros|
+				if num_zeros > max_col_assignment
+					columns_over_max << index
+				end
+			end
+			i = i + 1
+		end
+		return columns_over
+	end
+
+	# subtracts the lowest value in each row from each member of that row
+	def zero_each_row
+		i = 0
+		rows = self.row_count
+		while i < rows do
+			min = self.row(i).min
+			self.row(i).each_with_index do |value, index|
+				self.send( :[]=, i, index, value-min )
+			end
+			i = i + 1
+		end
+	end
+
+	# subtracts the lowest value in each column from each member of that column
+	def zero_each_column
+		i = 0
+		columns = self.column_count
+		while i < columns do
+			min = self.column(i).min
+			self.column(i).each_with_index do |value, index|
+				self.send( :[]=, index, i, value-min )
+			end
+			i = i + 1
+		end
+	end
 end
 
 
