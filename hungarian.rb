@@ -21,13 +21,6 @@ def hungarian
 	rows = ORIGINAL_MATRIX.row_count
 	ASSIGNING_MATRIX = Matrix.build(rows, columns) {}
 
-	# constraints
-	# ceil rounds a float up to the nearest integer
-	max_row_assignment = 1
-	min_row_assignment = 1
-	max_col_assignment = (rows/columns).ceil
-	min_col_assignment = 1
-
 	# first two steps of algorithm
 	if max_row_assignment <= max_col_assignment
 		WORKING_MATRIX.zero_each_row
@@ -39,23 +32,27 @@ def hungarian
 
 	# third step in algorithm
 		# find problematic rows if they exist
-		
-
-		# outputs array of column indexes such that each column contains more zeros than could be assigned in that column
-		def columns_over_max
-			i = 0
-			columns_over = []
-			while i < self.column_count
-				# adds each column over the max number of zeros to the columns_over array
-				self.column(i).zeros_per_column.each do |index, num_zeros|
-					if num_zeros > max_col_assignment
-						columns_over_max << index
+		WORKING_MATRIX.columns_over_max.each do |col_index|
+			def rows_with_zeros_in_column(column)
+				rows = []
+				i = 0
+				while i < self.row_count
+					if self[i, column] == 0
+						rows << i
 					end
 				end
-				i = i + 1
+				return rows
 			end
-			return columns_over
-		end
+
+
+
+
+			i = 0
+			while i < WORKING_MATRIX.row_count
+				if WORKING_MATRIX[i, col_index]
+
+		# outputs array of column indexes such that each column contains more zeros than could be assigned in that column
+
 
 
 			You only have to look at columns that contain more zeros than max_col_assignment
@@ -71,7 +68,8 @@ def hungarian
 		# resolve problematic rows if they exist
 
 
-
+	# outputs array of column indexes such that each column contains more zeros than could be assigned in that column
+	def columns_over_max
 	# counts number of cells with the given value in a row or column, must call on Vector
 	def count_with_value(value)
 	# subtracts the lowest value in each row from each member of that row, must call on Matrix
@@ -126,35 +124,89 @@ class Matrix
 		@rows[row][column] = value
 	end
 
+	# CONSTRAINTS
+	# ceil rounds a float up to the nearest integer
+	def max_col_assignment 
+		(self.row_count.fdiv(self.column_count)).ceil
+	end
+
+	def max_row_assignment
+		return 1
+	end
+
+	def min_row_assignment
+		return 1
+	end
+
+	def min_col_assignment
+		return 1
+	end
+
+	# returns an array of the rows in the Matrix it's called on
+	def rows
+		row_index = 0
+		rows = []
+		while row_index < self.row_count
+			rows << self.row(row_index)
+			row_index = row_index + 1
+		end
+		return rows
+	end
+
+	# returns an array of the columns in the Matrix it's called on
+	def columns
+		col_index = 0
+		columns = []
+		while col_index < self.column_count
+			columns << self.column(col_index)
+			col_index = col_index + 1
+		end
+		return columns
+	end
+
+
+	# returns an array of indices of rows with zeros in the specified column index
+	def rows_with_zeros_in_column(column_index)
+		rows = []
+		self.rows.each_with_index do |row, index|
+			if row[column_index] == 0
+				rows << index
+			end
+		end
+		return rows
+	end
+
 	#returns an array of arrays [n, m] where n is the column index and m is the number of zeros
 	def zeros_per_column
-		i = 0
 		result = []
-		while i < self.column_count
-			result << [i, self.column(i).count_with_value(0)]
-			i = i + 1
+		self.columns.each_with_index do |column, index|
+			result << [index, self.column(index).count_with_value(0)]
 		end
 		return result
 	end
 
 	# outputs array of column indexes for whatever columns contain more zeros than could be assigned in that column
 	def columns_over_max
-		i = 0
 		columns_over = []
-		while i < self.column_count
-			# adds each column over the max number of zeros to the columns_over array
-			self.column(i).zeros_per_column.each do |index, num_zeros|
-				if num_zeros > max_col_assignment
-					columns_over_max << index
-				end
+		self.zeros_per_column.each do |array|
+			if array[1] > self.max_col_assignment
+				columns_over << array[0]
 			end
-			i = i + 1
 		end
 		return columns_over
 	end
 
 	# subtracts the lowest value in each row from each member of that row
 	def zero_each_row
+		self.rows.each_with_index do |row, row_index|
+			min = row.min
+			row.each_with_index do |value, col_index|
+				self.send( :[]=, row_index, col_index, value-min )
+			end
+		end
+	end
+
+
 		i = 0
 		rows = self.row_count
 		while i < rows do
