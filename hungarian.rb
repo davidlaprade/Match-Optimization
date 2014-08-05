@@ -7,26 +7,19 @@
 # for matrix reference http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
 require 'matrix'
 
-class Matrix
-  def []=(row, column, value)
-    @rows[row][column] = value
-  end
-end
-
 
 def hungarian
-	# going to use an array so that values can be added/removed and accessed
 	ORIGINAL_MATRIX = self
-	# makes a copy of the self array
-	WORKING_MATRIX = Array.new(self)
+	# makes a copy of the input matrix
+	WORKING_MATRIX = self.clone
 
-	# ensure self array has same number of elements in each row...
-	# ensure self array has only integers in each row, and that each row contains each integer...
+	# ensure self matrix has same number of elements in each row...
+	# ensure self matrix has only integers in each row, and that each row contains each integer...
 
-	# want to create an empty array the same size as the original
-	columns = ORIGINAL_MATRIX.number_columns
-	rows = ORIGINAL_MATRIX.number_rows
-	ASSIGNING_MATRIX = Array.new(rows) { Array.new(columns) }
+	# want to create an empty matrix the same size as the original
+	columns = ORIGINAL_MATRIX.column_count
+	rows = ORIGINAL_MATRIX.row_count
+	ASSIGNING_MATRIX = Matrix.build(rows, columns) {}
 
 	# for now, make these pre-set; later have them input by user
 	# ceil rounds a float up to the nearest integer
@@ -36,14 +29,26 @@ def hungarian
 	min_col_assignment = 1
 
 	# subtracts the lowest value in each row from each member of that row
-	WORKING_MATRIX.each do |row|
-		min = row.min
-		row.each do |cell|
-			cell = cell - min
+	i = 0
+	while i < rows do
+		min = WORKING_MATRIX.row(i).min
+		WORKING_MATRIX.row(i).each_with_index do |value, index|
+			m.send( :[]=,i,index,value-min )
 		end
+		i = i + 1
+	end
+	
+	# subtracts the lowest value in each column from each member of that column
+	i = 0
+	while i < columns do
+		min = WORKING_MATRIX.column(i).min
+		WORKING_MATRIX.column(i).each_with_index do |value, index|
+			WORKING_MATRIX.send( :[]=,index,i,value-min )
+		end
+		i = i + 1
 	end
 
-	# subtracts the lowest value in each column from each member of that column
+
 	col_list = Array.new(columns) { Array.new(rows)}
 	WORKING_MATRIX.each do |r|
 		r.each do |index, value|
@@ -52,6 +57,7 @@ def hungarian
 	end
 
 JUST USE MATRICES! Tells you how to access matrix values, AND change them: http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
+	matrix.clone = creates a new matrix identical to the old one, not just a new name
 	matrix.row_count = number of rows
 	matrix.column_count = number of columns
 	matrix.row(j) = outputs j-th row in matrix
@@ -64,19 +70,12 @@ JUST USE MATRICES! Tells you how to access matrix values, AND change them: http:
 	matrix.row(k).max = returns the max value in the kth row; use the same method on columns
 	m.row(k).each_with_index do |value, index| = iterates through each index/value pair in row k, index must be listed second
 
-# this adds 1 to each value in row 1
-m.row(0).each_with_index do |value, index|
-	m.send( :[]=,0,index,value+1)
-end
+
 
 end
 
 
 # Helper methods
-def number_columns
-	self[0].length
-end
-
 def column
 	columns = []
 	self.each do |row|
@@ -90,16 +89,20 @@ def column[number]
 	return column_contents
 end
 
-def number_rows
-	self.length
-end
-
 def measure
 	SUM = 0
 	self.each do |index, value|
 		SUM = SUM + value
 	end
 	return SUM
+end
+
+# allows you to change values in matrix
+# for matrix reference http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
+class Matrix
+  def []=(row, column, value)
+    @rows[row][column] = value
+  end
 end
 
 
