@@ -33,16 +33,19 @@ def hungarian
 	# third step in algorithm
 		# find problematic rows if they exist
 		WORKING_MATRIX.columns_over_max.each do |col_index|
-			def rows_with_zeros_in_column(column)
-				rows = []
-				i = 0
-				while i < self.row_count
-					if self[i, column] == 0
-						rows << i
+			other_zeros = []
+			WORKING_MATRIX.rows_with_zeros_in_column(col_index).each do |row_index|
+				zero_columns = []
+				WORKING_MATRIX.row(row_index).each_with_index do |value, index|
+					if (value == 0) && (index != col_index)
+						zero_columns << index
 					end
 				end
-				return rows
+				other_zeros << [row_index, zero_columns]
 			end
+			return other_zeros
+		end
+
 
 
 
@@ -67,7 +70,8 @@ def hungarian
 
 		# resolve problematic rows if they exist
 
-
+	# returns an array of indices of rows with zeros in the specified column index
+	def rows_with_zeros_in_column(column_index)
 	# outputs array of column indexes such that each column contains more zeros than could be assigned in that column
 	def columns_over_max
 	# counts number of cells with the given value in a row or column, must call on Vector
@@ -76,7 +80,10 @@ def hungarian
 	def zero_each_row
 	# subtracts the lowest value in each column from each member of that column, must call on Matrix
 	def zero_each_column
-
+	# returns an array of the rows in the Matrix it's called on
+	def rows
+	# returns an array of the columns in the Matrix it's called on
+	def columns
 
 
 
@@ -201,35 +208,22 @@ class Matrix
 		self.rows.each_with_index do |row, row_index|
 			min = row.min
 			row.each_with_index do |value, col_index|
-				self.send( :[]=, row_index, col_index, value-min )
+				self.send( :[]=,row_index,col_index,value-min )
 			end
 		end
-	end
-
-
-		i = 0
-		rows = self.row_count
-		while i < rows do
-			min = self.row(i).min
-			self.row(i).each_with_index do |value, index|
-				self.send( :[]=, i, index, value-min )
-			end
-			i = i + 1
-		end
+		return self
 	end
 
 	# subtracts the lowest value in each column from each member of that column
 	def zero_each_column
-		i = 0
-		columns = self.column_count
-		while i < columns do
-			min = self.column(i).min
-			self.column(i).each_with_index do |value, index|
-				self.send( :[]=, index, i, value-min )
+		self.columns.each_with_index do |column, column_index|
+			min = column.min
+			column.each_with_index do |value, row_index|
+				self.send( :[]=,row_index,col_index,value-min )
 			end
-			i = i + 1
 		end
+		return self
 	end
-end
 
+end
 

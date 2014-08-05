@@ -17,16 +17,36 @@ class Vector
 end
 
 class Matrix
-
 	def zero_each_row
 		self.rows.each_with_index do |row, row_index|
 			min = row.min
-			print "row.min returns #{row.min}\n"
 			row.each_with_index do |value, col_index|
-				self.send( :[]=, row_index, col_index, value-min )
+				self.send( :[]=,row_index,col_index,value-min )
 			end
 		end
+		return self
 	end
+
+	def zero_each_column
+		self.columns.each_with_index do |column, column_index|
+			min = column.min
+			column.each_with_index do |value, row_index|
+				self.send( :[]=,row_index,col_index,value-min )
+			end
+		end
+		return self
+	end
+
+	def zero_each_column
+		self.columns.each_with_index do |column, col_index|
+			min = column.min
+			column.each_with_index do |value, row_index|
+				self.send( :[]=,row_index,col_index,value-min )
+			end
+		end
+		return self
+	end
+
 
 	def max_col_assignment 
 		(self.row_count.fdiv(self.column_count)).ceil
@@ -83,7 +103,10 @@ class Matrix
 end
 
 print "#{m}\n"
-print "m.zero_each_row returns #{m.zero_each_row}\n"
+m.zero_each_row
+print "m.zero_each_row returns #{m}\n"
+m.zero_each_column
+print "m.zero_each_column returns #{m}\n"
 print "m.columns returns #{m.columns}\n"
 print "m.columns[0] returns #{m.columns[0]}\n"
 print "m.rows returns #{m.rows}\n"
