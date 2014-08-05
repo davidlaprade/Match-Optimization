@@ -16,45 +16,82 @@ def hungarian
 	# ensure self matrix has same number of elements in each row...
 	# ensure self matrix has only integers in each row, and that each row contains each integer...
 
-	# want to create an empty matrix the same size as the original
+	# creates an empty matrix the same size as the original
 	columns = ORIGINAL_MATRIX.column_count
 	rows = ORIGINAL_MATRIX.row_count
 	ASSIGNING_MATRIX = Matrix.build(rows, columns) {}
 
-	# for now, make these pre-set; later have them input by user
+	# constraints
 	# ceil rounds a float up to the nearest integer
 	max_row_assignment = 1
 	min_row_assignment = 1
 	max_col_assignment = (rows/columns).ceil
 	min_col_assignment = 1
 
-	# subtracts the lowest value in each row from each member of that row
-	i = 0
-	while i < rows do
-		min = WORKING_MATRIX.row(i).min
-		WORKING_MATRIX.row(i).each_with_index do |value, index|
-			m.send( :[]=,i,index,value-min )
+	# carries out first two steps of algorithm
+	if max_row_assignment <= max_col_assignment
+		WORKING_MATRIX.zero_each_row
+		WORKING_MATRIX.zero_each_column
+	else
+		WORKING_MATRIX.zero_each_column
+		WORKING_MATRIX.zero_each_row
+	end
+
+	# third step in algorithm
+		# find problematic rows if they exist
+		
+		i = 0
+		while i < WORKING_MATRIX.column_count
+			WORKING_MATRIX.column(i).count_with_value(0)
+			if 
+
+		min_assignments = min_row_assignment * WORKING_MATRIX.row_count
+
+		# counts number of cells with the given value in a row or column
+		class Vector
+			def count_with_value(value)
+				count = 0
+					self.each do |cell|
+						count = (count + 1) unless (cell != value)
+					end
+				return count
+			end
 		end
-		i = i + 1
+
+
+		# resolve problematic rows if they exist
+
+
+
+
+	# subtracts the lowest value in each row from each member of that row
+	def zero_each_row
+		i = 0
+		rows = self.row_count
+		while i < rows do
+			min = self.row(i).min
+			self.row(i).each_with_index do |value, index|
+				self.send( :[]=, i, index, value-min )
+			end
+			i = i + 1
+		end
 	end
 	
 	# subtracts the lowest value in each column from each member of that column
-	i = 0
-	while i < columns do
-		min = WORKING_MATRIX.column(i).min
-		WORKING_MATRIX.column(i).each_with_index do |value, index|
-			WORKING_MATRIX.send( :[]=,index,i,value-min )
+	def zero_each_column
+		i = 0
+		columns = self.column_count
+		while i < columns do
+			min = self.column(i).min
+			self.column(i).each_with_index do |value, index|
+				self.send( :[]=, index, i, value-min )
+			end
+			i = i + 1
 		end
-		i = i + 1
 	end
 
 
-	col_list = Array.new(columns) { Array.new(rows)}
-	WORKING_MATRIX.each do |r|
-		r.each do |index, value|
-			col_list[index] << value
-		end
-	end
+
 
 JUST USE MATRICES! Tells you how to access matrix values, AND change them: http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
 	matrix.clone = creates a new matrix identical to the old one, not just a new name
