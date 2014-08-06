@@ -6,19 +6,14 @@ require 'matrix'
 
 def hungarian
 	ORIGINAL_MATRIX = self
-	# makes a copy of the input matrix
 	WORKING_MATRIX = self.clone
+	ASSIGNING_MATRIX = Matrix.build(self.row_count, self.column_count) {}
 
 	# ensure self matrix has same number of elements in each row...
 	# ensure self matrix has only integers in each row, and that each row contains each integer...
 
-	# creates an empty matrix the same size as the original
-	columns = ORIGINAL_MATRIX.column_count
-	rows = ORIGINAL_MATRIX.row_count
-	ASSIGNING_MATRIX = Matrix.build(rows, columns) {}
-
 	# first two steps of algorithm
-	if max_row_assignment <= max_col_assignment
+	if WORKING_MATRIX.row_count >= WORKING_MATRIX.column_count
 		WORKING_MATRIX.zero_each_row
 		WORKING_MATRIX.zero_each_column
 	else
@@ -28,34 +23,28 @@ def hungarian
 
 	# third step in algorithm
 		# is the Working Matrix solvable?
-		WORKING_MATRIX.solveable?
+		if WORKING_MATRIX.solveable? == false
 
-
-		# find problematic rows if they exist
-		other_zeros = []
-		WORKING_MATRIX.columns_over_max.each do |col_index|
-			WORKING_MATRIX.rows_with_zeros_in_column(col_index).each do |row_index|
-				zero_columns = []
-				WORKING_MATRIX.row(row_index).each_with_index do |value, index|
-					if (value == 0) && (index != col_index)
-						zero_columns << index
+			# find problematic rows if they exist
+			other_zeros = []
+			WORKING_MATRIX.columns_over_max.each do |col_index|
+				WORKING_MATRIX.rows_with_zeros_in_column(col_index).each do |row_index|
+					zero_columns = []
+					WORKING_MATRIX.row(row_index).each_with_index do |value, index|
+						if (value == 0) && (index != col_index)
+							zero_columns << index
+						end
 					end
+					other_zeros << [col_index row_index, zero_columns]
 				end
-				other_zeros << [col_index row_index, zero_columns]
 			end
+
+			# resolve problematic rows if they exist
+
 		end
 
-
-
-
-
-					
-
-
-
-
-		
-		# resolve problematic rows if they exist
+	# fourth step in algorithm
+		# make assignments usin ASSIGNING MATRX
 
 
 
@@ -117,15 +106,14 @@ class Vector
 end
 
 class Matrix
-	# allows you to change values in matrix
-	# for matrix reference http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
+	# allows you to change values in matrix, see http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
 	def []=(row, column, value)
 		@rows[row][column] = value
 	end
 
 	# CONSTRAINTS
-	# ceil rounds a float up to the nearest integer
 	def max_col_assignment 
+		# ceil rounds a float up to the nearest integer
 		(self.row_count.fdiv(self.column_count)).ceil
 	end
 
@@ -141,7 +129,7 @@ class Matrix
 		return 1
 	end
 
-	# returns an array of the rows in the Matrix it's called on
+	# returns an array of the rows (data type: vectors) in the Matrix it's called on
 	def rows
 		row_index = 0
 		rows = []
@@ -152,7 +140,7 @@ class Matrix
 		return rows
 	end
 
-	# returns an array of the columns in the Matrix it's called on
+	# returns an array of the columns (data type: vectors) in the Matrix it's called on
 	def columns
 		col_index = 0
 		columns = []
