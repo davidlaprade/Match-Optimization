@@ -69,20 +69,52 @@ def hungarian
 			end
 		end
 
+		min_col_assignments_possible > self.max_row_assingments_possible
+
+		first count rows with just the min zeros in them
+			# returns an array containing coordinates of each zero that lies in a row with the minimum number of assinable zeros
+			def minimum_zeros_in_rows
+				zeros_of_interest = []
+				self.rows.each_with_index do |row, row_index|
+					if row.count_with_value(0) = self.min_row_assignment
+						row.each_with_index do |cell, col_index|
+							if cell == 0
+								zeros_of_interest << [row_index, col_index]
+							end
+						end
+					end
+				end
+				return zeros_of_interest
+			end	
+
+		then count columns with just the min zeros in them
+			# returns an array containing coordinates of each zero that lies in a column with the minimum number of assinable zeros
+			def minimum_zeros_in_columns
+				zeros_of_interest = []
+				self.columns.each_with_index do |column, col_index|
+					if column.count_with_value(0) = self.min_col_assignment
+						column.each_with_index do |cell, row_index|
+							if cell == 0
+								zeros_of_interest << [row_index, col_index]
+							end
+						end
+					end
+				end
+				return zeros_of_interest
+			end	
+
+		if count all of the unique cells in those two collections; if that number is more than the max assignments possible
+			then you have a problem
+
+			def solveable?
+				required_zeros = WORKING_MATRIX.minimum_zeros_in_columns | WORKING_MATRIX.minimum_zeros_in_rows
+
 					
 
 
 
 
-		roblem: min_assignments > max_assignments_possible	
-					min_assign = NR x row count
-					max_poss = for each column that contains a zero (add one for each row with a zero if it is under the max allowable for that oclumn)
-
-
-
-
-
-
+		
 		# resolve problematic rows if they exist
 
 	# returns an array of indices of rows with zeros in the specified column index
