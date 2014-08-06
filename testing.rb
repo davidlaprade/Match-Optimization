@@ -1,9 +1,11 @@
 require 'matrix'
 
+m = Matrix[[1,5],[1,5],[1,4]]
+# m = Matrix[[1,2],[2,1]]
 # m = Matrix[[0,2,0,4,5,5],[9,4,4,8,8,8]]
 # m = Matrix[[8,3,5,2,7,1,6,4], [1,6,5,4,2,8,3,7], [2,3,8,1,5,6,7,4], [7,3,6,4,1,8,5,2],
               # [3,7,2,8,1,6,4,5], [7,2,1,3,4,6,8,5], [8,7,2,3,4,1,5,6]]
-m = Matrix[[5,0,3],[4,0,2],[8,0,8]]
+# m = Matrix[[5,0,3],[4,0,2],[8,0,8]]
 
 
 class Vector
@@ -33,29 +35,45 @@ class Matrix
 		return 1
 	end
 
-	def	min_row_assignments_possible 
-		return self.row_count * self.min_row_assignment
-	end
 
-	def max_column_assignments_possible
-		possible_assignments = 0
-		self.columns.each do |column|
-			if column.count_with_value(0) >= self.max_col_assignment
-				possible_assignments = possible_assignments + self.max_col_assignment
-			else
-				possible_assignments = possible_assignments + column.count_with_value(0)
+	def minimum_zeros_in_rows
+		zeros_of_interest = []
+		self.rows.each_with_index do |row, row_index|
+			if row.count_with_value(0) == self.min_row_assignment
+				row.each_with_index do |cell, col_index|
+					if cell == 0
+						zeros_of_interest << [row_index, col_index]
+					end
+				end
 			end
 		end
-		return possible_assignments
-	end
-	
+		return zeros_of_interest
+	end	
+
+	def minimum_zeros_in_columns
+		zeros_of_interest = []
+		self.columns.each_with_index do |column, col_index|
+			if column.count_with_value(0) == self.min_col_assignment
+				column.each_with_index do |cell, row_index|
+					if cell == 0
+						zeros_of_interest << [row_index, col_index]
+					end
+				end
+			end
+		end
+		return zeros_of_interest
+	end	
+
 	def solveable?
-		if self.min_row_assignments_possible > self.max_column_assignments_possible
+		required_zeros = self.minimum_zeros_in_columns | self.minimum_zeros_in_rows
+		if required_zeros.length > (self.max_row_assignment * self.row_count)
 			return false
 		else
-			return true
+			return nil
 		end
 	end
+
+
 
 	def print_in_readable_format
 		print "\n\n"

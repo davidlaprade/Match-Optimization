@@ -1,10 +1,6 @@
-# Modified hungarian algorithm to find matches
-# array_to_solve.hungarian == solution_array
-# array_to_solve is an array of arrays--i.e. a matrix in array form
-# solution_array is a set of ordered pairs (n, m) such that n is the number of a row in matrix_to_solve and m is the assignment in that row
-# solution_array.measure will add all of the values of the assignments in the solution
-
+# Modified hungarian algorithm to optimize matches
 # for matrix reference http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
+
 require 'matrix'
 
 
@@ -31,6 +27,10 @@ def hungarian
 	end
 
 	# third step in algorithm
+		# is the Working Matrix solvable?
+		WORKING_MATRIX.solveable?
+
+
 		# find problematic rows if they exist
 		other_zeros = []
 		WORKING_MATRIX.columns_over_max.each do |col_index|
@@ -45,69 +45,9 @@ def hungarian
 			end
 		end
 
-		def	min_row_assignments_possible 
-			return self.row_count * self.min_row_assignment
-		end
 
-		def max_column_assignments_possible
-			possible_assignments = 0
-			self.columns.each do |column|
-				if column.count_with_value(0) >= self.max_col_assignment
-					possible_assignments = possible_assignments + self.max_col_assignment
-				else
-					possible_assignments = possible_assignments + column.count_with_value(0)
-				end
-			end
-			return possible_assignments
-		end
-		
-		def solveable?
-			if self.min_row_assignments_possible > self.max_column_assignments_possible
-				return false
-			else
-				return true
-			end
-		end
 
-		min_col_assignments_possible > self.max_row_assingments_possible
 
-		first count rows with just the min zeros in them
-			# returns an array containing coordinates of each zero that lies in a row with the minimum number of assinable zeros
-			def minimum_zeros_in_rows
-				zeros_of_interest = []
-				self.rows.each_with_index do |row, row_index|
-					if row.count_with_value(0) = self.min_row_assignment
-						row.each_with_index do |cell, col_index|
-							if cell == 0
-								zeros_of_interest << [row_index, col_index]
-							end
-						end
-					end
-				end
-				return zeros_of_interest
-			end	
-
-		then count columns with just the min zeros in them
-			# returns an array containing coordinates of each zero that lies in a column with the minimum number of assinable zeros
-			def minimum_zeros_in_columns
-				zeros_of_interest = []
-				self.columns.each_with_index do |column, col_index|
-					if column.count_with_value(0) = self.min_col_assignment
-						column.each_with_index do |cell, row_index|
-							if cell == 0
-								zeros_of_interest << [row_index, col_index]
-							end
-						end
-					end
-				end
-				return zeros_of_interest
-			end	
-
-		if count all of the unique cells in those two collections; if that number is more than the max assignments possible
-			then you have a problem
-
-			def solveable?
-				required_zeros = WORKING_MATRIX.minimum_zeros_in_columns | WORKING_MATRIX.minimum_zeros_in_rows
 
 					
 
@@ -117,6 +57,14 @@ def hungarian
 		
 		# resolve problematic rows if they exist
 
+
+
+	# returns an array containing coordinates of each zero that lies in a row with the minimum number of assinable zeros
+	def minimum_zeros_in_rows
+	# returns an array containing coordinates of each zero that lies in a column with the minimum number of assinable zeros
+	def minimum_zeros_in_columns
+	# returns false if the matrix has no solution in its current state, nil if the matrix passes the test
+	def solveable?
 	# returns an array of indices of rows with zeros in the specified column index
 	def rows_with_zeros_in_column(column_index)
 	# outputs array of column indexes such that each column contains more zeros than could be assigned in that column
@@ -154,10 +102,7 @@ JUST USE MATRICES! Tells you how to access matrix values, AND change them: http:
 end
 
 
-# HELPER METHODS
-
-
-
+#--------------------- HELPER METHODS-----------------------------------------------------
 
 class Vector
 	# counts number of cells with the given value in a row or column
@@ -270,6 +215,46 @@ class Matrix
 			end
 		end
 		return self
+	end
+
+	# returns an array containing coordinates of each zero that lies in a row with the minimum number of assinable zeros
+	def minimum_zeros_in_rows
+		zeros_of_interest = []
+		self.rows.each_with_index do |row, row_index|
+			if row.count_with_value(0) == self.min_row_assignment
+				row.each_with_index do |cell, col_index|
+					if cell == 0
+						zeros_of_interest << [row_index, col_index]
+					end
+				end
+			end
+		end
+		return zeros_of_interest
+	end	
+
+	# returns an array containing coordinates of each zero that lies in a column with the minimum number of assinable zeros
+	def minimum_zeros_in_columns
+		zeros_of_interest = []
+		self.columns.each_with_index do |column, col_index|
+			if column.count_with_value(0) == self.min_col_assignment
+				column.each_with_index do |cell, row_index|
+					if cell == 0
+						zeros_of_interest << [row_index, col_index]
+					end
+				end
+			end
+		end
+		return zeros_of_interest
+	end	
+
+	# returns false if the matrix has no solution in its current state, nil if the matrix passes the test
+	def solveable?
+		required_zeros = self.minimum_zeros_in_columns | self.minimum_zeros_in_rows
+		if required_zeros.length > (self.max_row_assignment * self.row_count)
+			return false
+		else
+			return nil
+		end
 	end
 
 end
