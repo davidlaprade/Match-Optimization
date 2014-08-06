@@ -1,10 +1,10 @@
 require 'matrix'
 
-m = Matrix[[0,2,0,4,5,5],[9,4,4,8,8,8]]
+# m = Matrix[[0,2,0,4,5,5],[9,4,4,8,8,8]]
+# m = Matrix[[8,3,5,2,7,1,6,4], [1,6,5,4,2,8,3,7], [2,3,8,1,5,6,7,4], [7,3,6,4,1,8,5,2],
+             # [3,7,2,8,1,6,4,5], [7,2,1,3,4,6,8,5], [8,7,2,3,4,1,5,6]]
+m = Matrix[[5,0,3],[4,0,2],[8,0,8]]
 
-max_row_assignment = 1
-min_row_assignment = 1
-min_col_assignment = 1
 
 class Vector
 	def count_with_value(value)
@@ -17,6 +17,54 @@ class Vector
 end
 
 class Matrix
+	def max_col_assignment 
+		(self.row_count.fdiv(self.column_count)).ceil
+	end
+
+	def max_row_assignment
+		return 1
+	end
+
+	def min_row_assignment
+		return 1
+	end
+
+	def min_col_assignment
+		return 1
+	end
+
+	def	min_row_assignments_possible 
+		return self.row_count * self.min_row_assignment
+	end
+
+	def max_column_assignments_possible
+		possible_assignments = 0
+		self.columns.each do |column|
+			if column.count_with_value(0) >= self.max_col_assignment
+				possible_assignments = possible_assignments + self.max_col_assignment
+			else
+				possible_assignments = possible_assignments + column.count_with_value(0)
+			end
+		end
+		return possible_assignments
+	end
+	
+	def solveable?
+		if self.min_row_assignments_possible > self.max_column_assignments_possible
+			return false
+		else
+			return true
+		end
+	end
+
+	def print_in_readable_format
+		print "\n\n"
+		self.rows.each do |row|
+			print "#{row.to_a}\n"
+		end
+		print "\n\n"
+	end
+
 	def zero_each_row
 		self.rows.each_with_index do |row, row_index|
 			min = row.min
@@ -102,20 +150,24 @@ class Matrix
 
 end
 
-print "#{m}\n"
+m.print_in_readable_format
 m.zero_each_row
-print "m.zero_each_row returns #{m}\n"
+print "m.zero_each_row returns:"
+m.print_in_readable_format
 m.zero_each_column
-print "m.zero_each_column returns #{m}\n"
-print "m.columns returns #{m.columns}\n"
-print "m.columns[0] returns #{m.columns[0]}\n"
-print "m.rows returns #{m.rows}\n"
-print "m.rows[1][0] returns #{m.rows[1][0]}\n"
-print "m.rows_with_zeros_in_column(2) returns #{m.rows_with_zeros_in_column(2)}\n"
-print "m.max_col_assignment is #{m.max_col_assignment}\n"
-print "row(0).count_with_value(5) returns #{m.row(0).count_with_value(5)}\n"
-print "m.row(1).count_with_value(8) returns #{m.row(1).count_with_value(8)}\n"
-print "m.column(0).count_with_value(1) returns #{m.column(0).count_with_value(1)}\n"
-print "m.column(1).count_with_value(4) returns #{m.column(1).count_with_value(4)}\n"
-print "m.zeros_per_column returns #{m.zeros_per_column}\n"
-print "m.columns_over_max returns #{m.columns_over_max}\n"
+print "m.zero_each_column returns:"
+m.print_in_readable_format
+
+print "m.solvable? #{m.solveable?}\n\n"
+# print "m.columns returns #{m.columns}\n"
+# print "m.columns[0] returns #{m.columns[0]}\n"
+# print "m.rows returns #{m.rows}\n"
+# print "m.rows[1][0] returns #{m.rows[1][0]}\n"
+# print "m.rows_with_zeros_in_column(2) returns #{m.rows_with_zeros_in_column(2)}\n"
+# print "m.max_col_assignment is #{m.max_col_assignment}\n"
+# print "row(0).count_with_value(5) returns #{m.row(0).count_with_value(5)}\n"
+# print "m.row(1).count_with_value(8) returns #{m.row(1).count_with_value(8)}\n"
+# print "m.column(0).count_with_value(1) returns #{m.column(0).count_with_value(1)}\n"
+# print "m.column(1).count_with_value(4) returns #{m.column(1).count_with_value(4)}\n"
+# print "m.zeros_per_column returns #{m.zeros_per_column}\n"
+# print "m.columns_over_max returns #{m.columns_over_max}\n"

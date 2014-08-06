@@ -32,8 +32,8 @@ def hungarian
 
 	# third step in algorithm
 		# find problematic rows if they exist
+		other_zeros = []
 		WORKING_MATRIX.columns_over_max.each do |col_index|
-			other_zeros = []
 			WORKING_MATRIX.rows_with_zeros_in_column(col_index).each do |row_index|
 				zero_columns = []
 				WORKING_MATRIX.row(row_index).each_with_index do |value, index|
@@ -41,28 +41,43 @@ def hungarian
 						zero_columns << index
 					end
 				end
-				other_zeros << [row_index, zero_columns]
+				other_zeros << [col_index row_index, zero_columns]
 			end
-			return other_zeros
 		end
 
+		def	min_row_assignments_possible 
+			return self.row_count * self.min_row_assignment
+		end
+
+		def max_column_assignments_possible
+			possible_assignments = 0
+			self.columns.each do |column|
+				if column.count_with_value(0) >= self.max_col_assignment
+					possible_assignments = possible_assignments + self.max_col_assignment
+				else
+					possible_assignments = possible_assignments + column.count_with_value(0)
+				end
+			end
+			return possible_assignments
+		end
+		
+		def solveable?
+			if self.min_row_assignments_possible > self.max_column_assignments_possible
+				return false
+			else
+				return true
+			end
+		end
+
+					
 
 
 
 
-			i = 0
-			while i < WORKING_MATRIX.row_count
-				if WORKING_MATRIX[i, col_index]
+		roblem: min_assignments > max_assignments_possible	
+					min_assign = NR x row count
+					max_poss = for each column that contains a zero (add one for each row with a zero if it is under the max allowable for that oclumn)
 
-		# outputs array of column indexes such that each column contains more zeros than could be assigned in that column
-
-
-
-			You only have to look at columns that contain more zeros than max_col_assignment
-			Then check those columns to see if any of the rows that have zeros in them have no other zeros (more complicated...)
-
-
-		min_assignments = min_row_assignment * WORKING_MATRIX.row_count
 
 
 
