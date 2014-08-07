@@ -118,7 +118,8 @@ class Matrix
 	end
 
 	def max_row_assignment
-		return 1
+		# ceil rounds a float up to the nearest integer
+		(self.column_count.fdiv(self.row_count)).ceil
 	end
 
 	def min_row_assignment
@@ -205,116 +206,64 @@ class Matrix
 		return self
 	end
 
-	# returns an array containing coordinates of each zero that lies in a row with the minimum number of assinable zeros
-	def lonely_zeros_in_rows
-		zeros_of_interest = []
-		self.rows.each_with_index do |row, row_index|
-			if row.count_with_value(0) == self.min_row_assignment
-				row.each_with_index do |cell, col_index|
-					if cell == 0
-						zeros_of_interest << [row_index, col_index]
-					end
-				end
-			end
-		end
-		return zeros_of_interest
-	end	
-
-	# returns an array containing coordinates of each zero that lies in a column with the minimum number of assinable zeros
-	def lonely_zeros_in_columns
-		zeros_of_interest = []
-		self.columns.each_with_index do |column, col_index|
-			if column.count_with_value(0) == self.min_col_assignment
-				column.each_with_index do |cell, row_index|
-					if cell == 0
-						zeros_of_interest << [row_index, col_index]
-					end
-				end
-			end
-		end
-		return zeros_of_interest
-	end	
-
-	# returns an array of arrays [n, m] where n is the column index and m is the number of lonely zeros in that column
+	# returns an array of coordinates [n,m] of every lonely zero
 	# a lonely zero is one which occurs as the sole zero in EITHER its row or its column
-	def lonely_zeros_per_column
-		result = []
-		self.columns.each_with_index do |column, col_index|
-			num_lonely_zeros = 0
-			column.each_with_index do |cell, row_index|
-				if self.lonely_zeros_in_rows.include? [row_index, col_index]
-					num_lonely_zeros = num_lonely_zeros + 1
+	# number of lonely zeros
+	def lonely_zeros
+		zeros = []
+		self.rows.each_with_index do |row, row_index|
+			row.each_with_index do |cell, col_index|
+				if cell == 0 && (self.row(row_index).count_with_value(0) == 1 || self.column(col_index).count_with_value(0) == 1)
+					zeros << [row_index, col_index]
 				end
 			end
-			result << [col_index, num_lonely_zeros]
 		end
-		return result
+		return zeros
 	end
 
-	# returns an array of arrays [n, m] where n is the row index and m is the number of lonely zeros in that row
-	# a lonely zero is one which occurs as the sole zero in EITHER its row or its column
-	def lonely_zeros_per_row
-		result = []
-		self.rows.each_with_index do |row, row_index|
-			num_lonely_zeros = 0
-			row.each_with_index do |cell, col_index|
-				if self.lonely_zeros_in_columns.include? [row_index, col_index]
-					num_lonely_zeros = num_lonely_zeros + 1
+	# returns an array of arrays [n,m] where n is the column index and m is the number of lonely zeros in the column
+	def lonely_zeros_per_column
+		zeros_per_column = []
+		self.columns.each_with_index do |column, col_index|
+			zeros = 0
+			self.lonely_zeros.each do |array|
+				if array[1] == col_index
+					zeros = zeros + 1
 				end
 			end
-			result << [row_index, num_lonely_zeros]
+			zeros_per_column << [col_index, zeros]
 		end
-		return result
+		return zeros_per_column
+	end
+
+	# returns an array of arrays [n,m] where n is the column index and m is the number of lonely zeros in the column
+	def lonely_zeros_per_row
+		zeros_per_row = []
+		self.rows.each_with_index do |row, row_index|
+			zeros = 0
+			self.lonely_zeros.each do |array|
+				if array[0] == row_index
+					zeros = zeros + 1
+				end
+			end
+			zeros_per_row << [row_index, zeros]
+		end
+		return zeros_per_row
 	end
 
 	# returns false if the matrix has no solution in its current state, nil if the matrix passes the tests
 	def solveable?
-		# test 1: are there too many lonely zeros?
-		required_zeros = self.lonely_zeros_in_columns | self.lonely_zeros_in_rows
-		if required_zeros.length > (self.max_row_assignment * self.row_count)
-			return false
-		end
-		^^This is not the important problem
-		You can't have this problem without it being the case that there are too many lonely zeros in a row/column'
-		THAT is the real feature you need to be testing for
-
-			SO, first: identify all zeros that are lonely--i.e. the only one in their row or column
-
-				# returns an array of coordinates [n,m] of every lonely zero
-				def lonely_zeros
-					zeros = []
-					self.rows.each_with_index do |row, row_index|
-						row.each_with_index do |cell, col_index|
-							if cell == 0 && (self.row(row_index).count_with_value(0) == 1 || self.column(col_index).count_with_value(0) == 1)
-								zeros << [row_index, col_index]
-							end
-						end
-					end
-					return zeros
-				end
-
-			Second, count the lonely zeros per row, then the lonely zeros per column
-
-
-			column_zeros = 0
-			self.columns.each_with_index do |column, col_index|
-				self.lonely_zeros.each do |array|
-					if array[1] == col_index
-						column_zeros = column_zeros + 1
-
-
-
 		# checks to see if there are too many lonely zeros in any column
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
-				return false
+				return "false - too many lonely zeros per column"
 			end
 		end
 
 		# checks to see if there are too many lonely zeros in any row
 		self.lonely_zeros_per_row.each do |array|
 			if array[1] > self.max_row_assignment
-				return false
+				return "false - too many lonely zeros per row"
 			end
 		end
 	end

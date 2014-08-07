@@ -1,12 +1,16 @@
 require 'matrix'
 
-m = Matrix[[1,1,7,0,4,5,6,3],[7,4,2,0,6,3,7,1],[6,1,7,0,4,7,1,2]]
+# new challenge for solveablility: the following matrix does not have too many lonely zeros in any column or row
+	# m = Matrix[[0,3,0],[0,5,0],[0,1,0]]
+# m = Matrix[[1,1,7,0,4,5,6,3],[7,4,2,0,6,3,7,1],[6,1,7,0,4,7,1,2]]
 # m = Matrix[[1,5],[1,5],[1,4]]
 # m = Matrix[[1,2],[2,1]]
-# m = Matrix[[0,2,0,4,5,5],[9,4,4,8,8,8]]
-# m = Matrix[[8,3,5,2,7,1,6,4], [1,6,5,4,2,8,3,7], [2,3,8,1,5,6,7,4], [7,3,6,4,1,8,5,2],
-              # [3,7,2,8,1,6,4,5], [7,2,1,3,4,6,8,5], [8,7,2,3,4,1,5,6]]
+# m = Matrix[[0,2,0,4,5,5],[0,4,0,8,8,8]]
+m = Matrix[[8,3,5,2,7,1,6,4], [1,6,5,4,2,8,3,7], [2,3,8,1,5,6,7,4], [7,3,6,4,1,8,5,2],
+              [3,7,2,8,1,6,4,5], [7,2,1,3,4,6,8,5], [8,7,2,3,4,1,5,6]]
 # m = Matrix[[5,0,3],[4,0,2],[8,0,8]]
+
+
 
 
 class Vector
@@ -25,7 +29,7 @@ class Matrix
 	end
 
 	def max_row_assignment
-		return 1
+		(self.column_count.fdiv(self.row_count)).ceil
 	end
 
 	def min_row_assignment
@@ -37,79 +41,63 @@ class Matrix
 	end
 
 
-	def lonely_zeros_in_rows
-		zeros_of_interest = []
+	def lonely_zeros
+		zeros = []
 		self.rows.each_with_index do |row, row_index|
-			if row.count_with_value(0) == self.min_row_assignment
-				row.each_with_index do |cell, col_index|
-					if cell == 0
-						zeros_of_interest << [row_index, col_index]
-					end
-				end
-			end
-		end
-		return zeros_of_interest
-	end	
-
-	def lonely_zeros_in_columns
-		zeros_of_interest = []
-		self.columns.each_with_index do |column, col_index|
-			if column.count_with_value(0) == self.min_col_assignment
-				column.each_with_index do |cell, row_index|
-					if cell == 0
-						zeros_of_interest << [row_index, col_index]
-					end
-				end
-			end
-		end
-		return zeros_of_interest
-	end	
-
-	def lonely_zeros_per_column
-		result = []
-		self.columns.each_with_index do |column, col_index|
-			num_lonely_zeros = 0
-			column.each_with_index do |cell, row_index|
-				if self.lonely_zeros_in_rows.include? [row_index, col_index]
-					num_lonely_zeros = num_lonely_zeros + 1
-				end
-			end
-			result << [col_index, num_lonely_zeros]
-		end
-		return result
-	end
-
-	def lonely_zeros_per_row
-		result = []
-		self.rows.each_with_index do |row, row_index|
-			num_lonely_zeros = 0
 			row.each_with_index do |cell, col_index|
-				if self.lonely_zeros_in_columns.include? [row_index, col_index]
-					num_lonely_zeros = num_lonely_zeros + 1
+				if cell == 0 && (self.row(row_index).count_with_value(0) == 1 || self.column(col_index).count_with_value(0) == 1)
+					zeros << [row_index, col_index]
 				end
 			end
-			result << [row_index, num_lonely_zeros]
 		end
-		return result
+		return zeros
 	end
 
+		def lonely_zeros_per_column
+		zeros_per_column = []
+		self.columns.each_with_index do |column, col_index|
+			zeros = 0
+			self.lonely_zeros.each do |array|
+				if array[1] == col_index
+					zeros = zeros + 1
+				end
+			end
+			zeros_per_column << [col_index, zeros]
+		end
+		return zeros_per_column
+	end
+
+	# returns an array of arrays [n,m] where n is the column index and m is the number of lonely zeros in the column
+	def lonely_zeros_per_row
+		zeros_per_row = []
+		self.rows.each_with_index do |row, row_index|
+			zeros = 0
+			self.lonely_zeros.each do |array|
+				if array[0] == row_index
+					zeros = zeros + 1
+				end
+			end
+			zeros_per_row << [row_index, zeros]
+		end
+		return zeros_per_row
+	end
+
+	# returns false if the matrix has no solution in its current state, nil if the matrix passes the tests
 	def solveable?
 		# checks to see if there are too many lonely zeros in any column
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
-				return false
+				return "false - too many lonely zeros per column"
 			end
 		end
 
 		# checks to see if there are too many lonely zeros in any row
 		self.lonely_zeros_per_row.each do |array|
 			if array[1] > self.max_row_assignment
-				return false
+				return "false - too many lonely zeros per row"
 			end
 		end
 	end
-
-
 
 	def print_in_readable_format
 		print "\n\n"
@@ -204,19 +192,24 @@ class Matrix
 
 end
 
-m.print_in_readable_format
-# m.zero_each_row
-# print "m.zero_each_row returns:"
-# m.print_in_readable_format
-# m.zero_each_column
-# print "m.zero_each_column returns:"
-# m.print_in_readable_format
 
+
+m.print_in_readable_format
+m.zero_each_row
+print "m.zero_each_row returns:"
+m.print_in_readable_format
+m.zero_each_column
+print "m.zero_each_column returns:"
+m.print_in_readable_format
+
+print "m.max_col_assignment returns #{m.max_col_assignment}\n"
+print "m.max_row_assignment returns #{m.max_row_assignment}\n"
 
 print "m.solvable? #{m.solveable?}\n\n"
-print "m.lonely_zeros_in_rows returns #{m.lonely_zeros_in_rows}\n\n"
+print "m.lonely_zeros returns #{m.lonely_zeros}\n\n"
 print "m.lonely_zeros_per_column returns #{m.lonely_zeros_per_column}\n\n"
 print "m.lonely_zeros_per_row returns #{m.lonely_zeros_per_row}\n\n"
+
 # print "m.columns returns #{m.columns}\n"
 # print "m.columns[0] returns #{m.columns[0]}\n"
 # print "m.rows returns #{m.rows}\n"
