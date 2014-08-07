@@ -1,6 +1,7 @@
 require 'matrix'
 
-m = Matrix[[1,5],[1,5],[1,4]]
+m = Matrix[[1,1,7,0,4,5,6,3],[7,4,2,0,6,3,7,1],[6,1,7,0,4,7,1,2]]
+# m = Matrix[[1,5],[1,5],[1,4]]
 # m = Matrix[[1,2],[2,1]]
 # m = Matrix[[0,2,0,4,5,5],[9,4,4,8,8,8]]
 # m = Matrix[[8,3,5,2,7,1,6,4], [1,6,5,4,2,8,3,7], [2,3,8,1,5,6,7,4], [7,3,6,4,1,8,5,2],
@@ -36,7 +37,7 @@ class Matrix
 	end
 
 
-	def minimum_zeros_in_rows
+	def lonely_zeros_in_rows
 		zeros_of_interest = []
 		self.rows.each_with_index do |row, row_index|
 			if row.count_with_value(0) == self.min_row_assignment
@@ -50,7 +51,7 @@ class Matrix
 		return zeros_of_interest
 	end	
 
-	def minimum_zeros_in_columns
+	def lonely_zeros_in_columns
 		zeros_of_interest = []
 		self.columns.each_with_index do |column, col_index|
 			if column.count_with_value(0) == self.min_col_assignment
@@ -64,12 +65,31 @@ class Matrix
 		return zeros_of_interest
 	end	
 
+	def lonely_zeros_per_column
+		result = []
+		self.columns.each_with_index do |column, col_index|
+			num_lonely_zeros = 0
+			column.each_with_index do |cell, row_index|
+				if self.lonely_zeros_in_rows.include? [row_index, col_index]
+					num_lonely_zeros = num_lonely_zeros + 1
+				end
+			end
+			result << [col_index, num_lonely_zeros]
+		end
+		return result
+	end
+
 	def solveable?
-		required_zeros = self.minimum_zeros_in_columns | self.minimum_zeros_in_rows
+		required_zeros = self.lonely_zeros_in_columns | self.lonely_zeros_in_rows
 		if required_zeros.length > (self.max_row_assignment * self.row_count)
 			return false
-		else
-			return nil
+		end
+
+		# checks to see if there are too many lonely zeros in any column
+		self.lonely_zeros_per_column.each do |array|
+			if array[1] > self.max_col_assignment
+				return false
+			end
 		end
 	end
 
@@ -169,14 +189,17 @@ class Matrix
 end
 
 m.print_in_readable_format
-m.zero_each_row
-print "m.zero_each_row returns:"
-m.print_in_readable_format
-m.zero_each_column
-print "m.zero_each_column returns:"
-m.print_in_readable_format
+# m.zero_each_row
+# print "m.zero_each_row returns:"
+# m.print_in_readable_format
+# m.zero_each_column
+# print "m.zero_each_column returns:"
+# m.print_in_readable_format
+
 
 print "m.solvable? #{m.solveable?}\n\n"
+print "m.lonely_zeros_in_rows returns #{m.lonely_zeros_in_rows}\n\n"
+print "m.lonely_zeros_per_column returns #{m.lonely_zeros_per_column}\n\n"
 # print "m.columns returns #{m.columns}\n"
 # print "m.columns[0] returns #{m.columns[0]}\n"
 # print "m.rows returns #{m.rows}\n"

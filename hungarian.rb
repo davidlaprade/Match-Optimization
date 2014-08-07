@@ -49,9 +49,9 @@ def hungarian
 
 
 	# returns an array containing coordinates of each zero that lies in a row with the minimum number of assinable zeros
-	def minimum_zeros_in_rows
+	def lonely_zeros_in_rows
 	# returns an array containing coordinates of each zero that lies in a column with the minimum number of assinable zeros
-	def minimum_zeros_in_columns
+	def lonely_zeros_in_columns
 	# returns false if the matrix has no solution in its current state, nil if the matrix passes the test
 	def solveable?
 	# returns an array of indices of rows with zeros in the specified column index
@@ -206,7 +206,7 @@ class Matrix
 	end
 
 	# returns an array containing coordinates of each zero that lies in a row with the minimum number of assinable zeros
-	def minimum_zeros_in_rows
+	def lonely_zeros_in_rows
 		zeros_of_interest = []
 		self.rows.each_with_index do |row, row_index|
 			if row.count_with_value(0) == self.min_row_assignment
@@ -221,7 +221,7 @@ class Matrix
 	end	
 
 	# returns an array containing coordinates of each zero that lies in a column with the minimum number of assinable zeros
-	def minimum_zeros_in_columns
+	def lonely_zeros_in_columns
 		zeros_of_interest = []
 		self.columns.each_with_index do |column, col_index|
 			if column.count_with_value(0) == self.min_col_assignment
@@ -235,13 +235,34 @@ class Matrix
 		return zeros_of_interest
 	end	
 
+	# returns an array of arrays [n, m] where n is the column index and m is the number of lonely zeros in that column
+	# a lonely zero is one which occurs as the sole zero in either a row or a column
+	def lonely_zeros_per_column
+		result = []
+		self.columns.each_with_index do |column, col_index|
+			num_lonely_zeros = 0
+			column.each_with_index do |cell, row_index|
+				if self.lonely_zeros_in_rows.include? [row_index, col_index]
+					num_lonely_zeros = num_lonely_zeros + 1
+				end
+			end
+			result << [col_index, num_lonely_zeros]
+		end
+		return result
+	end
+
 	# returns false if the matrix has no solution in its current state, nil if the matrix passes the test
 	def solveable?
-		required_zeros = self.minimum_zeros_in_columns | self.minimum_zeros_in_rows
+		required_zeros = self.lonely_zeros_in_columns | self.lonely_zeros_in_rows
 		if required_zeros.length > (self.max_row_assignment * self.row_count)
 			return false
-		else
-			return nil
+		end
+
+		# checks to see if there are too many lonely zeros in any column
+		self.lonely_zeros_per_column.each do |array|
+			if array[1] > self.max_col_assignment
+				return false
+			end
 		end
 	end
 
