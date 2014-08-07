@@ -1,5 +1,6 @@
 require 'matrix'
 
+
 # new challenge for solveablility: the following matrix does not have too many lonely zeros in any column or row
 	# m = Matrix[[0,3,0],[0,5,0],[0,1,0]]
 # m = Matrix[[1,1,7,0,4,5,6,3],[7,4,2,0,6,3,7,1],[6,1,7,0,4,7,1,2]]
@@ -9,8 +10,6 @@ require 'matrix'
 m = Matrix[[8,3,5,2,7,1,6,4], [1,6,5,4,2,8,3,7], [2,3,8,1,5,6,7,4], [7,3,6,4,1,8,5,2],
               [3,7,2,8,1,6,4,5], [7,2,1,3,4,6,8,5], [8,7,2,3,4,1,5,6]]
 # m = Matrix[[5,0,3],[4,0,2],[8,0,8]]
-
-
 
 
 class Vector

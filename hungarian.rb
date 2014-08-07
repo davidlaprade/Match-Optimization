@@ -1,7 +1,10 @@
 # Modified hungarian algorithm to optimize matches
 # for matrix reference http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
 
+# see http://www.tutorialspoint.com/ruby/ruby_modules.html under "Ruby require statement" to see how this works
+$LOAD_PATH << '.'
 require 'matrix'
+require 'matrix_class_additions'
 
 
 def hungarian
@@ -105,6 +108,7 @@ class Vector
 
 end
 
+# Eventually you're going to want to add this to a new document titled "matrix_class_additions"
 class Matrix
 	# allows you to change values in matrix, see http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
 	def []=(row, column, value)
