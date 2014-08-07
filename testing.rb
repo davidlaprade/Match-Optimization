@@ -79,15 +79,31 @@ class Matrix
 		return result
 	end
 
-	def solveable?
-		required_zeros = self.lonely_zeros_in_columns | self.lonely_zeros_in_rows
-		if required_zeros.length > (self.max_row_assignment * self.row_count)
-			return false
+	def lonely_zeros_per_row
+		result = []
+		self.rows.each_with_index do |row, row_index|
+			num_lonely_zeros = 0
+			row.each_with_index do |cell, col_index|
+				if self.lonely_zeros_in_columns.include? [row_index, col_index]
+					num_lonely_zeros = num_lonely_zeros + 1
+				end
+			end
+			result << [row_index, num_lonely_zeros]
 		end
+		return result
+	end
 
+	def solveable?
 		# checks to see if there are too many lonely zeros in any column
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
+				return false
+			end
+		end
+
+		# checks to see if there are too many lonely zeros in any row
+		self.lonely_zeros_per_row.each do |array|
+			if array[1] > self.max_row_assignment
 				return false
 			end
 		end
@@ -200,6 +216,7 @@ m.print_in_readable_format
 print "m.solvable? #{m.solveable?}\n\n"
 print "m.lonely_zeros_in_rows returns #{m.lonely_zeros_in_rows}\n\n"
 print "m.lonely_zeros_per_column returns #{m.lonely_zeros_per_column}\n\n"
+print "m.lonely_zeros_per_row returns #{m.lonely_zeros_per_row}\n\n"
 # print "m.columns returns #{m.columns}\n"
 # print "m.columns[0] returns #{m.columns[0]}\n"
 # print "m.rows returns #{m.rows}\n"

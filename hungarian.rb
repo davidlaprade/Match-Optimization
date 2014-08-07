@@ -236,7 +236,7 @@ class Matrix
 	end	
 
 	# returns an array of arrays [n, m] where n is the column index and m is the number of lonely zeros in that column
-	# a lonely zero is one which occurs as the sole zero in either a row or a column
+	# a lonely zero is one which occurs as the sole zero in EITHER its row or its column
 	def lonely_zeros_per_column
 		result = []
 		self.columns.each_with_index do |column, col_index|
@@ -251,16 +251,43 @@ class Matrix
 		return result
 	end
 
-	# returns false if the matrix has no solution in its current state, nil if the matrix passes the test
+	# returns an array of arrays [n, m] where n is the row index and m is the number of lonely zeros in that row
+	# a lonely zero is one which occurs as the sole zero in EITHER its row or its column
+	def lonely_zeros_per_row
+		result = []
+		self.rows.each_with_index do |row, row_index|
+			num_lonely_zeros = 0
+			row.each_with_index do |cell, col_index|
+				if self.lonely_zeros_in_columns.include? [row_index, col_index]
+					num_lonely_zeros = num_lonely_zeros + 1
+				end
+			end
+			result << [row_index, num_lonely_zeros]
+		end
+		return result
+	end
+
+	# returns false if the matrix has no solution in its current state, nil if the matrix passes the tests
 	def solveable?
+		# test 1: are there too many lonely zeros?
 		required_zeros = self.lonely_zeros_in_columns | self.lonely_zeros_in_rows
 		if required_zeros.length > (self.max_row_assignment * self.row_count)
 			return false
 		end
+		^^This is not the important problem
+		You can't have this problem without it being the case that there are too many lonely zeros in a row/column'
+		THAT is the real feature you need to be testing for
 
 		# checks to see if there are too many lonely zeros in any column
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
+				return false
+			end
+		end
+
+		# checks to see if there are too many lonely zeros in any row
+		self.lonely_zeros_per_row.each do |array|
+			if array[1] > self.max_row_assignment
 				return false
 			end
 		end
