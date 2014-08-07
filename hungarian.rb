@@ -278,6 +278,32 @@ class Matrix
 		You can't have this problem without it being the case that there are too many lonely zeros in a row/column'
 		THAT is the real feature you need to be testing for
 
+			SO, first: identify all zeros that are lonely--i.e. the only one in their row or column
+
+				# returns an array of coordinates [n,m] of every lonely zero
+				def lonely_zeros
+					zeros = []
+					self.rows.each_with_index do |row, row_index|
+						row.each_with_index do |cell, col_index|
+							if cell == 0 && (self.row(row_index).count_with_value(0) == 1 || self.column(col_index).count_with_value(0) == 1)
+								zeros << [row_index, col_index]
+							end
+						end
+					end
+					return zeros
+				end
+
+			Second, count the lonely zeros per row, then the lonely zeros per column
+
+
+			column_zeros = 0
+			self.columns.each_with_index do |column, col_index|
+				self.lonely_zeros.each do |array|
+					if array[1] == col_index
+						column_zeros = column_zeros + 1
+
+
+
 		# checks to see if there are too many lonely zeros in any column
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
