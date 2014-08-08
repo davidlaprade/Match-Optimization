@@ -260,5 +260,13 @@ class Matrix
 		end
 	end
 
+
+	first count min row assignments allowable, e.g. num_rows x min_row_assignment
+	second, count max column assignemnts possible
+		count zeros in each column, assign up to the max_col_assignment
+	if the first number is greater than the second, the matrix isn't solveable
+
+	then look for the inverse property for rows
+
 end
 
