@@ -97,20 +97,20 @@ end
 class Array
 	# returns an array containing just the rows of the target array that are specified in the rows argument
 	# rows argument is an array of row indexs
-	def create_new_array_using_rows(rows)
-		new_array = []
-		self.each_with_index do |row, index|
-			if rows.include?(index) == true
-				new_array << row
-			end
-		end
-		return new_array
-	end
+	# def create_new_array_using_rows(rows)
+	# 	new_array = []
+	# 	self.each_with_index do |row, index|
+	# 		if rows.include?(index) == true
+	# 			new_array << row
+	# 		end
+	# 	end
+	# 	return new_array
+	# end
 
 	# returns an array containing every combination of members of the array it was called on
-	def every_combination_of_its_rows
+	def every_combination_of_its_members
 		combination_class = []
-		i = 1
+		i = 2
 		while i <= self.length do
 			new_members = self.combination(i).to_a
 			new_members.each do |member|
@@ -119,6 +119,45 @@ class Array
 			i = i + 1
 		end
 		return combination_class
+	end
+
+	# outputs the maximum number of assignments that could be made in columns given the current distribution of values and the max permitted column assignment
+	# does not take into account row assignments or loneliness; must be called on an array
+	def max_column_assmts_possible(max_col_assignment)
+		number_of_max_assignments = 0
+		self.array_columns.each do |column|
+			if column.array_count_with_value(0) > max_col_assignment
+				number_of_max_assignments = number_of_max_assignments + max_col_assignment
+			else 
+				number_of_max_assignments = number_of_max_assignments + column.array_count_with_value(0)
+			end
+		end
+		return number_of_max_assignments
+	end
+
+	# counts number of cells with the given value in an array
+	def array_count_with_value(value)
+		count = 0
+			self.each do |cell|
+				count = (count + 1) unless (cell != value)
+			end
+		return count
+	end
+
+	# outputs an ordered array of arrays, each of which containing a column from the array it is called on
+	# column and row indexes were preserved: array_columns[0][2] returns the cell in the 1st column in the 3rd row 
+	def array_columns
+		columns = []
+		i = 0
+		while i < self[0].length
+			column_i = []
+			self.each do |row|
+				column_i << row[i]
+			end
+			columns << column_i
+			i = i + 1
+		end
+		return columns
 	end
 
 end
@@ -349,9 +388,18 @@ class Matrix
 				for each member of the combination array:
 					find min row assignments permitted
 					find max column assignments possible
-					check if min_row_assmts > max_col_assmts
+					check if min_row_assmts_permitted > max_col_assmts_poss
 						return false
 
+		# TEST FOR ROWS
+		matrix_in_array_format = self.to_a
+		test_cases = matrix_in_array_format.every_combination_of_its_members
+		test_cases.each do |submatrix_in_array_format|
+			min_row_assignments_permitted = self.min_row_assignment * submatrix_in_array_format.length
+			if min_row_assmts_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
+				return false
+			end
+		end
 
 
 
@@ -359,43 +407,7 @@ class Matrix
 							VVV Fix the references to self/array in the method below and this should work!!
 
 
-							# outputs the maximum number of assignments that could be made in columns given the current distribution of values 
-							def max_column_assmts_possible
-								number_of_max_assignments = 0
-								self.array_columns.each do |column|
-									if column.array_count_with_value(0) > self.max_col_assignment
-										number_of_max_assignments = number_of_max_assignments + self.max_col_assignment
-									else 
-										number_of_max_assignments = number_of_max_assignments + column.count_with_value(0)
-									end
-								end
-								return number_of_max_assignments
-							end
 
-							# counts number of cells with the given value in an array
-							def array_count_with_value(value)
-								count = 0
-									self.each do |cell|
-										count = (count + 1) unless (cell != value)
-									end
-								return count
-							end
-
-							# outputs an ordered array of arrays, each of which containing a column from the array it is called on
-							# column and row indexes were preserved: array_columns[0][2] returns the cell in the 1st column in the 3rd row 
-							def array_columns
-								columns = []
-								i = 0
-								while i < self[0].length
-									column_i = []
-									self.each do |row|
-										column_i << row[i]
-									end
-									columns << column_i
-									i = i + 1
-								end
-								return columns
-							end
 
 
 

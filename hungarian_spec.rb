@@ -3,11 +3,56 @@
 $LOAD_PATH << '.'
 require 'testing'
 
-describe Array, "every_combination_of_its_rows" do
-	it "returns [[1],[2],[1,2]] when called on [1,2]" do
-		array = [1,2]
-		expect(array.every_combination_of_its_rows).to eq([[1],[2],[1,2]])
+describe Array, "max_column_assmts_possible(max_col_assignment)" do
+	it "returns 2 when called on [[0,4,0],[0,9,0],[0,2,0]] and passed 1" do
+		array = [[0,4,0],[0,9,0],[0,2,0]]
+		expect(array.max_column_assmts_possible(1)).to eq(2)
 	end
+
+	it "returns 4 when called on [[0,4,0],[0,9,0],[0,2,0]] and passed 2" do
+		array = [[0,4,0],[0,9,0],[0,2,0]]
+		expect(array.max_column_assmts_possible(2)).to eq(4)
+	end
+
+	it "returns 0 when called on [[5,4,5],[5,9,5],[5,2,5]] and passed anything" do
+		array = [[5,4,5],[5,9,5],[5,2,5]]
+		anything = rand * 10
+		expect(array.max_column_assmts_possible(anything)).to eq(0)
+	end
+end
+
+
+describe Array, "array_count_with_value(value)" do
+	it "returns 0 when called on [1,2,3,4,5] and passed 6" do
+		array = [1,2,3,4,5]
+		expect(array.array_count_with_value(6)).to eq(0)
+	end
+
+	it "returns 0 when called on [] and passed anything" do
+		array = []
+		anything = rand * 10
+		expect(array.array_count_with_value(anything)).to eq(0)
+	end
+
+	it "returns 9 when called on [1,1,1,1,1,1,1,1,1,2] and passed 1" do
+		array = [1,1,1,1,1,1,1,1,1,2]
+		expect(array.array_count_with_value(1)).to eq(9)
+	end
+
+end
+
+
+describe Array, "every_combination_of_its_members" do
+	it "returns [[1,2]] when called on [1,2]" do
+		array = [1,2]
+		expect(array.every_combination_of_its_members).to eq([[1,2]])
+	end
+
+	it "returns [[1,2],[1,3],[2,3],[1,2,3]] when called on [1,2,3]" do
+		array = [1,2,3]
+		expect(array.every_combination_of_its_members).to eq([[1,2],[1,3],[2,3],[1,2,3]])
+	end
+
 end
 
 describe Array, "array_columns" do

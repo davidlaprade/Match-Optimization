@@ -25,9 +25,9 @@ class Array
 	end
 
 	# returns an array containing every combination of members of the array it was called on
-	def every_combination_of_its_rows
+	def every_combination_of_its_members
 		combination_class = []
-		i = 1
+		i = 2
 		while i <= self.length do
 			new_members = self.combination(i).to_a
 			new_members.each do |member|
@@ -38,6 +38,30 @@ class Array
 		return combination_class
 	end
 
+	# outputs the maximum number of assignments that could be made in columns given the current distribution of values 
+	def max_column_assmts_possible(max_col_assignment)
+		number_of_max_assignments = 0
+		self.array_columns.each do |column|
+			if column.array_count_with_value(0) > max_col_assignment
+				number_of_max_assignments = number_of_max_assignments + max_col_assignment
+			else 
+				number_of_max_assignments = number_of_max_assignments + column.array_count_with_value(0)
+			end
+		end
+		return number_of_max_assignments
+	end
+
+	# counts number of cells with the given value in an array
+	def array_count_with_value(value)
+		count = 0
+			self.each do |cell|
+				count = (count + 1) unless (cell != value)
+			end
+		return count
+	end
+
+	# outputs an ordered array of arrays, each of which containing a column from the array it is called on
+	# column and row indexes were preserved: array_columns[0][2] returns the cell in the 1st column in the 3rd row 
 	def array_columns
 		columns = []
 		i = 0
@@ -171,8 +195,13 @@ class Matrix
 			end
 		end
 
-		if self.min_row_assmts_permitted > self.max_column_assmts_possible
-			return false
+		matrix_in_array_format = self.to_a
+		test_cases = matrix_in_array_format.every_combination_of_its_members
+		test_cases.each do |submatrix_in_array_format|
+			min_row_assignments_permitted = self.min_row_assignment * submatrix_in_array_format.length
+			if min_row_assmts_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
+				return false
+			end
 		end
 
 		if self.min_column_assmts_permitted > self.max_row_assmts_possible
