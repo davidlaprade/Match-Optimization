@@ -123,4 +123,17 @@ describe Matrix, "solveable?" do
 					[0,8,0,9,0,9,0],[0,4,0,5,0,4,0]]
 		expect(matrix.solveable?).to eq(false)
 	end
+
+	it "returns false when run on Matrix[[1,6,1,2,0,0,0],[0,7,0,6,3,8,4],[1,1,3,1,0,0,0],[0,0,9,0,4,9,5],
+				[5,1,1,1,0,0,0],[6,0,0,8,7,9,4],[9,23,6,2,0,0,9]]" do
+		matrix = Matrix[[1,6,1,2,0,0,0],[0,7,0,6,3,8,4],[1,1,3,1,0,0,0],[0,0,9,0,4,9,5],
+				[5,1,1,1,0,0,0],[6,0,0,8,7,9,4],[9,23,6,2,0,0,9]]
+		expect(matrix.solveable?).to eq(false)
+	end
+
+	it "returns false when run on Matrix[[1,6,1,2],[0,7,0,6],[1,1,3,1],[0,0,9,0],[5,1,1,1],[6,0,0,8],[9,23,6,2]]" do
+		matrix = Matrix[[1,6,1,2],[0,7,0,6],[1,1,3,1],[0,0,9,0],[5,1,1,1],[6,0,0,8],[9,23,6,2]]
+		expect(matrix.solveable?).to eq(false)
+	end	
+
 end
