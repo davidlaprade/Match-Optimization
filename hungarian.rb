@@ -8,6 +8,7 @@ require 'matrix_class_additions'
 
 
 def hungarian
+	# these assignments are going to pose problems for the following reason: http://stackoverflow.com/questions/6712298/dynamic-constant-assignment
 	ORIGINAL_MATRIX = self
 	WORKING_MATRIX = self.clone
 	ASSIGNING_MATRIX = Matrix.build(self.row_count, self.column_count) {}
@@ -28,19 +29,6 @@ def hungarian
 		# is the Working Matrix solvable?
 		if WORKING_MATRIX.solveable? == false
 
-			# find problematic rows if they exist
-			other_zeros = []
-			WORKING_MATRIX.columns_over_max.each do |col_index|
-				WORKING_MATRIX.rows_with_zeros_in_column(col_index).each do |row_index|
-					zero_columns = []
-					WORKING_MATRIX.row(row_index).each_with_index do |value, index|
-						if (value == 0) && (index != col_index)
-							zero_columns << index
-						end
-					end
-					other_zeros << [col_index row_index, zero_columns]
-				end
-			end
 
 			# resolve problematic rows if they exist
 
@@ -75,19 +63,19 @@ def hungarian
 
 
 
-JUST USE MATRICES! Tells you how to access matrix values, AND change them: http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
-	matrix.clone = creates a new matrix identical to the old one, not just a new name
-	matrix.row_count = number of rows
-	matrix.column_count = number of columns
-	matrix.row(j) = outputs j-th row in matrix
-	matrix.row(j)[k] = outputs the k-th element in the j-th row, i.e. row j column k
-	matrix[j,k] = outputs element in the j-th row, in the kth column
-	matrix.column(k) = outputs k-th column
-	matrix.to_a = converts matrix into an array of arrays
-	matrix.send( :[]=,j,k,m) = saves value m to the cell in row j, column k
-	matrix.row(k).min = returns the minimum value in the kth row; use the same method on columns
-	matrix.row(k).max = returns the max value in the kth row; use the same method on columns
-	m.row(k).each_with_index do |value, index| = iterates through each index/value pair in row k, index must be listed second
+# JUST USE MATRICES! Tells you how to access matrix values, AND change them: http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
+# 	matrix.clone = creates a new matrix identical to the old one, not just a new name
+# 	matrix.row_count = number of rows
+# 	matrix.column_count = number of columns
+# 	matrix.row(j) = outputs j-th row in matrix
+# 	matrix.row(j)[k] = outputs the k-th element in the j-th row, i.e. row j column k
+# 	matrix[j,k] = outputs element in the j-th row, in the kth column
+# 	matrix.column(k) = outputs k-th column
+# 	matrix.to_a = converts matrix into an array of arrays
+# 	matrix.send( :[]=,j,k,m) = saves value m to the cell in row j, column k
+# 	matrix.row(k).min = returns the minimum value in the kth row; use the same method on columns
+# 	matrix.row(k).max = returns the max value in the kth row; use the same method on columns
+# 	m.row(k).each_with_index do |value, index| = iterates through each index/value pair in row k, index must be listed second
 
 
 

@@ -86,14 +86,14 @@ class Matrix
 		# checks to see if there are too many lonely zeros in any column
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
-				return "false - too many lonely zeros per column"
+				return false
 			end
 		end
 
 		# checks to see if there are too many lonely zeros in any row
 		self.lonely_zeros_per_row.each do |array|
 			if array[1] > self.max_row_assignment
-				return "false - too many lonely zeros per row"
+				return false
 			end
 		end
 	end
@@ -193,21 +193,21 @@ end
 
 
 
-m.print_in_readable_format
-m.zero_each_row
-print "m.zero_each_row returns:"
-m.print_in_readable_format
-m.zero_each_column
-print "m.zero_each_column returns:"
-m.print_in_readable_format
+# m.print_in_readable_format
+# m.zero_each_row
+# print "m.zero_each_row returns:"
+# m.print_in_readable_format
+# m.zero_each_column
+# print "m.zero_each_column returns:"
+# m.print_in_readable_format
 
-print "m.max_col_assignment returns #{m.max_col_assignment}\n"
-print "m.max_row_assignment returns #{m.max_row_assignment}\n"
+# print "m.max_col_assignment returns #{m.max_col_assignment}\n"
+# print "m.max_row_assignment returns #{m.max_row_assignment}\n"
 
-print "m.solvable? #{m.solveable?}\n\n"
-print "m.lonely_zeros returns #{m.lonely_zeros}\n\n"
-print "m.lonely_zeros_per_column returns #{m.lonely_zeros_per_column}\n\n"
-print "m.lonely_zeros_per_row returns #{m.lonely_zeros_per_row}\n\n"
+# print "m.solvable? #{m.solveable?}\n\n"
+# print "m.lonely_zeros returns #{m.lonely_zeros}\n\n"
+# print "m.lonely_zeros_per_column returns #{m.lonely_zeros_per_column}\n\n"
+# print "m.lonely_zeros_per_row returns #{m.lonely_zeros_per_row}\n\n"
 
 # print "m.columns returns #{m.columns}\n"
 # print "m.columns[0] returns #{m.columns[0]}\n"
