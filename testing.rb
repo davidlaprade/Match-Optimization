@@ -52,7 +52,7 @@ class Matrix
 		return zeros
 	end
 
-		def lonely_zeros_per_column
+	def lonely_zeros_per_column
 		zeros_per_column = []
 		self.columns.each_with_index do |column, col_index|
 			zeros = 0
@@ -66,7 +66,6 @@ class Matrix
 		return zeros_per_column
 	end
 
-	# returns an array of arrays [n,m] where n is the column index and m is the number of lonely zeros in the column
 	def lonely_zeros_per_row
 		zeros_per_row = []
 		self.rows.each_with_index do |row, row_index|
@@ -80,6 +79,23 @@ class Matrix
 		end
 		return zeros_per_row
 	end
+
+	def min_row_assmts_permitted
+		self.min_row_assignment * self.row_count
+	end
+
+	def max_column_assmts_possible
+		number_of_max_assignments = 0
+		self.columns.each do |column|
+			if column.count_with_value(0) > self.max_col_assignment
+				number_of_max_assignments = number_of_max_assignments + self.max_col_assignment
+			else 
+				number_of_max_assignments = number_of_max_assignments + column.count_with_value(0)
+			end
+		end
+		return number_of_max_assignments
+	end
+
 
 	# returns false if the matrix has no solution in its current state, nil if the matrix passes the tests
 	def solveable?
@@ -96,6 +112,11 @@ class Matrix
 				return false
 			end
 		end
+
+		if self.min_row_assmts_permitted > self.max_column_assmts_possible
+			return false
+		end
+
 	end
 
 	def print_in_readable_format

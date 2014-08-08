@@ -61,6 +61,35 @@ def hungarian
 	def columns
 
 
+	first count min row assignments allowable, e.g. num_rows x min_row_assignment
+	# outputs the lowest permitted number of row assignments
+	def min_row_assmts_permitted
+		self.min_row_assignment * self.row_count
+	end
+
+	# outputs the maximum number of assignments that could be made in columns given the current distribution of values 
+	def max_column_assmts_possible
+		number_of_max_assignments = 0
+		self.columns.each do |column|
+			if column.count_with_value(0) > self.max_col_assignment
+				number_of_max_assignments = number_of_max_assignments + self.max_col_assignment
+			else 
+				number_of_max_assignments = number_of_max_assignments + column.count_with_value(0)
+			end
+		end
+		return number_of_max_assignments
+	end
+
+	if min_row_assmts_permitted > max_column_assmts_possible
+
+
+	second, count max column assignemnts possible
+		count zeros in each column, assign up to the max_col_assignment
+	if the first number is greater than the second, the matrix isnt solveable
+
+	then look for the inverse property for rows
+
+
 
 
 # JUST USE MATRICES! Tells you how to access matrix values, AND change them: http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
@@ -103,7 +132,7 @@ class Matrix
 		@rows[row][column] = value
 	end
 
-	# CONSTRAINTS
+	# CONSTRAINTS----------------------------------------
 	def max_col_assignment 
 		# ceil rounds a float up to the nearest integer
 		(self.row_count.fdiv(self.column_count)).ceil
@@ -121,6 +150,7 @@ class Matrix
 	def min_col_assignment
 		return 1
 	end
+	# -----------------------------------------------------
 
 	# returns an array of the rows (data type: vectors) in the Matrix it's called on
 	def rows
@@ -261,12 +291,6 @@ class Matrix
 	end
 
 
-	first count min row assignments allowable, e.g. num_rows x min_row_assignment
-	second, count max column assignemnts possible
-		count zeros in each column, assign up to the max_col_assignment
-	if the first number is greater than the second, the matrix isn't solveable
-
-	then look for the inverse property for rows
 
 end
 
