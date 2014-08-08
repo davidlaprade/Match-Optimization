@@ -3,6 +3,14 @@
 $LOAD_PATH << '.'
 require 'testing'
 
+describe Array, "every_combination_of_its_rows" do
+	it "returns [[1],[2],[1,2]] when called on [1,2]" do
+		array = [1,2]
+		expect(array.every_combination_of_its_rows).to eq([[1],[2],[1,2]])
+	end
+end
+
+
 describe Matrix, "#rows" do
 	it "returns an array containing Vectors of each row in the matrix it is called on" do
 		matrix = Matrix[[1,2,3],[9,7,6]]

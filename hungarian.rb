@@ -94,6 +94,36 @@ end
 
 
 #--------------------- HELPER METHODS-----------------------------------------------------
+class Array
+	# returns an array containing just the rows of the target array that are specified in the rows argument
+	# rows argument is an array of row indexs
+	def create_new_array_using_rows(rows)
+		new_array = []
+		self.each_with_index do |row, index|
+			if rows.include?(index) == true
+				new_array << row
+			end
+		end
+		return new_array
+	end
+
+	# returns an array containing every combination of members of the array it was called on
+	def every_combination_of_its_rows
+		combination_class = []
+		i = 1
+		while i <= self.length do
+			new_members = self.combination(i).to_a
+			new_members.each do |member|
+				combination_class << member
+			end
+			i = i + 1
+		end
+		return combination_class
+	end
+
+end
+
+
 
 class Vector
 	# counts number of cells with the given value in a row or column
@@ -315,6 +345,8 @@ class Matrix
 
 			consider turning the matrix into an array using to_a
 			then go through the array deleting rows one at a time with array.delete_at(row_index), testing each array at a time
+
+
 
 		# to be effective, this needs to check isolated parts of the matrix
 		# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments

@@ -7,10 +7,39 @@ require 'matrix'
 # m = Matrix[[1,5],[1,5],[1,4]]
 # m = Matrix[[1,2],[2,1]]
 # m = Matrix[[0,2,0,4,5,5],[0,4,0,8,8,8]]
-m = Matrix[[8,3,5,2,7,1,6,4], [1,6,5,4,2,8,3,7], [2,3,8,1,5,6,7,4], [7,3,6,4,1,8,5,2],
+ m = Matrix[[8,3,5,2,7,1,6,4], [1,6,5,4,2,8,3,7], [2,3,8,1,5,6,7,4], [7,3,6,4,1,8,5,2],
               [3,7,2,8,1,6,4,5], [7,2,1,3,4,6,8,5], [8,7,2,3,4,1,5,6]]
 # m = Matrix[[5,0,3],[4,0,2],[8,0,8]]
 
+class Array
+	# returns an array containing just the rows of the target array that are specified in the rows argument
+	# rows argument is an array of row indexs
+	def create_new_array_using_rows(rows)
+		new_array = []
+		self.each_with_index do |row, index|
+			if rows.include?(index) == true
+				new_array << row
+			end
+		end
+		return new_array
+	end
+
+	# returns an array containing every combination of members of the array it was called on
+	def every_combination_of_its_rows
+		combination_class = []
+		i = 1
+		while i <= self.length do
+			new_members = self.combination(i).to_a
+			new_members.each do |member|
+				combination_class << member
+			end
+			i = i + 1
+		end
+		return combination_class
+	end
+
+end
+ 
 
 class Vector
 	def count_with_value(value)
