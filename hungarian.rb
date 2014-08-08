@@ -62,25 +62,7 @@ def hungarian
 
 
 	first count min row assignments allowable, e.g. num_rows x min_row_assignment
-	# outputs the lowest permitted number of row assignments
-	def min_row_assmts_permitted
-		self.min_row_assignment * self.row_count
-	end
 
-	# outputs the maximum number of assignments that could be made in columns given the current distribution of values 
-	def max_column_assmts_possible
-		number_of_max_assignments = 0
-		self.columns.each do |column|
-			if column.count_with_value(0) > self.max_col_assignment
-				number_of_max_assignments = number_of_max_assignments + self.max_col_assignment
-			else 
-				number_of_max_assignments = number_of_max_assignments + column.count_with_value(0)
-			end
-		end
-		return number_of_max_assignments
-	end
-
-	if min_row_assmts_permitted > max_column_assmts_possible
 
 
 	second, count max column assignemnts possible
@@ -273,21 +255,73 @@ class Matrix
 		return zeros_per_row
 	end
 
+	# outputs the lowest permitted number of row assignments
+	def min_row_assmts_permitted
+		self.min_row_assignment * self.row_count
+	end
+
+	# outputs the lowest permitted number of column assignments
+	def min_column_assmts_permitted
+		self.min_col_assignment * self.column_count
+	end
+
+	# outputs the maximum number of assignments that could be made in columns given the current distribution of values 
+	def max_column_assmts_possible
+		number_of_max_assignments = 0
+		self.columns.each do |column|
+			if column.count_with_value(0) > self.max_col_assignment
+				number_of_max_assignments = number_of_max_assignments + self.max_col_assignment
+			else 
+				number_of_max_assignments = number_of_max_assignments + column.count_with_value(0)
+			end
+		end
+		return number_of_max_assignments
+	end
+
+	# outputs the maximum number of assignments that could be made in rows given the current distribution of values 
+	def max_row_assmts_possible
+		number_of_max_assignments = 0
+		self.rows.each do |row|
+			if row.count_with_value(0) > self.max_row_assignment
+				number_of_max_assignments = number_of_max_assignments + self.max_row_assignment
+			else 
+				number_of_max_assignments = number_of_max_assignments + row.count_with_value(0)
+			end
+		end
+		return number_of_max_assignments
+	end
+
 	# returns false if the matrix has no solution in its current state, nil if the matrix passes the tests
 	def solveable?
 		# checks to see if there are too many lonely zeros in any column
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
-				return "false - too many lonely zeros per column"
+				return false
 			end
 		end
 
 		# checks to see if there are too many lonely zeros in any row
 		self.lonely_zeros_per_row.each do |array|
 			if array[1] > self.max_row_assignment
-				return "false - too many lonely zeros per row"
+				return false
 			end
 		end
+
+		# to be effective, this needs to check isolated parts of the matrix
+		# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
+		if self.min_row_assmts_permitted > self.max_column_assmts_possible
+			return false
+		end
+
+			consider turning the matrix into an array using to_a
+			then go through the array deleting rows one at a time with array.delete_at(row_index), testing each array at a time
+
+		# to be effective, this needs to check isolated parts of the matrix
+		# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
+		if self.min_column_assmts_permitted > self.max_row_assmts_possible
+			return false
+		end
+
 	end
 
 

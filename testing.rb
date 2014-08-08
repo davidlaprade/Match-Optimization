@@ -84,6 +84,10 @@ class Matrix
 		self.min_row_assignment * self.row_count
 	end
 
+	def min_column_assmts_permitted
+		self.min_col_assignment * self.column_count
+	end
+
 	def max_column_assmts_possible
 		number_of_max_assignments = 0
 		self.columns.each do |column|
@@ -96,6 +100,17 @@ class Matrix
 		return number_of_max_assignments
 	end
 
+	def max_row_assmts_possible
+		number_of_max_assignments = 0
+		self.rows.each do |row|
+			if row.count_with_value(0) > self.max_row_assignment
+				number_of_max_assignments = number_of_max_assignments + self.max_row_assignment
+			else 
+				number_of_max_assignments = number_of_max_assignments + row.count_with_value(0)
+			end
+		end
+		return number_of_max_assignments
+	end
 
 	# returns false if the matrix has no solution in its current state, nil if the matrix passes the tests
 	def solveable?
@@ -114,6 +129,10 @@ class Matrix
 		end
 
 		if self.min_row_assmts_permitted > self.max_column_assmts_possible
+			return false
+		end
+
+		if self.min_column_assmts_permitted > self.max_row_assmts_possible
 			return false
 		end
 
