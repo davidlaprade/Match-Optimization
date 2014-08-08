@@ -376,22 +376,8 @@ class Matrix
 			end
 		end
 
-		# to be effective, this needs to check isolated parts of the matrix
 		# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
-		if self.min_row_assmts_permitted > self.max_column_assmts_possible
-			return false
-		end
-
-			how this is going to work:
-				turn matrix into an array
-				populate array of every combination of the matrix_array rows
-				for each member of the combination array:
-					find min row assignments permitted
-					find max column assignments possible
-					check if min_row_assmts_permitted > max_col_assmts_poss
-						return false
-
-		# TEST FOR ROWS
+		# if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix, the parent matrix is unsolveable
 		matrix_in_array_format = self.to_a
 		test_cases = matrix_in_array_format.every_combination_of_its_members
 		test_cases.each do |submatrix_in_array_format|
@@ -401,19 +387,16 @@ class Matrix
 			end
 		end
 
+			# how this is going to work:
+			# 	turn matrix into an array
+			# 	populate array of every combination of the matrix_array rows
+			# 	for each member of the combination array:
+			# 		find min row assignments permitted
+			# 		find max column assignments possible
+			# 		check if min_row_assmts_permitted > max_col_assmts_poss
+			# 			return false
 
-
-
-							VVV Fix the references to self/array in the method below and this should work!!
-
-
-
-
-
-
-
-
-
+		# Now do the same thing for columns!!!
 
 
 
