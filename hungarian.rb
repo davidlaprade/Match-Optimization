@@ -343,8 +343,65 @@ class Matrix
 			return false
 		end
 
-			consider turning the matrix into an array using to_a
-			then go through the array deleting rows one at a time with array.delete_at(row_index), testing each array at a time
+			how this is going to work:
+				turn matrix into an array
+				populate array of every combination of the matrix_array rows
+				for each member of the combination array:
+					find min row assignments permitted
+					find max column assignments possible
+					check if min_row_assmts > max_col_assmts
+						return false
+
+
+
+
+
+							VVV Fix the references to self/array in the method below and this should work!!
+
+
+							# outputs the maximum number of assignments that could be made in columns given the current distribution of values 
+							def max_column_assmts_possible
+								number_of_max_assignments = 0
+								self.array_columns.each do |column|
+									if column.array_count_with_value(0) > self.max_col_assignment
+										number_of_max_assignments = number_of_max_assignments + self.max_col_assignment
+									else 
+										number_of_max_assignments = number_of_max_assignments + column.count_with_value(0)
+									end
+								end
+								return number_of_max_assignments
+							end
+
+							# counts number of cells with the given value in an array
+							def array_count_with_value(value)
+								count = 0
+									self.each do |cell|
+										count = (count + 1) unless (cell != value)
+									end
+								return count
+							end
+
+							# outputs an ordered array of arrays, each of which containing a column from the array it is called on
+							# column and row indexes were preserved: array_columns[0][2] returns the cell in the 1st column in the 3rd row 
+							def array_columns
+								columns = []
+								i = 0
+								while i < self[0].length
+									column_i = []
+									self.each do |row|
+										column_i << row[i]
+									end
+									columns << column_i
+									i = i + 1
+								end
+								return columns
+							end
+
+
+
+
+
+
 
 
 

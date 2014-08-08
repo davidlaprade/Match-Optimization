@@ -10,6 +10,17 @@ describe Array, "every_combination_of_its_rows" do
 	end
 end
 
+describe Array, "array_columns" do
+	it "returns [[9,6,3],[8,6,2],[7,4,1] when called on [[9,8,7],[6,5,4],[3,2,1]]" do
+		array = [[9,8,7],[6,5,4],[3,2,1]]
+		expect(array.array_columns).to eq([[9,6,3],[8,5,2],[7,4,1]])
+	end
+
+	it "returns [[1]] when called on [[1]]" do
+		array = [[1]]
+		expect(array.array_columns).to eq([[1]])
+	end
+end
 
 describe Matrix, "#rows" do
 	it "returns an array containing Vectors of each row in the matrix it is called on" do
