@@ -7,8 +7,12 @@ require 'matrix'
 # m = Matrix[[1,5],[1,5],[1,4]]
 # m = Matrix[[1,2],[2,1]]
 # m = Matrix[[0,2,0,4,5,5],[0,4,0,8,8,8]]
- m = Matrix[[8,3,5,2,7,1,6,4], [1,6,5,4,2,8,3,7], [2,3,8,1,5,6,7,4], [7,3,6,4,1,8,5,2],
-              [3,7,2,8,1,6,4,5], [7,2,1,3,4,6,8,5], [8,7,2,3,4,1,5,6]]
+# m = Matrix[[8,3,5,2,7,1,6,4], [1,6,5,4,2,8,3,7], [2,3,8,1,5,6,7,4], [7,3,6,4,1,8,5,2],
+              # [3,7,2,8,1,6,4,5], [7,2,1,3,4,6,8,5], [8,7,2,3,4,1,5,6]]
+# m = Matrix[[1,6,1,2,0,0,0],[0,7,0,6,3,8,4],[1,1,3,1,0,0,0],[0,0,9,0,4,9,5],
+				# [5,1,1,1,0,0,0],[6,0,0,8,7,9,4],[9,23,6,2,0,0,9]]
+m = Matrix[[1,0,1,9,5,6,9],[6,7,1,0,1,9,23],[1,9,3,9,1,9,6],[2,6,1,9,1,0,2],[0,3,0,4,0,7,0],
+					[0,8,0,9,0,9,0],[0,4,0,5,0,4,0]]
 # m = Matrix[[5,0,3],[4,0,2],[8,0,8]]
 
 class Array
@@ -184,14 +188,14 @@ class Matrix
 		# checks to see if there are too many lonely zeros in any column
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
-				return false
+				return 1
 			end
 		end
 
 		# checks to see if there are too many lonely zeros in any row
 		self.lonely_zeros_per_row.each do |array|
 			if array[1] > self.max_row_assignment
-				return false
+				return 2
 			end
 		end
 
@@ -199,13 +203,13 @@ class Matrix
 		test_cases = matrix_in_array_format.every_combination_of_its_members
 		test_cases.each do |submatrix_in_array_format|
 			min_row_assignments_permitted = self.min_row_assignment * submatrix_in_array_format.length
-			if min_row_assmts_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
-				return false
+			if min_row_assignments_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
+				return 3
 			end
 		end
 
 		if self.min_column_assmts_permitted > self.max_row_assmts_possible
-			return false
+			return 4
 		end
 
 	end
@@ -305,7 +309,7 @@ end
 
 
 
-# m.print_in_readable_format
+m.print_in_readable_format
 # m.zero_each_row
 # print "m.zero_each_row returns:"
 # m.print_in_readable_format
@@ -316,7 +320,7 @@ end
 # print "m.max_col_assignment returns #{m.max_col_assignment}\n"
 # print "m.max_row_assignment returns #{m.max_row_assignment}\n"
 
-# print "m.solvable? #{m.solveable?}\n\n"
+print "m.solvable? #{m.solveable?}\n\n"
 # print "m.lonely_zeros returns #{m.lonely_zeros}\n\n"
 # print "m.lonely_zeros_per_column returns #{m.lonely_zeros_per_column}\n\n"
 # print "m.lonely_zeros_per_row returns #{m.lonely_zeros_per_row}\n\n"

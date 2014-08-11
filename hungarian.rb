@@ -382,7 +382,7 @@ class Matrix
 		test_cases = matrix_in_array_format.every_combination_of_its_members
 		test_cases.each do |submatrix_in_array_format|
 			min_row_assignments_permitted = self.min_row_assignment * submatrix_in_array_format.length
-			if min_row_assmts_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
+			if min_row_assignments_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
 				return false
 			end
 		end
