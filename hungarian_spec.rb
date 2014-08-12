@@ -136,4 +136,6 @@ describe Matrix, "solveable?" do
 		expect(matrix.solveable?).to eq(false)
 	end	
 
+# next test some matrices that will allow for multiple assignments in rows, then in columns
+
 end

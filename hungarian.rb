@@ -28,11 +28,66 @@ def hungarian
 	# third step in algorithm
 		# is the Working Matrix solvable?
 		if WORKING_MATRIX.solveable? == 1
-			# if it fails test 1, need to fix the matrix accordingly
+			# it fails test 1, need to fix the matrix accordingly
 			# TEST1 - checks to see if there are too many lonely zeros in any column
 				# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
 				# find the lowest member in that row besides the zero, add the value of that member to each zero, 
 				# subtract it from every other member (including itself)
+
+
+					def fix_too_many_lonely_zeros_in_columns
+						# will contain indexes of each row that is causing the problem
+						problematic_rows = []
+						# first find out which rows contain the problematic lonely zeros
+						self.lonely_zeros_per_column.each do |array|
+							if array[1] > self.max_col_assignment
+								self.lonely_zeros.each do |coordinate_array|
+									if array[0] == coordinate_array[1]
+										problematic_rows << coordinate_array[0]
+									end
+								end
+							end
+						end
+						# correct the least necessary, and determine which to correct based on the other values in the row
+						# you want to correct the row with the lowest min value
+							# will contain arrays [n,m], where n is the row index and m is the min-sans-zero value for that row
+						comparison_array = []
+						problematic_rows.each do |row_index|
+							row_array = self.row(row_index).to_a
+							row_array.delete(0)
+							row_min = row_array.min
+							comparison_array << [row_index, row_min]
+						end
+						to_fix_in_order = comparison_array.sort { |x,y| x[1] <=> y[1] }
+
+						# find out how many rows need to be fixed
+							# this will be = the number of lonely zeros in the column minus the max col assignment
+							number_to_fix = self.lonely_zeros_per_column(?????)
+
+						# fix those rows useing the to_fix_in_order array
+
+
+							self.add_value_if_zero_else_subtract_value(row_index, row_min)
+						end
+
+
+							# called on Matrix object, takes row index and value as inputs
+							# outputs Matrix in which the value provided has been added to each zero and subtracted otherwise
+							def add_value_if_zero_else_subtract_value(row_index, value)
+								self.rows(row_index).each_with_index |cell_value, col_index|
+									if cell_value == 0
+										self.send( :[]=,row_index, col_index, value )
+									else
+										self.send( :[]=,row_index, col_index, (cell_value - value) )
+									end
+								end
+								return self
+							end
+
+
+
+
+
 		elsif WORKING_MATRIX.solveable? == 2
 			# if it fails test 2, need to fix the matrix accordingly
 			# TEST2 - checks to see if there are too many lonely zeros in any row
@@ -51,10 +106,9 @@ def hungarian
 
 
 
-
-
-
-
+	# returns an array of coordinates [n,m] of every lonely zero in the Matrix it is called on
+	# a lonely zero is one which occurs as the sole zero in EITHER its row or its column
+	def lonely_zeros
 	# returns an array containing coordinates of each zero that lies in a row with the minimum number of assinable zeros
 	def lonely_zeros_in_rows
 	# returns an array containing coordinates of each zero that lies in a column with the minimum number of assinable zeros
@@ -75,18 +129,6 @@ def hungarian
 	def rows
 	# returns an array of the columns in the Matrix it's called on
 	def columns
-
-
-	first count min row assignments allowable, e.g. num_rows x min_row_assignment
-
-
-
-	second, count max column assignemnts possible
-		count zeros in each column, assign up to the max_col_assignment
-	if the first number is greater than the second, the matrix isnt solveable
-
-	then look for the inverse property for rows
-
 
 
 
