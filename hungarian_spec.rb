@@ -67,6 +67,49 @@ describe Array, "array_columns" do
 	end
 end
 
+describe Matrix, "get_problematic_rows" do
+	# supposed to output an array of arrays [n,m,o] where n is the index of a column with too many lonely zeros
+	# m is the number of lonely zero's in column n
+	# and o is an array that contains the row indexes of each lonely zero in column n
+	it "returns [[0,2,[0,1]]] when called on Matrix[[0,1,9],[0,3,3],[0,6,0]]" do
+		matrix = Matrix[[0,1,9],[0,3,3],[0,6,0]]
+		expect(matrix.get_problematic_rows).to eq([[0,2,[0,1]]])
+	end
+
+end
+
+describe Matrix, "add_value_if_zero_else_subtract_value" do
+	it "returns Matrix[[3,3,0,1,2,6]] when run on Matrix[[0,0,3,4,5,9]] and passed 0 and 3" do
+		matrix = Matrix[[0,0,3,4,5,9]]
+		expect(matrix.add_value_if_zero_else_subtract_value(0, 3)).to eq(Matrix[[3,3,0,1,2,6]])
+	end
+
+	it "returns Matrix[[5,0,2,3,4,8]] when run on Matrix[[6,1,3,4,5,9]] and passed 0 and 1" do
+		matrix = Matrix[[6,1,3,4,5,9]]
+		expect(matrix.add_value_if_zero_else_subtract_value(0, 1)).to eq(Matrix[[5,0,2,3,4,8]])
+	end
+
+	it "returns Matrix[[6,1,3,4,5,9]] when run on Matrix[[6,1,3,4,5,9]] and passed 1 and 1" do
+		matrix = Matrix[[6,1,3,4,5,9]]
+		expect(matrix.add_value_if_zero_else_subtract_value(1, 1)).to eq(Matrix[[6,1,3,4,5,9]])
+	end
+
+	it "returns Matrix[[6,1,3,4,5,9]] when run on Matrix[[6,1,3,4,5,9]] and passed 100 and 1" do
+		matrix = Matrix[[6,1,3,4,5,9]]
+		expect(matrix.add_value_if_zero_else_subtract_value(100, 1)).to eq(Matrix[[6,1,3,4,5,9]])
+	end
+
+	it "returns Matrix[[6,1,3,4,5,9],[1,0,4,5,0,4]] when run on Matrix[[6,1,3,4,5,9],[5,4,0,9,4,0]] and passed 1 and 4" do
+		matrix = Matrix[[6,1,3,4,5,9],[5,4,0,9,4,0]]
+		expect(matrix.add_value_if_zero_else_subtract_value(1, 4)).to eq(Matrix[[6,1,3,4,5,9],[1,0,4,5,0,4]])
+	end
+
+	it "returns Matrix[[6,1,3,4,5,9],[0,4,1,4,4,4],[5,4,0,9,4,0]] when run on Matrix[[6,1,3,4,5,9],[4,0,5,0,0,0],[5,4,0,9,4,0]] and passed 1 and 4" do
+		matrix = Matrix[[6,1,3,4,5,9],[4,0,5,0,0,0],[5,4,0,9,4,0]]
+		expect(matrix.add_value_if_zero_else_subtract_value(1, 4)).to eq(Matrix[[6,1,3,4,5,9],[0,4,1,4,4,4],[5,4,0,9,4,0]])
+	end
+end
+
 describe Matrix, "#rows" do
 	it "returns an array containing Vectors of each row in the matrix it is called on" do
 		matrix = Matrix[[1,2,3],[9,7,6]]

@@ -14,7 +14,8 @@ require 'matrix'
 # m = Matrix[[1,0,1,9,5,6,9],[6,7,1,0,1,9,23],[1,9,3,9,1,9,6],[2,6,1,9,1,0,2],[0,3,0,4,0,7,0],
 					# [0,8,0,9,0,9,0],[0,4,0,5,0,4,0]]
 # m = Matrix[[5,0,3],[4,0,2],[8,0,8]]
-m = Matrix[[0,1],[5,0]]
+# m = Matrix[[0,1],[5,0]]
+m = Matrix[[6,1,3,4,5,9]]
 
 class Array
 	# returns an array containing just the rows of the target array that are specified in the rows argument
@@ -111,6 +112,35 @@ class Matrix
 		return 1
 	end
 
+	def add_value_if_zero_else_subtract_value(row_index, value)
+		if !(self.rows[row_index] == nil)
+			self.rows[row_index].each_with_index do |cell_value, col_index|
+				if cell_value == 0
+					self.send( :[]=,row_index, col_index, value )
+				else
+					self.send( :[]=,row_index, col_index, (cell_value - value) )
+				end
+			end
+		end
+		return self
+	end
+
+	def get_problematic_rows
+		problematic_rows = []
+		# first find out which rows contain the problematic lonely zeros
+		self.lonely_zeros_per_column.each do |array|
+			if array[1] > self.max_col_assignment
+				rows = []
+				self.lonely_zeros.each do |lonely_zero_coordinates|
+					if array[0] == lonely_zero_coordinates[1]
+						rows << lonely_zero_coordinates[0]
+					end
+				end
+				problematic_rows << [array[0], array[1], rows]
+			end
+		end
+		return problematic_rows
+	end
 
 	def lonely_zeros
 		zeros = []
