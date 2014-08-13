@@ -70,11 +70,41 @@ end
 describe Matrix, "get_problematic_rows" do
 	# outputs array of arrays [n,m,o] where n is the index of a column with too many lonely zeros
 	# m is the number of lonely zero's in column n
-	# and o is an array that contains arrays [p,q] where p is a row index of a lonely zero in column n, 
-	# and q is the min value in that row other than zero
+	# and o is an ORDERED array that contains arrays [p,q] where p is a row index of a lonely zero in column n, 
+	# and q is the min value in that row other than zero, ordered by ascending q value
 	it "returns [[0,2,[[0,1],[1,3]]] when called on Matrix[[0,1,9],[0,3,3],[0,6,0]]" do
 		matrix = Matrix[[0,1,9],[0,3,3],[0,6,0]]
 		expect(matrix.get_problematic_rows).to eq([[0,2,[[0,1],[1,3]]]])
+	end
+
+	it "returns [] when called on Matrix[[0,1,9],[0,3,3],[0,6,0],[4,5,6]]" do
+		matrix = Matrix[[0,1,9],[0,3,3],[0,6,0],[4,5,6]]
+		expect(matrix.get_problematic_rows).to eq([])
+	end
+
+	it "returns [] when called on Matrix[[0,1,4],[5,7,0],[9,0,9]]" do
+		matrix = Matrix[[0,1,4],[5,7,0],[9,0,9]]
+		expect(matrix.get_problematic_rows).to eq([])
+	end
+
+	# case where there are no lonely zeros in the matrix at all
+	it "returns [] when called on Matrix[[0,1,0],[0,7,0],[0,7,0]]" do
+		matrix = Matrix[[0,1,0],[0,7,0],[0,7,0]]
+		expect(matrix.get_problematic_rows).to eq([])
+	end
+
+	# case where multiple columns have too many lonely zeros, order is not being checked yet
+	it "returns [[[0,2,[[0,2],[2,5]]],[3,3,[[1,3],[3,7],[4,8]]] when called on 
+		Matrix[[0,5,4,3,2,9,10,17],[8,9,3,0,4,4,44,49],[0,5,5,5,5,5,55,52],[7,7,7,0,7,7,88,81],[8,8,8,0,8,8,8,777]]" do
+		matrix = Matrix[[0,5,4,3,2,9,10,17],[8,9,3,0,4,4,44,49],[0,5,5,5,5,5,55,52],[7,7,7,0,7,7,88,81],[8,8,8,0,8,8,8,777]]
+		expect(matrix.get_problematic_rows).to eq([[0,2,[[0,2],[2,5]]],[3,3,[[1,3],[3,7],[4,8]]]])
+	end
+
+	# case where multiple columns have too many lonely zeros, checking for correct matrix order
+	it "returns [[0,2,[[2,5],[0,6]]],[3,3,[[4,8],[1,9],[3,17]]]] when called on 
+		Matrix[[0,6,6,6,6,9,10,17],[9,9,9,0,9,9,44,49],[0,5,5,5,5,5,55,52],[17,17,17,0,17,17,88,81],[8,8,8,0,8,8,8,777]]" do
+		matrix = Matrix[[0,6,6,6,6,9,10,17],[9,9,9,0,9,9,44,49],[0,5,5,5,5,5,55,52],[17,17,17,0,17,17,88,81],[8,8,8,0,8,8,8,777]]
+		expect(matrix.get_problematic_rows).to eq([[0,2,[[2,5],[0,6]]],[3,3,[[4,8],[1,9],[3,17]]]])
 	end
 
 end

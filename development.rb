@@ -101,8 +101,8 @@ def hungarian
 
 						# outputs array of arrays [n,m,o] where n is the index of a column with too many lonely zeros
 						# m is the number of lonely zero's in column n
-						# and o is an array that contains arrays [p,q] where p is a row index of a lonely zero in column n, 
-						# and q is the min value in that row other than zero
+						# and o is an ORDERED array that contains arrays [p,q] where p is a row index of a lonely zero in column n, 
+						# and q is the min value in that row other than zero, ordered by ascending q value
 						def get_problematic_rows
 							problematic_rows = []
 							# first find out which rows contain the problematic lonely zeros
