@@ -33,54 +33,23 @@ def hungarian
 				# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
 				# find the lowest member in that row besides the zero, add the value of that member to each zero, 
 				# subtract it from every other member (including itself)
+			WORKING_MATRIX.fix_too_many_lonely_zeros_in_columns
 
 
 					def fix_too_many_lonely_zeros_in_columns
-						
-						problematic_rows = self.get_problematic_rows
-
-
+						# isolate the columns that are causing the problem, then the rows in those columns that contain their lonely zeros
 						# PROBLEM: it could be that there are multiple columns with too many lonely zeros, e.g. one col might have 4, another 2
 							# and if the max col assignment were 1, you would want to add_value_if_zero to 3 of the 4 rows in the first group
 							# and only 1 of the 2 rows in the second group
 							# so you need some way of keeping track of these groups
+						problematic_rows = self.get_problematic_rows
 
-						# Now you want to reorganize the members in the "rows" member of problematic_rows
-							# the rows should be ordered from lowest minimum member-sans-zero to highest minimum member-sans-zero
-							# for each problematic group of lonely zeros, reordered_problematic_rows will contain an array [n,m, o] where
-							# n is the column index which contains the lonely zeros, o is the number of lonely zeros in the column, and m is an ordered array of arrays [p,q] where
-							# p is the row index and q is the min value in that row sans-zero
-						reordered_problematic_rows = []
-						problematic_rows.each do [column_index__num_lonely_zeros__array_of_row_indices]
-							new_array_of_row_indices = []
-							column_index__num_lonely_zeros__array_of_row_indices[2].each do [array_of_row_indexes]
-								comparison_array = []
-								array_of_row_indexes.each do |row_index|
-									row_array = self.row(row_index).to_a
-									row_array.delete(0)
-									row_min = row_array.min
-									comparison_array << [row_index, row_min]
-								end
-								to_fix_in_order = comparison_array.sort { |x,y| x[1] <=> y[1] }
-								new_array_of_row_indices << to_fix_in_order
-							end
-							reordered_problematic_rows << [column_index__num_lonely_zeros__array_of_row_indices[0], 
-									column_index__num_lonely_zeros__array_of_row_indices[1], new_array_of_row_indices]
-						end
+						# now make the fewest changes necessary to remove the problem, and determine which row to correct based on the other values in that row
+						# you want to correct the row with the lowest min value first, then the row with the next lowest, then with the next lowest, and so on
+						# point is: you want to minimize the extent to which you have to lower values to get an assignment
 
+						self.zero_fewest_problematic_rows(problematic_rows)
 
-						# correct the least necessary, and determine which to correct based on the other values in the row
-						# you want to correct the row with the lowest min value first, then the next lowest, then the next lowest...
-	
-						reordered_problematic_rows.each do |col_index__num_lonely_zeros__array_of_ordered_row_indices|
-							i = 0
-							while col_index__num_lonely_zeros__array_of_ordered_row_indices[1] > self.max_col_assignment
-								self.add_value_if_zero_else_subtract_value(col_index__num_lonely_zeros__array_of_ordered_row_indices[2][i][0], 
-									col_index__num_lonely_zeros__array_of_ordered_row_indices[2][i][1])
-								col_index__num_lonely_zeros__array_of_ordered_row_indices[1] = col_index__num_lonely_zeros__array_of_ordered_row_indices[1] - 1
-								i = i + 1
-							end
-						end
 					end
 
 
@@ -131,6 +100,25 @@ def hungarian
 								end
 							end
 							return problematic_rows
+						end
+
+						# called on matrix object, for each row specified in params, adds min row-value-sans-zero to each zero in the row
+						# subtracts min-row-value-sans-zero from each non-zero in the row; edits as few rows as necessary to remove the problem
+						def zero_fewest_problematic_rows(problematic_rows)
+							# problematic rows must be an array of arrays [n,m,o], one for each problematic column
+							# n is the column index, m is the number of lonely zeros in column n
+							# o is an ORDERED array containing all arrays [p,q] where p is the row index of a row containing a lonely zero in column n
+							# and q is the minimum value in that row-sans-zero; o is ordered by ascending q value
+							# the "get_problematic_rows" method returns exactly this array
+							problematic_rows.each do |array|
+								i = 0
+								while array[1] > self.max_col_assignment
+									self.add_value_if_zero_else_subtract_value(array[2][i][0], array[2][i][1])
+									array[1] = array[1] - 1
+									i = i + 1
+								end
+							end
+							return self
 						end
 
 
