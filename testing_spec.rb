@@ -83,7 +83,36 @@ describe Matrix, "zero_fewest_problematic_rows" do
 		expect(matrix.zero_fewest_problematic_rows([])).to eq(Matrix[[0,1,4],[5,7,0],[9,0,9]])
 	end
 
-	# does it work when passed a small problematic array?
+	# a possible big problem: if (1) fixing a matrix leads to an unsolveable matrix,
+	# and (2) running the method again on the problematic matrix it generates just brings it back to the original problematic array
+	# the following scenario almost fits the bill here
+
+			# does it work when passed a small problematic array?
+			it "returns Matrix[[0,5,6],[1,0,2],[9,0,4]] when called on Matrix[[0,5,6],[0,1,3],[9,0,4]] 
+				and passed [[0,2,[[1,1],[0,5]]]" do
+				matrix = Matrix[[0,5,6],[0,1,3],[9,0,4]]
+				expect(matrix.zero_fewest_problematic_rows([[0,2,[[1,1],[0,5]]]])).to eq(Matrix[[0,5,6],[1,0,2],[9,0,4]])
+			end
+
+			# does it work on the array it produces in the previous example?
+			it "returns Matrix[[0,5,6],[0,1,3],[9,0,4]] when called on Matrix[[0,5,6],[1,0,2],[9,0,4]] 
+				and passed [[1,2,[[1,1],[2,4]]]" do
+				matrix = Matrix[[0,5,6],[1,0,2],[9,0,4]]
+				expect(matrix.zero_fewest_problematic_rows([[1,2,[[1,1],[2,4]]]])).to eq(Matrix[[0,5,6],[0,1,1],[9,0,4]])
+			end
+
+			# does it work on the array it produces in the previous example?
+			it "returns Matrix[[0,5,6],[1,0,0],[9,0,4]] when called on Matrix[[0,5,6],[0,1,1],[9,0,4]] 
+				and passed [[0,2,[[1,1],[0,5]]]]" do
+				matrix = Matrix[[0,5,6],[0,1,1],[9,0,4]]
+				expect(matrix.zero_fewest_problematic_rows([[0,2,[[1,1],[0,5]]]])).to eq(Matrix[[0,5,6],[1,0,0],[9,0,4]])
+			end
+
+			# ---------------------------------------------
+			# second attempt to produce the vicious loop
+				# it "returns Matrix[[1,0,0,1],[0,2,2,0],[8,0,0,8]] when called on matrix = Matrix[[0,1,1,0],[0,2,2,0],[8,0,0,8]] and 
+				# passed matrix.get_problematic_rows" do
+					# this doesn't work either! none of these zeros is lonely!
 
 	# does it work when passed problematic_rows directly when there are multiple columns with too many lonely zeros, and those zeros occur in rows with differing min-sans-zero values?
 	it "returns Matrix[[0,6,6,6,6,9,10,17],[0,0,0,9,0,0,35,40],[5,0,0,0,0,0,50,47],[17,17,17,0,17,17,88,81],[0,0,0,8,0,0,0,769]]

@@ -27,13 +27,14 @@ def hungarian
 
 	# third step in algorithm
 		# is the Working Matrix solvable?
-		if WORKING_MATRIX.solveable? == 1
+		while WORKING_MATRIX.solveable? == 1
 			# it fails test 1, need to fix the matrix accordingly
 			# TEST1 - checks to see if there are too many lonely zeros in any column
 				# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
 				# find the lowest member in that row besides the zero, add the value of that member to each zero, 
 				# subtract it from every other member (including itself)
 			WORKING_MATRIX.fix_too_many_lonely_zeros_in_columns
+		end
 
 
 					def fix_too_many_lonely_zeros_in_columns
