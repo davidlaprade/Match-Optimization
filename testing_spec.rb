@@ -67,21 +67,64 @@ describe Array, "array_columns" do
 	end
 end
 
+describe Matrix, "zero_fewest_problematic_rows" do
+	# called on matrix object, for each row specified in params, adds min row-value-sans-zero to each zero in the row
+	# subtracts min-row-value-sans-zero from each non-zero in the row; edits as few rows as necessary to remove the problem
+	# returns editted matrix object it was called on
+		# problematic rows must be an array of arrays [n,m,o], one for each problematic column
+		# n is the column index, m is the number of lonely zeros in column n
+		# o is an ORDERED array containing all arrays [p,q] where p is the row index of a row containing a lonely zero in column n
+		# and q is the minimum value in that row-sans-zero; o is ordered by ascending q value
+		# the "get_problematic_rows" method returns exactly this array
+
+	# it shouldn't change the Matrix if passed an empty array
+	it "returns Matrix[[0,1,4],[5,7,0],[9,0,9]] when called on Matrix[[0,1,4],[5,7,0],[9,0,9]] and passed []" do
+		matrix = Matrix[[0,1,4],[5,7,0],[9,0,9]]
+		expect(matrix.zero_fewest_problematic_rows([])).to eq(Matrix[[0,1,4],[5,7,0],[9,0,9]])
+	end
+
+	# does it work when passed a small problematic array?
+
+	# does it work when passed problematic_rows directly when there are multiple columns with too many lonely zeros, and those zeros occur in rows with differing min-sans-zero values?
+	it "returns Matrix[[0,6,6,6,6,9,10,17],[0,0,0,9,0,0,35,40],[5,0,0,0,0,0,50,47],[17,17,17,0,17,17,88,81],[0,0,0,8,0,0,0,769]]
+		when called on Matrix[[0,6,6,6,6,9,10,17],[9,9,9,0,9,9,44,49],[0,5,5,5,5,5,55,52],[17,17,17,0,17,17,88,81],[8,8,8,0,8,8,8,777]],
+			and passed [[0,2,[[2,5],[0,6]]],[3,3,[[4,8],[1,9],[3,17]]]]" do
+		matrix = Matrix[[0,6,6,6,6,9,10,17],[9,9,9,0,9,9,44,49],[0,5,5,5,5,5,55,52],[17,17,17,0,17,17,88,81],[8,8,8,0,8,8,8,777]]
+		expect(matrix.zero_fewest_problematic_rows([[0,2,[[2,5],[0,6]]],[3,3,[[4,8],[1,9],[3,17]]]])).to eq(Matrix[[0,6,6,6,6,9,10,17],[0,0,0,9,0,0,35,40],
+			[5,0,0,0,0,0,50,47],[17,17,17,0,17,17,88,81],[0,0,0,8,0,0,0,769]])
+	end
+
+	# does it work with the get_problematic_rows method when there are multiple columns with too many lonely zeros, and those zeros occur in rows with differing min-sans-zero values?
+	it "returns Matrix[[0,6,6,6,6,9,10,17],[0,0,0,9,0,0,35,40],[5,0,0,0,0,0,50,47],[17,17,17,0,17,17,88,81],[0,0,0,8,0,0,0,769]]
+		when called on matrix = Matrix[[0,6,6,6,6,9,10,17],[9,9,9,0,9,9,44,49],[0,5,5,5,5,5,55,52],[17,17,17,0,17,17,88,81],[8,8,8,0,8,8,8,777]],
+			and passed matrix.get_problematic_rows" do
+		matrix = Matrix[[0,6,6,6,6,9,10,17],[9,9,9,0,9,9,44,49],[0,5,5,5,5,5,55,52],[17,17,17,0,17,17,88,81],[8,8,8,0,8,8,8,777]]
+		expect(matrix.zero_fewest_problematic_rows(matrix.get_problematic_rows)).to eq(Matrix[[0,6,6,6,6,9,10,17],[0,0,0,9,0,0,35,40],
+			[5,0,0,0,0,0,50,47],[17,17,17,0,17,17,88,81],[0,0,0,8,0,0,0,769]])
+	end
+end
+
+
 describe Matrix, "get_problematic_rows" do
 	# outputs array of arrays [n,m,o] where n is the index of a column with too many lonely zeros
 	# m is the number of lonely zero's in column n
 	# and o is an ORDERED array that contains arrays [p,q] where p is a row index of a lonely zero in column n, 
 	# and q is the min value in that row other than zero, ordered by ascending q value
+	
+	# test with one problematic column, when rows are in order of min-sans-zero
 	it "returns [[0,2,[[0,1],[1,3]]] when called on Matrix[[0,1,9],[0,3,3],[0,6,0]]" do
 		matrix = Matrix[[0,1,9],[0,3,3],[0,6,0]]
 		expect(matrix.get_problematic_rows).to eq([[0,2,[[0,1],[1,3]]]])
 	end
 
+	# test same array as above, but add a row to increase the max_col_assignment for the array
+	# this will eliminate all the previously problematic columns
 	it "returns [] when called on Matrix[[0,1,9],[0,3,3],[0,6,0],[4,5,6]]" do
 		matrix = Matrix[[0,1,9],[0,3,3],[0,6,0],[4,5,6]]
 		expect(matrix.get_problematic_rows).to eq([])
 	end
 
+	# test it on an array that is solveable
 	it "returns [] when called on Matrix[[0,1,4],[5,7,0],[9,0,9]]" do
 		matrix = Matrix[[0,1,4],[5,7,0],[9,0,9]]
 		expect(matrix.get_problematic_rows).to eq([])

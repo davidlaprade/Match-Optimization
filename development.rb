@@ -74,7 +74,6 @@ def hungarian
 						# and q is the min value in that row other than zero, ordered by ascending q value
 						def get_problematic_rows
 							problematic_rows = []
-							# first find out which rows contain the problematic lonely zeros
 							self.lonely_zeros_per_column.each do |array|
 								if array[1] > self.max_col_assignment
 									col_index = array[0]
@@ -89,14 +88,8 @@ def hungarian
 											rows << [row_id, row_min_sans_zero]
 										end
 									end
-									rows_plus_mins = []
-									rows.each do |row_index|
-										row_array = self.row(row_index).to_a
-										row_array.delete(0)
-										row_min = row_array.min
-										rows_plus_mins << [row_index, row_min]
-									end
-									problematic_rows << [col_index, num_lonely_zeros, rows_plus_mins]
+									rows = rows.sort { |x,y| x[1] <=> y[1] }
+									problematic_rows << [col_index, num_lonely_zeros, rows]
 								end
 							end
 							return problematic_rows
@@ -104,6 +97,7 @@ def hungarian
 
 						# called on matrix object, for each row specified in params, adds min row-value-sans-zero to each zero in the row
 						# subtracts min-row-value-sans-zero from each non-zero in the row; edits as few rows as necessary to remove the problem
+						# returns the edited matrix object it was called on
 						def zero_fewest_problematic_rows(problematic_rows)
 							# problematic rows must be an array of arrays [n,m,o], one for each problematic column
 							# n is the column index, m is the number of lonely zeros in column n
