@@ -148,15 +148,7 @@ class Matrix
 		return problematic_rows
 	end
 
-	# called on matrix object, for each row specified in params, adds min row-value-sans-zero to each zero in the row
-	# subtracts min-row-value-sans-zero from each non-zero in the row; edits as few rows as necessary to remove the problem
-	# returns editted matrix object it was called on
 	def zero_fewest_problematic_rows(problematic_rows)
-		# problematic rows must be an array of arrays [n,m,o], one for each problematic column
-		# n is the column index, m is the number of lonely zeros in column n
-		# o is an ORDERED array containing all arrays [p,q] where p is the row index of a row containing a lonely zero in column n
-		# and q is the minimum value in that row-sans-zero; o is ordered by ascending q value
-		# the "get_problematic_rows" method returns exactly this array
 		problematic_rows.each do |array|
 			i = 0
 			while array[1] > self.max_col_assignment
@@ -168,6 +160,10 @@ class Matrix
 		return self
 	end
 
+	def fix_too_many_lonely_zeros_in_columns
+		problematic_rows = self.get_problematic_rows
+		self.zero_fewest_problematic_rows(problematic_rows)
+	end
 
 	def lonely_zeros
 		zeros = []

@@ -134,6 +134,55 @@ describe Matrix, "zero_fewest_problematic_rows" do
 end
 
 
+describe Matrix, "fix_too_many_lonely_zeros_in_columns" do
+		# isolate the columns that are causing the problem, then the rows in those columns that contain their lonely zeros
+		# PROBLEM: it could be that there are multiple columns with too many lonely zeros, e.g. one col might have 4, another 2
+			# and if the max col assignment were 1, you would want to add_value_if_zero to 3 of the 4 rows in the first group
+			# and only 1 of the 2 rows in the second group
+			# so you need some way of keeping track of these groups
+
+		# now make the fewest changes necessary to remove the problem, and determine which row to correct based on the other values in that row
+		# you want to correct the row with the lowest min value first, then the row with the next lowest, then with the next lowest, and so on
+		# point is: you want to minimize the extent to which you have to lower values to get an assignment
+
+	# does it work when there are multiple columns with too many lonely zeros, and those zeros occur in rows with differing min-sans-zero values?
+	it "returns Matrix[[0,6,6,6,6,9,10,17],[0,0,0,9,0,0,35,40],[5,0,0,0,0,0,50,47],[17,17,17,0,17,17,88,81],[0,0,0,8,0,0,0,769]]
+		when called on matrix = Matrix[[0,6,6,6,6,9,10,17],[9,9,9,0,9,9,44,49],[0,5,5,5,5,5,55,52],[17,17,17,0,17,17,88,81],[8,8,8,0,8,8,8,777]]" do
+		matrix = Matrix[[0,6,6,6,6,9,10,17],[9,9,9,0,9,9,44,49],[0,5,5,5,5,5,55,52],[17,17,17,0,17,17,88,81],[8,8,8,0,8,8,8,777]]
+		expect(matrix.fix_too_many_lonely_zeros_in_columns).to eq(Matrix[[0,6,6,6,6,9,10,17],[0,0,0,9,0,0,35,40],
+			[5,0,0,0,0,0,50,47],[17,17,17,0,17,17,88,81],[0,0,0,8,0,0,0,769]])
+	end
+
+	# does it work when passed a small problematic array?
+	it "returns Matrix[[0,5,6],[1,0,2],[9,0,4]] when called on Matrix[[0,5,6],[0,1,3],[9,0,4]]" do
+		matrix = Matrix[[0,5,6],[0,1,3],[9,0,4]]
+		expect(matrix.fix_too_many_lonely_zeros_in_columns).to eq(Matrix[[0,5,6],[1,0,2],[9,0,4]])
+	end
+
+	# does it work on the array it produces in the previous example?
+	it "returns Matrix[[0,5,6],[0,1,3],[9,0,4]] when called on Matrix[[0,5,6],[1,0,2],[9,0,4]]" do
+		matrix = Matrix[[0,5,6],[1,0,2],[9,0,4]]
+		expect(matrix.fix_too_many_lonely_zeros_in_columns).to eq(Matrix[[0,5,6],[0,1,1],[9,0,4]])
+	end
+
+	# does it work on the array it produces in the previous example?
+	it "returns Matrix[[0,5,6],[1,0,0],[9,0,4]] when called on Matrix[[0,5,6],[0,1,1],[9,0,4]]" do
+		matrix = Matrix[[0,5,6],[0,1,1],[9,0,4]]
+		expect(matrix.fix_too_many_lonely_zeros_in_columns).to eq(Matrix[[0,5,6],[1,0,0],[9,0,4]])
+	end
+
+	# does it leave an unproblematic array unchanged?
+	it "returns Matrix[[0,3,4],[7,0,9],[3,3,0]] when called on Matrix[[0,3,4],[7,0,9],[3,3,0]]" do
+		matrix = Matrix[[0,3,4],[7,0,9],[3,3,0]]
+		expect(matrix.fix_too_many_lonely_zeros_in_columns).to eq(Matrix[[0,3,4],[7,0,9],[3,3,0]])
+	end
+
+	# does it work when there are many rows to fix?
+	
+
+
+end
+
 describe Matrix, "get_problematic_rows" do
 	# outputs array of arrays [n,m,o] where n is the index of a column with too many lonely zeros
 	# m is the number of lonely zero's in column n
