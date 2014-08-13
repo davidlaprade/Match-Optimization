@@ -68,12 +68,13 @@ describe Array, "array_columns" do
 end
 
 describe Matrix, "get_problematic_rows" do
-	# supposed to output an array of arrays [n,m,o] where n is the index of a column with too many lonely zeros
+	# outputs array of arrays [n,m,o] where n is the index of a column with too many lonely zeros
 	# m is the number of lonely zero's in column n
-	# and o is an array that contains the row indexes of each lonely zero in column n
-	it "returns [[0,2,[0,1]]] when called on Matrix[[0,1,9],[0,3,3],[0,6,0]]" do
+	# and o is an array that contains arrays [p,q] where p is a row index of a lonely zero in column n, 
+	# and q is the min value in that row other than zero
+	it "returns [[0,2,[[0,1],[1,3]]] when called on Matrix[[0,1,9],[0,3,3],[0,6,0]]" do
 		matrix = Matrix[[0,1,9],[0,3,3],[0,6,0]]
-		expect(matrix.get_problematic_rows).to eq([[0,2,[0,1]]])
+		expect(matrix.get_problematic_rows).to eq([[0,2,[[0,1],[1,3]]]])
 	end
 
 end

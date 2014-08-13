@@ -101,19 +101,33 @@ def hungarian
 
 						# outputs array of arrays [n,m,o] where n is the index of a column with too many lonely zeros
 						# m is the number of lonely zero's in column n
-						# and o is an array that contains the row indexes of each lonely zero in column n
+						# and o is an array that contains arrays [p,q] where p is a row index of a lonely zero in column n, 
+						# and q is the min value in that row other than zero
 						def get_problematic_rows
 							problematic_rows = []
 							# first find out which rows contain the problematic lonely zeros
 							self.lonely_zeros_per_column.each do |array|
 								if array[1] > self.max_col_assignment
+									col_index = array[0]
+									num_lonely_zeros = array[1]
 									rows = []
 									self.lonely_zeros.each do |lonely_zero_coordinates|
-										if array[0] == lonely_zero_coordinates[1]
-											rows << lonely_zero_coordinates[0]
+										row_id = lonely_zero_coordinates[0]
+										if col_index == lonely_zero_coordinates[1]
+											row_array = self.row(row_id).to_a
+											row_array.delete(0)
+											row_min_sans_zero = row_array.min
+											rows << [row_id, row_min_sans_zero]
 										end
 									end
-									problematic_rows << [array[0], array[1], rows]
+									rows_plus_mins = []
+									rows.each do |row_index|
+										row_array = self.row(row_index).to_a
+										row_array.delete(0)
+										row_min = row_array.min
+										rows_plus_mins << [row_index, row_min]
+									end
+									problematic_rows << [col_index, num_lonely_zeros, rows_plus_mins]
 								end
 							end
 							return problematic_rows

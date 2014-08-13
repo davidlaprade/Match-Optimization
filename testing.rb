@@ -127,16 +127,22 @@ class Matrix
 
 	def get_problematic_rows
 		problematic_rows = []
-		# first find out which rows contain the problematic lonely zeros
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
+				col_index = array[0]
+				num_lonely_zeros = array[1]
 				rows = []
 				self.lonely_zeros.each do |lonely_zero_coordinates|
-					if array[0] == lonely_zero_coordinates[1]
-						rows << lonely_zero_coordinates[0]
+					row_id = lonely_zero_coordinates[0]
+					if col_index == lonely_zero_coordinates[1]
+						row_array = self.row(row_id).to_a
+						row_array.delete(0)
+						row_min_sans_zero = row_array.min
+						rows << [row_id, row_min_sans_zero]
 					end
 				end
-				problematic_rows << [array[0], array[1], rows]
+				rows = rows.sort { |x,y| x[1] <=> y[1] }
+				problematic_rows << [col_index, num_lonely_zeros, rows]
 			end
 		end
 		return problematic_rows
