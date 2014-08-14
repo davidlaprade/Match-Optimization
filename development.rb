@@ -6,7 +6,7 @@ $LOAD_PATH << '.'
 require 'matrix'
 require 'matrix_class_additions'
 
-
+# called on Matrix object, returns an array of coordinates, one for each assignment in the optimal match
 def hungarian
 	# these assignments are going to pose problems for the following reason: http://stackoverflow.com/questions/6712298/dynamic-constant-assignment
 	ORIGINAL_MATRIX = self
@@ -27,46 +27,27 @@ def hungarian
 
 	# third step in algorithm
 		# is the Working Matrix solvable?
-		while WORKING_MATRIX.solveable? == 1
-			# it fails test 1, need to fix the matrix accordingly
-			# TEST1 - checks to see if there are too many lonely zeros in any column
-				# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
-				# find the lowest member in that row besides the zero, add the value of that member to each zero, 
-				# subtract it from every other member (including itself)
+		while WORKING_MATRIX.solveable? == "no, too many lonely zeros in columns"
+			# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
+			# find the lowest member in that row besides the zero, add the value of that member to each zero, 
+			# subtract it from every other member (including itself)
 			WORKING_MATRIX.fix_too_many_lonely_zeros_in_columns
+			# Running the fix method might result in a matrix with the same problem, so run solveable? method again
+			# Repeat until the matrix no longer has too many lonely zeros in columns
+			# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
 		end
 
 
-					def fix_too_many_lonely_zeros_in_columns
-						# isolate the columns that are causing the problem, then the rows in those columns that contain their lonely zeros
-						# PROBLEM: it could be that there are multiple columns with too many lonely zeros, e.g. one col might have 4, another 2
-							# and if the max col assignment were 1, you would want to add_value_if_zero to 3 of the 4 rows in the first group
-							# and only 1 of the 2 rows in the second group
-							# so you need some way of keeping track of these groups
-						problematic_rows = self.get_problematic_rows
-
-						# now make the fewest changes necessary to remove the problem, and determine which row to correct based on the other values in that row
-						# you want to correct the row with the lowest min value first, then the row with the next lowest, then with the next lowest, and so on
-						# point is: you want to minimize the extent to which you have to lower values to get an assignment
-
-						self.zero_fewest_problematic_rows(problematic_rows)
-
-					end
 
 
-
-
-
-
-
-	# returns an array of arrays [n,m] where n is the column index and m is the number of lonely zeros in the column
-	def lonely_zeros_per_column
-
-
-		elsif WORKING_MATRIX.solveable? == 2
+		while WORKING_MATRIX.solveable? == "no, too many lonely zeros in rows"
 			# if it fails test 2, need to fix the matrix accordingly
 			# TEST2 - checks to see if there are too many lonely zeros in any row
-		elsif WORKING_MATRIX.solveable? == 3
+		end
+
+
+
+		elsif WORKING_MATRIX.solveable? == "no, min permitted row assignments > max column assignments possible"
 			# if it fails test 3, need to fix the matrix accordingly
 			# TEST3 - checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
 				# if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix, the parent matrix is unsolveable
@@ -76,7 +57,10 @@ def hungarian
 		end
 
 
-
+	return "no, too many lonely zeros in columns"
+	return "no, too many lonely zeros in rows"
+	return "no, min permitted row assignments > max column assignments possible"
+	return "no, min permitted column assignments > max row assignments possible"
 
 
 
@@ -409,14 +393,14 @@ class Matrix
 		# checks to see if there are too many lonely zeros in any column
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
-				return false
+				return "no, too many lonely zeros in columns"
 			end
 		end
 
 		# checks to see if there are too many lonely zeros in any row
 		self.lonely_zeros_per_row.each do |array|
 			if array[1] > self.max_row_assignment
-				return false
+				return "no, too many lonely zeros in rows"
 			end
 		end
 
@@ -427,7 +411,7 @@ class Matrix
 		test_cases.each do |submatrix_in_array_format|
 			min_row_assignments_permitted = self.min_row_assignment * submatrix_in_array_format.length
 			if min_row_assignments_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
-				return false
+				return "no, min permitted row assignments > max column assignments possible"
 			end
 		end
 
@@ -444,7 +428,7 @@ class Matrix
 		# to be effective, this needs to check isolated parts of the matrix
 		# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
 		if self.min_column_assmts_permitted > self.max_row_assmts_possible
-			return false
+			return "no, min permitted column assignments > max row assignments possible"
 		end
 
 	end
@@ -509,6 +493,19 @@ class Matrix
 			end
 		end
 		return self
+	end
+
+	def fix_too_many_lonely_zeros_in_columns
+		# isolate the columns that are causing the problem, then the rows in those columns that contain their lonely zeros
+		# PROBLEM: it could be that there are multiple columns with too many lonely zeros, e.g. one col might have 4, another 2
+			# and if the max col assignment were 1, you would want to add_value_if_zero to 3 of the 4 rows in the first group
+			# and only 1 of the 2 rows in the second group
+			# so you need some way of keeping track of these groups
+		problematic_rows = self.get_problematic_rows
+		# now make the fewest changes necessary to remove the problem, and determine which row to correct based on the other values in that row
+		# you want to correct the row with the lowest min value first, then the row with the next lowest, then with the next lowest, and so on
+		# point is: you want to minimize the extent to which you have to lower values to get an assignment
+		self.zero_fewest_problematic_rows(problematic_rows)
 	end
 
 end

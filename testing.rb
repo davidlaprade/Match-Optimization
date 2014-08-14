@@ -242,14 +242,14 @@ class Matrix
 		# checks to see if there are too many lonely zeros in any column
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
-				return 1
+				return "no, too many lonely zeros in columns"
 			end
 		end
 
 		# checks to see if there are too many lonely zeros in any row
 		self.lonely_zeros_per_row.each do |array|
 			if array[1] > self.max_row_assignment
-				return 2
+				return "no, too many lonely zeros in rows"
 			end
 		end
 
@@ -258,12 +258,12 @@ class Matrix
 		test_cases.each do |submatrix_in_array_format|
 			min_row_assignments_permitted = self.min_row_assignment * submatrix_in_array_format.length
 			if min_row_assignments_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
-				return 3
+				return "no, min permitted row assignments > max column assignments possible"
 			end
 		end
 
 		if self.min_column_assmts_permitted > self.max_row_assmts_possible
-			return 4
+			return "no, min permitted column assignments > max row assignments possible"
 		end
 
 	end
