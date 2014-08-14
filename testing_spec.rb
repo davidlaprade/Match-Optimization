@@ -178,8 +178,11 @@ describe Matrix, "fix_too_many_lonely_zeros_in_columns" do
 	end
 
 	# does it work when there are many rows to fix?
-	
-
+	it "returns	Matrix[[0,7],[0,9],[2,0],[1,0],[1,0],[0,35],[0,23],[0,9],[4,0]] when called on 
+		Matrix[[0,7],[0,9],[0,2],[0,1],[0,1],[0,35],[0,23],[0,9],[0,4]]" do
+		matrix = Matrix[[0,7],[0,9],[0,2],[0,1],[0,1],[0,35],[0,23],[0,9],[0,4]]
+		expect(matrix.fix_too_many_lonely_zeros_in_columns).to eq(Matrix[[0,7],[0,9],[2,0],[1,0],[1,0],[0,35],[0,23],[0,9],[4,0]])
+	end
 
 end
 
