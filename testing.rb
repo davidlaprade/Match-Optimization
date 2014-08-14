@@ -112,7 +112,7 @@ class Matrix
 		return 1
 	end
 
-	def add_value_if_zero_else_subtract_value(row_index, value)
+	def add_value_if_zero_else_subtract_value_in_rows(row_index, value)
 		if !(self.rows[row_index] == nil)
 			self.rows[row_index].each_with_index do |cell_value, col_index|
 				if cell_value == 0
@@ -152,7 +152,7 @@ class Matrix
 		problematic_rows.each do |array|
 			i = 0
 			while array[1] > self.max_col_assignment
-				self.add_value_if_zero_else_subtract_value(array[2][i][0], array[2][i][1])
+				self.add_value_if_zero_else_subtract_value_in_rows(array[2][i][0], array[2][i][1])
 				array[1] = array[1] - 1
 				i = i + 1
 			end

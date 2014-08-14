@@ -233,35 +233,35 @@ describe Matrix, "get_problematic_rows" do
 
 end
 
-describe Matrix, "add_value_if_zero_else_subtract_value" do
+describe Matrix, "add_value_if_zero_else_subtract_value_in_rows" do
 	it "returns Matrix[[3,3,0,1,2,6]] when run on Matrix[[0,0,3,4,5,9]] and passed 0 and 3" do
 		matrix = Matrix[[0,0,3,4,5,9]]
-		expect(matrix.add_value_if_zero_else_subtract_value(0, 3)).to eq(Matrix[[3,3,0,1,2,6]])
+		expect(matrix.add_value_if_zero_else_subtract_value_in_rows(0, 3)).to eq(Matrix[[3,3,0,1,2,6]])
 	end
 
 	it "returns Matrix[[5,0,2,3,4,8]] when run on Matrix[[6,1,3,4,5,9]] and passed 0 and 1" do
 		matrix = Matrix[[6,1,3,4,5,9]]
-		expect(matrix.add_value_if_zero_else_subtract_value(0, 1)).to eq(Matrix[[5,0,2,3,4,8]])
+		expect(matrix.add_value_if_zero_else_subtract_value_in_rows(0, 1)).to eq(Matrix[[5,0,2,3,4,8]])
 	end
 
 	it "returns Matrix[[6,1,3,4,5,9]] when run on Matrix[[6,1,3,4,5,9]] and passed 1 and 1" do
 		matrix = Matrix[[6,1,3,4,5,9]]
-		expect(matrix.add_value_if_zero_else_subtract_value(1, 1)).to eq(Matrix[[6,1,3,4,5,9]])
+		expect(matrix.add_value_if_zero_else_subtract_value_in_rows(1, 1)).to eq(Matrix[[6,1,3,4,5,9]])
 	end
 
 	it "returns Matrix[[6,1,3,4,5,9]] when run on Matrix[[6,1,3,4,5,9]] and passed 100 and 1" do
 		matrix = Matrix[[6,1,3,4,5,9]]
-		expect(matrix.add_value_if_zero_else_subtract_value(100, 1)).to eq(Matrix[[6,1,3,4,5,9]])
+		expect(matrix.add_value_if_zero_else_subtract_value_in_rows(100, 1)).to eq(Matrix[[6,1,3,4,5,9]])
 	end
 
 	it "returns Matrix[[6,1,3,4,5,9],[1,0,4,5,0,4]] when run on Matrix[[6,1,3,4,5,9],[5,4,0,9,4,0]] and passed 1 and 4" do
 		matrix = Matrix[[6,1,3,4,5,9],[5,4,0,9,4,0]]
-		expect(matrix.add_value_if_zero_else_subtract_value(1, 4)).to eq(Matrix[[6,1,3,4,5,9],[1,0,4,5,0,4]])
+		expect(matrix.add_value_if_zero_else_subtract_value_in_rows(1, 4)).to eq(Matrix[[6,1,3,4,5,9],[1,0,4,5,0,4]])
 	end
 
 	it "returns Matrix[[6,1,3,4,5,9],[0,4,1,4,4,4],[5,4,0,9,4,0]] when run on Matrix[[6,1,3,4,5,9],[4,0,5,0,0,0],[5,4,0,9,4,0]] and passed 1 and 4" do
 		matrix = Matrix[[6,1,3,4,5,9],[4,0,5,0,0,0],[5,4,0,9,4,0]]
-		expect(matrix.add_value_if_zero_else_subtract_value(1, 4)).to eq(Matrix[[6,1,3,4,5,9],[0,4,1,4,4,4],[5,4,0,9,4,0]])
+		expect(matrix.add_value_if_zero_else_subtract_value_in_rows(1, 4)).to eq(Matrix[[6,1,3,4,5,9],[0,4,1,4,4,4],[5,4,0,9,4,0]])
 	end
 end
 

@@ -38,11 +38,90 @@ def hungarian
 		end
 
 
-
-
 		while WORKING_MATRIX.solveable? == "no, too many lonely zeros in rows"
-			# if it fails test 2, need to fix the matrix accordingly
-			# TEST2 - checks to see if there are too many lonely zeros in any row
+			# to fix: isolate the lonely zeros causing the problem, take each column they occur in
+			# find the lowest member in that column besides the zero, add the value of that lowest member to each zero,
+			# subtract the value of that lowest member from every other member (including itself)
+			WORKING_MATRIX.fix_too_many_lonely_zeros_in_rows
+
+
+				# called on Matrix object, takes row index and value as inputs
+					# outputs Matrix in which the value provided has been added to each zero and subtracted otherwise
+					def add_value_if_zero_else_subtract_value_in_rows(row_index, value)
+						if !(self.rows[row_index] == nil)
+							self.rows[row_index].each_with_index do |cell_value, col_index|
+								if cell_value == 0
+									self.send( :[]=,row_index, col_index, value )
+								else
+									self.send( :[]=,row_index, col_index, (cell_value - value) )
+								end
+							end
+						end
+						return self
+					end
+
+					# called on Matrix object; outputs array of arrays [n,m,o] where n is the index of a column with too many lonely zeros
+					# m is the number of lonely zero's in column n
+					# and o is an ORDERED array that contains arrays [p,q] where p is a row index of a lonely zero in column n, 
+					# and q is the min value in that row other than zero, ordered by ascending q value
+					def get_problematic_rows
+						problematic_rows = []
+						self.lonely_zeros_per_column.each do |array|
+							if array[1] > self.max_col_assignment
+								col_index = array[0]
+								num_lonely_zeros = array[1]
+								rows = []
+								self.lonely_zeros.each do |lonely_zero_coordinates|
+									row_id = lonely_zero_coordinates[0]
+									if col_index == lonely_zero_coordinates[1]
+										row_array = self.row(row_id).to_a
+										row_array.delete(0)
+										row_min_sans_zero = row_array.min
+										rows << [row_id, row_min_sans_zero]
+									end
+								end
+								rows = rows.sort { |x,y| x[1] <=> y[1] }
+								problematic_rows << [col_index, num_lonely_zeros, rows]
+							end
+						end
+						return problematic_rows
+					end
+
+					# called on Matrix object, for each row specified in params, adds min row-value-sans-zero to each zero in the row
+					# subtracts min-row-value-sans-zero from each non-zero in the row; edits as few rows as necessary to remove the problem
+					# returns the edited matrix object it was called on
+					def zero_fewest_problematic_rows(problematic_rows)
+						# problematic rows must be an array of arrays [n,m,o], one for each problematic column
+						# n is the column index, m is the number of lonely zeros in column n
+						# o is an ORDERED array containing all arrays [p,q] where p is the row index of a row containing a lonely zero in column n
+						# and q is the minimum value in that row-sans-zero; o is ordered by ascending q value
+						# the "get_problematic_rows" method returns exactly this array
+						problematic_rows.each do |array|
+							i = 0
+							while array[1] > self.max_col_assignment
+								self.add_value_if_zero_else_subtract_value_in_rows(array[2][i][0], array[2][i][1])
+								array[1] = array[1] - 1
+								i = i + 1
+							end
+						end
+						return self
+					end
+
+					def fix_too_many_lonely_zeros_in_columns
+						# isolate the columns that are causing the problem, then the rows in those columns that contain their lonely zeros
+						# PROBLEM: it could be that there are multiple columns with too many lonely zeros, e.g. one col might have 4, another 2
+							# and if the max col assignment were 1, you would want to add_value_if_zero to 3 of the 4 rows in the first group
+							# and only 1 of the 2 rows in the second group
+							# so you need some way of keeping track of these groups
+						problematic_rows = self.get_problematic_rows
+						# now make the fewest changes necessary to remove the problem, and determine which row to correct based on the other values in that row
+						# you want to correct the row with the lowest min value first, then the row with the next lowest, then with the next lowest, and so on
+						# point is: you want to minimize the extent to which you have to lower values to get an assignment
+						self.zero_fewest_problematic_rows(problematic_rows)
+					end
+
+
+
 		end
 
 
@@ -52,15 +131,8 @@ def hungarian
 			# TEST3 - checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
 				# if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix, the parent matrix is unsolveable
 		
-		else
-			# is solveable
-		end
+		while WORKING_MATRIX.solveable? == "no, min permitted column assignments > max row assignments possible"
 
-
-	return "no, too many lonely zeros in columns"
-	return "no, too many lonely zeros in rows"
-	return "no, min permitted row assignments > max column assignments possible"
-	return "no, min permitted column assignments > max row assignments possible"
 
 
 
@@ -101,7 +173,7 @@ def hungarian
 	def get_problematic_rows
 	# called on Matrix object, takes row index and value as inputs
 	# outputs Matrix in which the value provided has been added to each zero and subtracted otherwise
-	def add_value_if_zero_else_subtract_value(row_index, value)
+	def add_value_if_zero_else_subtract_value_in_rows(row_index, value)
 
 
 # JUST USE MATRICES! Tells you how to access matrix values, AND change them: http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
@@ -435,7 +507,7 @@ class Matrix
 
 	# called on Matrix object, takes row index and value as inputs
 	# outputs Matrix in which the value provided has been added to each zero and subtracted otherwise
-	def add_value_if_zero_else_subtract_value(row_index, value)
+	def add_value_if_zero_else_subtract_value_in_rows(row_index, value)
 		if !(self.rows[row_index] == nil)
 			self.rows[row_index].each_with_index do |cell_value, col_index|
 				if cell_value == 0
@@ -487,7 +559,7 @@ class Matrix
 		problematic_rows.each do |array|
 			i = 0
 			while array[1] > self.max_col_assignment
-				self.add_value_if_zero_else_subtract_value(array[2][i][0], array[2][i][1])
+				self.add_value_if_zero_else_subtract_value_in_rows(array[2][i][0], array[2][i][1])
 				array[1] = array[1] - 1
 				i = i + 1
 			end
