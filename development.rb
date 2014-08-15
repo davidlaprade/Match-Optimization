@@ -27,6 +27,7 @@ def hungarian
 
 	# third step in algorithm
 		# is the Working Matrix solvable?
+	while WORKING_MATRIX.solveable? != output if it passes all the tests
 		while WORKING_MATRIX.solveable? == "no, too many lonely zeros in columns"
 			# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
 			# find the lowest member in that row besides the zero, add the value of that member to each zero, 
@@ -45,11 +46,11 @@ def hungarian
 			WORKING_MATRIX.fix_too_many_lonely_zeros_in_rows
 
 
-				# called on Matrix object, takes row index and value as inputs
-					# outputs Matrix in which the value provided has been added to each zero and subtracted otherwise
-					def add_value_if_zero_else_subtract_value_in_rows(row_index, value)
-						if !(self.rows[row_index] == nil)
-							self.rows[row_index].each_with_index do |cell_value, col_index|
+				# called on Matrix object, takes column index and value as inputs
+					# outputs Matrix in which the value provided has been added to each zero in the column and subtracted otherwise
+					def add_value_if_zero_else_subtract_value_in_rows(col_index, value)
+						if !(self.columns[col_index] == nil)
+							self.columns[col_index].each_with_index do |cell_value, row_index|
 								if cell_value == 0
 									self.send( :[]=,row_index, col_index, value )
 								else
@@ -60,37 +61,37 @@ def hungarian
 						return self
 					end
 
-					# called on Matrix object; outputs array of arrays [n,m,o] where n is the index of a column with too many lonely zeros
-					# m is the number of lonely zero's in column n
-					# and o is an ORDERED array that contains arrays [p,q] where p is a row index of a lonely zero in column n, 
-					# and q is the min value in that row other than zero, ordered by ascending q value
-					def get_problematic_rows
-						problematic_rows = []
-						self.lonely_zeros_per_column.each do |array|
-							if array[1] > self.max_col_assignment
-								col_index = array[0]
+					# called on Matrix object; outputs array of arrays [n,m,o] where n is the index of a row with too many lonely zeros
+					# m is the number of lonely zero's in row n
+					# and o is an ORDERED array that contains arrays [p,q] where p is a column index of a lonely zero in row n, 
+					# and q is the min value in that column other than zero, ordered by ascending q value
+					def get_problematic_columns_per_problematic_row
+						problematic_columns_per_problematic_row = []
+						self.lonely_zeros_per_row.each do |array|
+							if array[1] > self.max_row_assignment
+								row_index = array[0]
 								num_lonely_zeros = array[1]
-								rows = []
+								columns = []
 								self.lonely_zeros.each do |lonely_zero_coordinates|
-									row_id = lonely_zero_coordinates[0]
-									if col_index == lonely_zero_coordinates[1]
-										row_array = self.row(row_id).to_a
-										row_array.delete(0)
-										row_min_sans_zero = row_array.min
-										rows << [row_id, row_min_sans_zero]
+									col_id = lonely_zero_coordinates[1]
+									if row_index == lonely_zero_coordinates[0]
+										col_array = self.column(col_id).to_a
+										col_array.delete(0)
+										column_min_sans_zero = col_array.min
+										columns << [col_id, column_min_sans_zero]
 									end
 								end
-								rows = rows.sort { |x,y| x[1] <=> y[1] }
-								problematic_rows << [col_index, num_lonely_zeros, rows]
+								columns = columns.sort { |x,y| x[1] <=> y[1] }
+								problematic_columns_per_problematic_row << [row_index, num_lonely_zeros, columns]
 							end
 						end
-						return problematic_rows
+						return problematic_columns_per_problematic_row
 					end
 
 					# called on Matrix object, for each row specified in params, adds min row-value-sans-zero to each zero in the row
 					# subtracts min-row-value-sans-zero from each non-zero in the row; edits as few rows as necessary to remove the problem
 					# returns the edited matrix object it was called on
-					def zero_fewest_problematic_rows(problematic_rows)
+					def zero_fewest_problematic_columns(problematic_columns)
 						# problematic rows must be an array of arrays [n,m,o], one for each problematic column
 						# n is the column index, m is the number of lonely zeros in column n
 						# o is an ORDERED array containing all arrays [p,q] where p is the row index of a row containing a lonely zero in column n
@@ -136,7 +137,8 @@ def hungarian
 
 
 
-
+	# returns an array of arrays [n,m] where n is the row index and m is the number of lonely zeros in the row
+	def lonely_zeros_per_row
 	# returns an array of arrays [n,m] where n is the column index and m is the number of lonely zeros in the column
 	def lonely_zeros_per_column
 	# returns an array of coordinates [n,m] of every lonely zero in the Matrix it is called on
@@ -409,7 +411,7 @@ class Matrix
 		return zeros_per_column
 	end
 
-	# returns an array of arrays [n,m] where n is the column index and m is the number of lonely zeros in the column
+	# returns an array of arrays [n,m] where n is the row index and m is the number of lonely zeros in the row
 	def lonely_zeros_per_row
 		zeros_per_row = []
 		self.rows.each_with_index do |row, row_index|
