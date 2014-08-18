@@ -95,6 +95,7 @@ class Vector
 	end
 end
 
+
 class Matrix
 	def max_col_assignment 
 		(self.row_count.fdiv(self.column_count)).ceil
@@ -111,6 +112,81 @@ class Matrix
 	def min_col_assignment
 		return 1
 	end
+
+	# called on Matrix object, takes column index and value as inputs
+	# outputs Matrix in which the value provided has been added to each zero in the column and subtracted otherwise
+	def add_value_if_zero_else_subtract_value_in_columns(col_index, value)
+		if !(self.columns[col_index] == nil)
+			self.columns[col_index].each_with_index do |cell_value, row_index|
+				if cell_value == 0
+					self.send( :[]=,row_index, col_index, value )
+				else
+					self.send( :[]=,row_index, col_index, (cell_value - value) )
+				end
+			end
+		end
+		return self
+	end
+
+		# called on Matrix object; outputs array of arrays [n,m,o] where n is the index of a row with too many lonely zeros
+		# m is the number of lonely zero's in row n
+		# and o is an ORDERED array that contains arrays [p,q] where p is a column index of a lonely zero in row n, 
+		# and q is the min value in that column other than zero, ordered by ascending q value
+		def get_problematic_columns_per_problematic_row
+			problematic_columns_per_problematic_row = []
+			self.lonely_zeros_per_row.each do |array|
+				if array[1] > self.max_row_assignment
+					row_index = array[0]
+					num_lonely_zeros = array[1]
+					columns = []
+					self.lonely_zeros.each do |lonely_zero_coordinates|
+						col_id = lonely_zero_coordinates[1]
+						if row_index == lonely_zero_coordinates[0]
+							col_array = self.column(col_id).to_a
+							col_array.delete(0)
+							column_min_sans_zero = col_array.min
+							columns << [col_id, column_min_sans_zero]
+						end
+					end
+					columns = columns.sort { |x,y| x[1] <=> y[1] }
+					problematic_columns_per_problematic_row << [row_index, num_lonely_zeros, columns]
+				end
+			end
+			return problematic_columns_per_problematic_row
+		end
+
+		# called on Matrix object; takes as input an array of arrays [n,m,o] where n is a row index, m is the number of lonely zeros in that row
+		# and o is an ordered array of arrays [p,q] where p is the column index of a lonely zero in row n, and q is the min value in that column other than zero
+		# see method "get_problematic_columns_per_problematic_row" for a convenient way to get a parameter like this
+		# for each member of the array passed to this method as a parameter, the method adds min row-value-sans-zero to each zero in the row
+		# subtracts min-row-value-sans-zero from each non-zero in the row; edits as few rows as necessary to remove the problem
+		# returns the edited matrix object it was called on
+		def zero_fewest_problematic_columns(problematic_columns)
+			problematic_columns.each do |array|
+				i = 0
+				while array[1] > self.max_row_assignment
+					self.add_value_if_zero_else_subtract_value_in_columns(array[2][i][0], array[2][i][1])
+					array[1] = array[1] - 1
+					i = i + 1
+				end
+			end
+			return self
+		end
+
+		def fix_too_many_lonely_zeros_in_rows
+			# isolate the rows that are causing the problem, then the columns in those rows that contain their lonely zeros
+			# PROBLEM: it could be that there are multiple rows with too many lonely zeros, e.g. one row might have 4, another 2
+				# and if the max row assignment were 1, you would want to add_value_if_zero to 3 of the 4 columns in the first group
+				# and only 1 of the 2 columnss in the second group; so you need some way of keeping track of these groups
+			problematic_columns = self.get_problematic_columns_per_problematic_row
+			# now make the fewest changes necessary to remove the problem, and determine which column to correct based on the other values in that column
+			# you want to correct the column with the lowest min value first, then the column with the next lowest, then with the next lowest, and so on
+			# point is: you want to minimize the extent to which you have to lower values to get an assignment
+			self.zero_fewest_problematic_columns(problematic_columns)
+		end
+
+
+
 
 	def add_value_if_zero_else_subtract_value_in_rows(row_index, value)
 		if !(self.rows[row_index] == nil)

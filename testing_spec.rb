@@ -67,6 +67,28 @@ describe Array, "array_columns" do
 	end
 end
 
+describe Matrix, "add_value_if_zero_else_subtract_value_in_columns" do
+
+	# called on Matrix object, takes column index and value as inputs
+	# outputs Matrix in which the value provided has been added to each zero in the column and subtracted otherwise
+		def add_value_if_zero_else_subtract_value_in_columns(col_index, value)
+
+	# it should add the value to each member of a column that contains only zeros
+
+	# it should add the value to each member of a column that contains many zeros
+
+	# it should subtract the value to each member of a column that contains no zeros
+
+	# it should leave the column unchanged if it is passed a value of zero
+
+	# it should throw an error if passed a column index for a column that doesn't exist
+
+	# it should throw an error if passed a non-integer
+
+	# it should throw an error if passed a non-number
+end
+
+
 describe Matrix, "zero_fewest_problematic_rows" do
 	# called on matrix object, for each row specified in params, adds min row-value-sans-zero to each zero in the row
 	# subtracts min-row-value-sans-zero from each non-zero in the row; edits as few rows as necessary to remove the problem
