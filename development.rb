@@ -48,7 +48,7 @@ def hungarian
 
 				# called on Matrix object, takes column index and value as inputs
 					# outputs Matrix in which the value provided has been added to each zero in the column and subtracted otherwise
-					def add_value_if_zero_else_subtract_value_in_rows(col_index, value)
+					def add_value_if_zero_else_subtract_value_in_columns(col_index, value)
 						if !(self.columns[col_index] == nil)
 							self.columns[col_index].each_with_index do |cell_value, row_index|
 								if cell_value == 0
@@ -88,19 +88,17 @@ def hungarian
 						return problematic_columns_per_problematic_row
 					end
 
-					# called on Matrix object, for each row specified in params, adds min row-value-sans-zero to each zero in the row
+					# called on Matrix object; takes as input an array of arrays [n,m,o] where n is a row index, m is the number of lonely zeros in that row
+					# and o is an ordered array of arrays [p,q] where p is the column index of a lonely zero in row n, and q is the min value in that column other than zero
+					# see method "get_problematic_columns_per_problematic_row" for a convenient way to get a parameter like this
+					# for each member of the array passed to this method as a parameter, the method adds min row-value-sans-zero to each zero in the row
 					# subtracts min-row-value-sans-zero from each non-zero in the row; edits as few rows as necessary to remove the problem
 					# returns the edited matrix object it was called on
 					def zero_fewest_problematic_columns(problematic_columns)
-						# problematic rows must be an array of arrays [n,m,o], one for each problematic column
-						# n is the column index, m is the number of lonely zeros in column n
-						# o is an ORDERED array containing all arrays [p,q] where p is the row index of a row containing a lonely zero in column n
-						# and q is the minimum value in that row-sans-zero; o is ordered by ascending q value
-						# the "get_problematic_rows" method returns exactly this array
-						problematic_rows.each do |array|
+						problematic_columns.each do |array|
 							i = 0
-							while array[1] > self.max_col_assignment
-								self.add_value_if_zero_else_subtract_value_in_rows(array[2][i][0], array[2][i][1])
+							while array[1] > self.max_row_assignment
+								self.add_value_if_zero_else_subtract_value_in_columns(array[2][i][0], array[2][i][1])
 								array[1] = array[1] - 1
 								i = i + 1
 							end
@@ -108,17 +106,16 @@ def hungarian
 						return self
 					end
 
-					def fix_too_many_lonely_zeros_in_columns
-						# isolate the columns that are causing the problem, then the rows in those columns that contain their lonely zeros
-						# PROBLEM: it could be that there are multiple columns with too many lonely zeros, e.g. one col might have 4, another 2
-							# and if the max col assignment were 1, you would want to add_value_if_zero to 3 of the 4 rows in the first group
-							# and only 1 of the 2 rows in the second group
-							# so you need some way of keeping track of these groups
-						problematic_rows = self.get_problematic_rows
-						# now make the fewest changes necessary to remove the problem, and determine which row to correct based on the other values in that row
-						# you want to correct the row with the lowest min value first, then the row with the next lowest, then with the next lowest, and so on
+					def fix_too_many_lonely_zeros_in_rows
+						# isolate the rows that are causing the problem, then the columns in those rows that contain their lonely zeros
+						# PROBLEM: it could be that there are multiple rows with too many lonely zeros, e.g. one row might have 4, another 2
+							# and if the max row assignment were 1, you would want to add_value_if_zero to 3 of the 4 columns in the first group
+							# and only 1 of the 2 columnss in the second group; so you need some way of keeping track of these groups
+						problematic_columns = self.get_problematic_columns_per_problematic_row
+						# now make the fewest changes necessary to remove the problem, and determine which column to correct based on the other values in that column
+						# you want to correct the column with the lowest min value first, then the column with the next lowest, then with the next lowest, and so on
 						# point is: you want to minimize the extent to which you have to lower values to get an assignment
-						self.zero_fewest_problematic_rows(problematic_rows)
+						self.zero_fewest_problematic_columns(problematic_columns)
 					end
 
 
