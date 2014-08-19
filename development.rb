@@ -56,6 +56,9 @@ def hungarian
 				3. Subtract the min-sans-zero from every member-sans-zero of the row in which it occurs
 			4. Repeat until min permitted row assignments <= max column assignments possible
 
+			PROBLEM: it could be that running the 
+
+			def make_more_column_assignments_possible
 				# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
 				# if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix, the parent matrix is unsolveable
 				# run this test first, as you want to fix it last (the solveable? method will return the failure code of the last test it fails)
@@ -80,24 +83,26 @@ def hungarian
 					# order row_id_plus_row_min by increasing row.min value
 					row_id_plus_row_min = row_id_plus_row_min.sort { |x,y| x[1] <=> y[1] }
 					# Subtract the min-sans-zero from every member-sans-zero of the row in which it occurs
+					# Repeat until min permitted row assignments <= max column assignments possible
 					min_row_assignments_permitted = self.min_row_assignment * submatrix.length
-					while min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
-						row_to_match = submatrix[row_id_plus_row_min[0][0]
+					i = min_row_assignments_permitted - submatrix.max_column_assmts_possible(self.max_col_assignment)
+
+						PROBLEM: it could be that the find_by_matching_row_then_subtract method will only add zeros in ONE additional column
+						(It might be that the min-sans-zero value occurs in the same column in each row of the submatrix)  
+						And, if it turns out that the submatrix min_row_assignments is TWO larger than the max_col_assignments possible
+						then using a the variable i to monitor this loop will not be enough
+
+					while i > 0
+						row_to_match = submatrix[row_id_plus_row_min[0][0]]
 						value_to_subtract = row_id_plus_row_min[0][1]
 						self.find_matching_row_then_subtract_value(row_to_match, value_to_subtract)
+						row_id_plus_row_min.shift
+						i = i + 1
+					end
+				end
+				return self
+			end
 
-
-
-						self.rows.each_with_index do |matrix_row, matrix_row_index|
-							if matrix_row == submatrix[row_id_plus_row_min[0][0]]
-								self.rows[matrix_row_index].each_with_index do |value, matrix_column_index|
-									if value != 0
-										self.send( :[]=,matrix_row_index, matrix_column_index, value - row_id_plus_row_min[0][1] )
-									end
-								end
-							end
-						end
-						change the original Matrix and the submatrix
 
 					# called on Matrix; finds all rows matching the row_to_match (data type: array) given as first parameter;
 					# subtracts input value from each member of each row matching the row_array, skips over zeros
