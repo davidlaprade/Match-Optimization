@@ -385,23 +385,28 @@ describe Matrix, "rows" do
 end
 
 describe Matrix, "solveable?" do
-	it "doesn't return false when run on Matrix[[1,2],[1,2]]" do
+	it "returns failure code when run on Matrix[[1,2],[1,2]]" do
 		matrix = Matrix[[1,2],[1,2]]
 		expect(matrix.solveable?).to eq("no, min permitted row assignments > max column assignments possible")
 	end
 
-	it "returns false when run on Matrix[[0,3,0],[0,5,0],[0,1,0]]" do
+	it "returns true when run on Matrix[[0,0,0],[0,9,0],[0,7,8]]" do
+		matrix = Matrix[[0,0,0],[0,9,0],[0,7,8]]
+		expect(matrix.solveable?).to eq(true)
+	end
+
+	it "returns failure code when run on Matrix[[0,3,0],[0,5,0],[0,1,0]]" do
 		matrix = Matrix[[0,3,0],[0,5,0],[0,1,0]]
 		expect(matrix.solveable?).to eq("no, min permitted row assignments > max column assignments possible")
 	end
 
-	it "returns false when run on Matrix[[5,0,3],[4,0,2],[8,0,8]]" do
+	it "returns failure code when run on Matrix[[5,0,3],[4,0,2],[8,0,8]]" do
 		matrix = Matrix[[5,0,3],[4,0,2],[8,0,8]]
 		expect(matrix.solveable?).to eq("no, too many lonely zeros in columns")
 	end
 
 	# this is an interesting case, it has too many loney zeros in column 1, and too many lonely zeros in row 1
-	it "returns false when run on Matrix[[4,0,1],[0,7,0],[9,0,2]]" do
+	it "returns failure code when run on Matrix[[4,0,1],[0,7,0],[9,0,2]]" do
 		matrix = Matrix[[4,0,1],[0,7,0],[9,0,2]]
 		expect(matrix.solveable?).to eq("no, too many lonely zeros in columns")
 	end
@@ -411,33 +416,33 @@ describe Matrix, "solveable?" do
 		expect(matrix.solveable?).to eq(true)
 	end
 
-	it "returns false when run on Matrix[[1,0,1,0,5,6],[6,7,1,0,1,0],[1,0,3,9,1,0],[2,6,1,0,1,8]]" do
+	it "returns failure code when run on Matrix[[1,0,1,0,5,6],[6,7,1,0,1,0],[1,0,3,9,1,0],[2,6,1,0,1,8]]" do
 		matrix = Matrix[[1,0,1,0,5,6],[6,7,1,0,1,0],[1,0,3,9,1,0],[2,6,1,0,1,8]]
 		expect(matrix.solveable?).to eq("no, min permitted row assignments > max column assignments possible")
 	end
 
-	it "returns false when run on Matrix[[1,0,1,9,5,6,9],[6,7,1,0,1,9,23],[1,9,3,0,1,9,6],[2,6,1,9,1,0,2],[0,3,0,4,0,7,0],
+	it "returns failure code when run on Matrix[[1,0,1,9,5,6,9],[6,7,1,0,1,9,23],[1,9,3,0,1,9,6],[2,6,1,9,1,0,2],[0,3,0,4,0,7,0],
 					[0,8,0,9,0,9,0],[0,4,0,5,0,4,0]]" do
 		matrix = Matrix[[1,0,1,9,5,6,9],[6,7,1,0,1,9,23],[1,9,3,0,1,9,6],[2,6,1,9,1,0,2],[0,3,0,4,0,7,0],
 					[0,8,0,9,0,9,0],[0,4,0,5,0,4,0]]
 		expect(matrix.solveable?).to eq("no, too many lonely zeros in columns")
 	end
 
-	it "returns false when run on Matrix[[1,7,1,3,5,6,9],[6,7,1,5,1,5,23],[1,3,3,9,1,9,6],[2,6,1,9,1,8,2],[0,3,0,4,0,7,0],
+	it "returns failure code when run on Matrix[[1,7,1,3,5,6,9],[6,7,1,5,1,5,23],[1,3,3,9,1,9,6],[2,6,1,9,1,8,2],[0,3,0,4,0,7,0],
 					[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]" do
 		matrix = Matrix[[1,0,1,7,5,6,9],[6,7,1,0,1,0,23],[1,7,3,9,1,9,6],[2,6,1,9,1,0,2],[0,3,0,4,0,7,0],
 					[0,8,0,9,0,9,0],[0,4,0,5,0,4,0]]
 		expect(matrix.solveable?).to eq("no, min permitted row assignments > max column assignments possible")
 	end
 
-	it "returns false when run on Matrix[[1,6,1,2,0,0,0],[0,7,0,6,3,8,4],[1,1,3,1,0,0,0],[0,0,9,0,4,9,5],
+	it "returns failure code when run on Matrix[[1,6,1,2,0,0,0],[0,7,0,6,3,8,4],[1,1,3,1,0,0,0],[0,0,9,0,4,9,5],
 				[5,1,1,1,0,0,0],[6,0,0,8,7,9,4],[9,23,6,2,0,0,9]]" do
 		matrix = Matrix[[1,6,1,2,0,0,0],[0,7,0,6,3,8,4],[1,1,3,1,0,0,0],[0,0,9,0,4,9,5],
 				[5,1,1,1,0,0,0],[6,0,0,8,7,9,4],[9,23,6,2,0,0,9]]
 		expect(matrix.solveable?).to eq("no, min permitted row assignments > max column assignments possible")
 	end
 
-	it "returns false when run on Matrix[[1,6,1,2],[0,7,0,6],[1,1,3,1],[0,0,9,0],[5,1,1,1],[6,0,0,8],[9,23,6,2]]" do
+	it "returns failure code when run on Matrix[[1,6,1,2],[0,7,0,6],[1,1,3,1],[0,0,9,0],[5,1,1,1],[6,0,0,8],[9,23,6,2]]" do
 		matrix = Matrix[[1,6,1,2],[0,7,0,6],[1,1,3,1],[0,0,9,0],[5,1,1,1],[6,0,0,8],[9,23,6,2]]
 		expect(matrix.solveable?).to eq("no, min permitted row assignments > max column assignments possible")
 	end	

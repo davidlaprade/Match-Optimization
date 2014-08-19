@@ -401,12 +401,7 @@ class Matrix
 	end
 
 	def rows
-		row_index = 0
-		rows = []
-		while row_index < self.row_count
-			rows << self.row(row_index)
-			row_index = row_index + 1
-		end
+		rows = self.to_a
 		return rows
 	end
 

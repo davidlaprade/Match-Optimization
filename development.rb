@@ -13,7 +13,6 @@ def hungarian
 	WORKING_MATRIX = self.clone
 	ASSIGNING_MATRIX = Matrix.build(self.row_count, self.column_count) {}
 
-	# ensure self matrix has same number of elements in each row...
 	# ensure self matrix has only integers in each row, and that each row contains each integer...
 
 	# first two steps of algorithm
@@ -26,7 +25,6 @@ def hungarian
 	end
 
 	# third step in algorithm
-		# is the Working Matrix solvable?
 	while WORKING_MATRIX.solveable? != true
 		while WORKING_MATRIX.solveable? == "no, too many lonely zeros in columns"
 			# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
@@ -38,7 +36,6 @@ def hungarian
 			# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
 		end
 
-
 		while WORKING_MATRIX.solveable? == "no, too many lonely zeros in rows"
 			# to fix: isolate the lonely zeros causing the problem, take each column they occur in
 			# find the lowest member in that column besides the zero, add the value of that lowest member to each zero,
@@ -49,13 +46,91 @@ def hungarian
 			# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
 		end
 
+		while WORKING_MATRIX.solveable? == "no, min permitted row assignments > max column assignments possible"
+			# to fix: if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix
+			# find the lowest value-sans-zero in the submatrix, then subtract that value from every member-sans-zero of the row in which it occurs
+			# do this only as many times as you need to make min permitted row assignments <= max column assignments possible
 
+			1. Find problematic submatrices
+				2. In each such submarix, identify the minimum value-sans-zero
+				3. Subtract the min-sans-zero from every member-sans-zero of the row in which it occurs
+			4. Repeat until min permitted row assignments <= max column assignments possible
 
-		elsif WORKING_MATRIX.solveable? == "no, min permitted row assignments > max column assignments possible"
-			# if it fails test 3, need to fix the matrix accordingly
-			# TEST3 - checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
+				# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
 				# if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix, the parent matrix is unsolveable
-		
+				# run this test first, as you want to fix it last (the solveable? method will return the failure code of the last test it fails)
+				matrix_in_array_format = self.to_a
+				test_cases = matrix_in_array_format.every_combination_of_its_members
+				# find the problematic submatrices
+				problematic_submatrices = []
+				test_cases.each do |submatrix_in_array_format|
+					min_row_assignments_permitted = self.min_row_assignment * submatrix_in_array_format.length
+					if min_row_assignments_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
+						problematic_submatrices << submatrix_in_array_format
+					end
+				end
+				# In each problematic submarix, identify the minimum value-sans-zero
+				problematic_submatrices.each do |submatrix|
+					# get min-sans-zero value for each row in submatrix
+					row_id_plus_row_min = []
+					submatrix.each_with_index do |row, row_id|
+						row.delete(0)
+						row_id_plus_row_min << [row_id, row.min]
+					end
+					# order row_id_plus_row_min by increasing row.min value
+					row_id_plus_row_min = row_id_plus_row_min.sort { |x,y| x[1] <=> y[1] }
+					# Subtract the min-sans-zero from every member-sans-zero of the row in which it occurs
+					min_row_assignments_permitted = self.min_row_assignment * submatrix.length
+					while min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
+						row_to_match = submatrix[row_id_plus_row_min[0][0]
+						value_to_subtract = row_id_plus_row_min[0][1]
+						self.find_matching_row_then_subtract_value(row_to_match, value_to_subtract)
+
+
+
+						self.rows.each_with_index do |matrix_row, matrix_row_index|
+							if matrix_row == submatrix[row_id_plus_row_min[0][0]]
+								self.rows[matrix_row_index].each_with_index do |value, matrix_column_index|
+									if value != 0
+										self.send( :[]=,matrix_row_index, matrix_column_index, value - row_id_plus_row_min[0][1] )
+									end
+								end
+							end
+						end
+						change the original Matrix and the submatrix
+
+					# called on Matrix; finds all rows matching the row_to_match (data type: array) given as first parameter;
+					# subtracts input value from each member of each row matching the row_array, skips over zeros
+					def find_matching_row_then_subtract_value(row_to_match, value_to_subtract)
+						self.rows.each_with_index do |matrix_row, matrix_row_index|
+							if matrix_row == row_to_match
+								matrix_row.each_with_index do |cell_value, matrix_column_index|
+									if cell_value != 0
+										self.send( :[]=, matrix_row_index, matrix_column_index, cell_value - value_to_subtract )
+									end
+								end
+							end
+						end
+						return self
+					end
+
+
+								self.rows[matrix_row_index].each_with_index do |value, matrix_column_index|
+									if value != 0
+										self.send( :[]=,matrix_row_index, matrix_column_index, value - row_id_plus_row_min[0][1] )
+									end
+								end
+							end
+						end
+
+
+
+
+			4. Repeat until min permitted row assignments <= max column assignments possible
+
+
+		end
+
 	end
 
 	# fourth step in algorithm
@@ -254,12 +329,7 @@ class Matrix
 
 	# returns an array of the rows (data type: vectors) in the Matrix it's called on
 	def rows
-		row_index = 0
-		rows = []
-		while row_index < self.row_count
-			rows << self.row(row_index)
-			row_index = row_index + 1
-		end
+		rows = self.to_a
 		return rows
 	end
 
