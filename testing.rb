@@ -201,7 +201,7 @@ class Matrix
 		return self
 	end
 
-	def get_problematic_rows
+	def get_problematic_rows_per_problematic_columns
 		problematic_rows = []
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
@@ -237,7 +237,7 @@ class Matrix
 	end
 
 	def fix_too_many_lonely_zeros_in_columns
-		problematic_rows = self.get_problematic_rows
+		problematic_rows = self.get_problematic_rows_per_problematic_columns
 		self.zero_fewest_problematic_rows(problematic_rows)
 	end
 

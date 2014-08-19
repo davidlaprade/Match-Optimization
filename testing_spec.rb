@@ -71,15 +71,35 @@ describe Matrix, "add_value_if_zero_else_subtract_value_in_columns" do
 
 	# called on Matrix object, takes column index and value as inputs
 	# outputs Matrix in which the value provided has been added to each zero in the column and subtracted otherwise
-		def add_value_if_zero_else_subtract_value_in_columns(col_index, value)
+		# def add_value_if_zero_else_subtract_value_in_columns(col_index, value)
 
 	# it should add the value to each member of a column that contains only zeros
+	it "returns Matrix[[2,2,9,5,6,8],[2,4,6,8,1,0],[2,2,4,7,8,0],[2,9,8,4,6,3],[2,6,4,9,2,4]] when called on 
+		Matrix[[0,2,9,5,6,8],[0,4,6,8,1,0],[0,2,4,7,8,0],[0,9,8,4,6,3],[0,6,4,9,2,4]] and passed 0, 2" do
+		matrix = Matrix[[0,2,9,5,6,8],[0,4,6,8,1,0],[0,2,4,7,8,0],[0,9,8,4,6,3],[0,6,4,9,2,4]]
+		expect(matrix.add_value_if_zero_else_subtract_value_in_columns(0,2)).to eq(Matrix[[2,2,9,5,6,8],[2,4,6,8,1,0],[2,2,4,7,8,0],[2,9,8,4,6,3],[2,6,4,9,2,4]])
+	end
 
 	# it should add the value to each member of a column that contains many zeros
+	it "returns Matrix[[0,2,9,5,6,8],[0,4,6,8,1,9],[0,2,4,7,8,9],[0,9,8,4,6,3],[0,6,4,9,2,4]] when called on 
+		Matrix[[0,2,9,5,6,8],[0,4,6,8,1,0],[0,2,4,7,8,0],[0,9,8,4,6,3],[0,6,4,9,2,4]] and passed 5, 9" do
+		matrix = Matrix[[0,2,9,5,6,8],[0,4,6,8,1,0],[0,2,4,7,8,0],[0,9,8,4,6,3],[0,6,4,9,2,4]]
+		expect(matrix.add_value_if_zero_else_subtract_value_in_columns(5,9)).to eq(Matrix[[0,2,9,5,6,-1],[0,4,6,8,1,9],[0,2,4,7,8,9],[0,9,8,4,6,-6],[0,6,4,9,2,-5]])
+	end
+
+	# it should throw an error if passed a negative value
+
+	# it should add the value even if it is very large
 
 	# it should subtract the value to each member of a column that contains no zeros
 
 	# it should leave the column unchanged if it is passed a value of zero
+	it "returns Matrix[[0,2,9,5,6,8],[0,4,6,8,1,0],[0,2,4,7,8,0],[0,9,8,4,6,3],[0,6,4,9,2,4]] when called on 
+		Matrix[[0,2,9,5,6,8],[0,4,6,8,1,0],[0,2,4,7,8,0],[0,9,8,4,6,3],[0,6,4,9,2,4]] and passed anything with 0" do
+		matrix = Matrix[[0,2,9,5,6,8],[0,4,6,8,1,0],[0,2,4,7,8,0],[0,9,8,4,6,3],[0,6,4,9,2,4]]
+		anything = (rand*10).ceil
+		expect(matrix.add_value_if_zero_else_subtract_value_in_columns(anything,0)).to eq(Matrix[[0,2,9,5,6,8],[0,4,6,8,1,0],[0,2,4,7,8,0],[0,9,8,4,6,3],[0,6,4,9,2,4]])
+	end
 
 	# it should throw an error if passed a column index for a column that doesn't exist
 
@@ -97,7 +117,7 @@ describe Matrix, "zero_fewest_problematic_rows" do
 		# n is the column index, m is the number of lonely zeros in column n
 		# o is an ORDERED array containing all arrays [p,q] where p is the row index of a row containing a lonely zero in column n
 		# and q is the minimum value in that row-sans-zero; o is ordered by ascending q value
-		# the "get_problematic_rows" method returns exactly this array
+		# the "get_problematic_rows_per_problematic_columns" method returns exactly this array
 
 	# it shouldn't change the Matrix if passed an empty array
 	it "returns Matrix[[0,1,4],[5,7,0],[9,0,9]] when called on Matrix[[0,1,4],[5,7,0],[9,0,9]] and passed []" do
@@ -133,7 +153,7 @@ describe Matrix, "zero_fewest_problematic_rows" do
 			# ---------------------------------------------
 			# second attempt to produce the vicious loop
 				# it "returns Matrix[[1,0,0,1],[0,2,2,0],[8,0,0,8]] when called on matrix = Matrix[[0,1,1,0],[0,2,2,0],[8,0,0,8]] and 
-				# passed matrix.get_problematic_rows" do
+				# passed matrix.get_problematic_rows_per_problematic_columns" do
 					# this doesn't work either! none of these zeros is lonely!
 
 	# does it work when passed problematic_rows directly when there are multiple columns with too many lonely zeros, and those zeros occur in rows with differing min-sans-zero values?
@@ -145,12 +165,12 @@ describe Matrix, "zero_fewest_problematic_rows" do
 			[5,0,0,0,0,0,50,47],[17,17,17,0,17,17,88,81],[0,0,0,8,0,0,0,769]])
 	end
 
-	# does it work with the get_problematic_rows method when there are multiple columns with too many lonely zeros, and those zeros occur in rows with differing min-sans-zero values?
+	# does it work with the get_problematic_rows_per_problematic_columns method when there are multiple columns with too many lonely zeros, and those zeros occur in rows with differing min-sans-zero values?
 	it "returns Matrix[[0,6,6,6,6,9,10,17],[0,0,0,9,0,0,35,40],[5,0,0,0,0,0,50,47],[17,17,17,0,17,17,88,81],[0,0,0,8,0,0,0,769]]
 		when called on matrix = Matrix[[0,6,6,6,6,9,10,17],[9,9,9,0,9,9,44,49],[0,5,5,5,5,5,55,52],[17,17,17,0,17,17,88,81],[8,8,8,0,8,8,8,777]],
-			and passed matrix.get_problematic_rows" do
+			and passed matrix.get_problematic_rows_per_problematic_columns" do
 		matrix = Matrix[[0,6,6,6,6,9,10,17],[9,9,9,0,9,9,44,49],[0,5,5,5,5,5,55,52],[17,17,17,0,17,17,88,81],[8,8,8,0,8,8,8,777]]
-		expect(matrix.zero_fewest_problematic_rows(matrix.get_problematic_rows)).to eq(Matrix[[0,6,6,6,6,9,10,17],[0,0,0,9,0,0,35,40],
+		expect(matrix.zero_fewest_problematic_rows(matrix.get_problematic_rows_per_problematic_columns)).to eq(Matrix[[0,6,6,6,6,9,10,17],[0,0,0,9,0,0,35,40],
 			[5,0,0,0,0,0,50,47],[17,17,17,0,17,17,88,81],[0,0,0,8,0,0,0,769]])
 	end
 end
@@ -208,7 +228,7 @@ describe Matrix, "fix_too_many_lonely_zeros_in_columns" do
 
 end
 
-describe Matrix, "get_problematic_rows" do
+describe Matrix, "get_problematic_rows_per_problematic_columns" do
 	# outputs array of arrays [n,m,o] where n is the index of a column with too many lonely zeros
 	# m is the number of lonely zero's in column n
 	# and o is an ORDERED array that contains arrays [p,q] where p is a row index of a lonely zero in column n, 
@@ -217,40 +237,40 @@ describe Matrix, "get_problematic_rows" do
 	# test with one problematic column, when rows are in order of min-sans-zero
 	it "returns [[0,2,[[0,1],[1,3]]] when called on Matrix[[0,1,9],[0,3,3],[0,6,0]]" do
 		matrix = Matrix[[0,1,9],[0,3,3],[0,6,0]]
-		expect(matrix.get_problematic_rows).to eq([[0,2,[[0,1],[1,3]]]])
+		expect(matrix.get_problematic_rows_per_problematic_columns).to eq([[0,2,[[0,1],[1,3]]]])
 	end
 
 	# test same array as above, but add a row to increase the max_col_assignment for the array
 	# this will eliminate all the previously problematic columns
 	it "returns [] when called on Matrix[[0,1,9],[0,3,3],[0,6,0],[4,5,6]]" do
 		matrix = Matrix[[0,1,9],[0,3,3],[0,6,0],[4,5,6]]
-		expect(matrix.get_problematic_rows).to eq([])
+		expect(matrix.get_problematic_rows_per_problematic_columns).to eq([])
 	end
 
 	# test it on an array that is solveable
 	it "returns [] when called on Matrix[[0,1,4],[5,7,0],[9,0,9]]" do
 		matrix = Matrix[[0,1,4],[5,7,0],[9,0,9]]
-		expect(matrix.get_problematic_rows).to eq([])
+		expect(matrix.get_problematic_rows_per_problematic_columns).to eq([])
 	end
 
 	# case where there are no lonely zeros in the matrix at all
 	it "returns [] when called on Matrix[[0,1,0],[0,7,0],[0,7,0]]" do
 		matrix = Matrix[[0,1,0],[0,7,0],[0,7,0]]
-		expect(matrix.get_problematic_rows).to eq([])
+		expect(matrix.get_problematic_rows_per_problematic_columns).to eq([])
 	end
 
 	# case where multiple columns have too many lonely zeros, order is not being checked yet
 	it "returns [[[0,2,[[0,2],[2,5]]],[3,3,[[1,3],[3,7],[4,8]]] when called on 
 		Matrix[[0,5,4,3,2,9,10,17],[8,9,3,0,4,4,44,49],[0,5,5,5,5,5,55,52],[7,7,7,0,7,7,88,81],[8,8,8,0,8,8,8,777]]" do
 		matrix = Matrix[[0,5,4,3,2,9,10,17],[8,9,3,0,4,4,44,49],[0,5,5,5,5,5,55,52],[7,7,7,0,7,7,88,81],[8,8,8,0,8,8,8,777]]
-		expect(matrix.get_problematic_rows).to eq([[0,2,[[0,2],[2,5]]],[3,3,[[1,3],[3,7],[4,8]]]])
+		expect(matrix.get_problematic_rows_per_problematic_columns).to eq([[0,2,[[0,2],[2,5]]],[3,3,[[1,3],[3,7],[4,8]]]])
 	end
 
 	# case where multiple columns have too many lonely zeros, checking for correct matrix order
 	it "returns [[0,2,[[2,5],[0,6]]],[3,3,[[4,8],[1,9],[3,17]]]] when called on 
 		Matrix[[0,6,6,6,6,9,10,17],[9,9,9,0,9,9,44,49],[0,5,5,5,5,5,55,52],[17,17,17,0,17,17,88,81],[8,8,8,0,8,8,8,777]]" do
 		matrix = Matrix[[0,6,6,6,6,9,10,17],[9,9,9,0,9,9,44,49],[0,5,5,5,5,5,55,52],[17,17,17,0,17,17,88,81],[8,8,8,0,8,8,8,777]]
-		expect(matrix.get_problematic_rows).to eq([[0,2,[[2,5],[0,6]]],[3,3,[[4,8],[1,9],[3,17]]]])
+		expect(matrix.get_problematic_rows_per_problematic_columns).to eq([[0,2,[[2,5],[0,6]]],[3,3,[[4,8],[1,9],[3,17]]]])
 	end
 
 end

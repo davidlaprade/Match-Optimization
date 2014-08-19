@@ -169,7 +169,7 @@ def hungarian
 	# m is the number of lonely zero's in column n
 	# and o is an ORDERED array that contains arrays [p,q] where p is a row index of a lonely zero in column n, 
 	# and q is the min value in that row other than zero, ordered by ascending q value
-	def get_problematic_rows
+	def get_problematic_rows_per_problematic_column
 	# called on Matrix object, takes row index and value as inputs
 	# outputs Matrix in which the value provided has been added to each zero and subtracted otherwise
 	def add_value_if_zero_else_subtract_value_in_rows(row_index, value)
@@ -523,7 +523,7 @@ class Matrix
 	# m is the number of lonely zero's in column n
 	# and o is an ORDERED array that contains arrays [p,q] where p is a row index of a lonely zero in column n, 
 	# and q is the min value in that row other than zero, ordered by ascending q value
-	def get_problematic_rows
+	def get_problematic_rows_per_problematic_column
 		problematic_rows = []
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
@@ -554,7 +554,7 @@ class Matrix
 		# n is the column index, m is the number of lonely zeros in column n
 		# o is an ORDERED array containing all arrays [p,q] where p is the row index of a row containing a lonely zero in column n
 		# and q is the minimum value in that row-sans-zero; o is ordered by ascending q value
-		# the "get_problematic_rows" method returns exactly this array
+		# the "get_problematic_rows_per_problematic_column" method returns exactly this array
 		problematic_rows.each do |array|
 			i = 0
 			while array[1] > self.max_col_assignment
@@ -572,7 +572,7 @@ class Matrix
 			# and if the max col assignment were 1, you would want to add_value_if_zero to 3 of the 4 rows in the first group
 			# and only 1 of the 2 rows in the second group
 			# so you need some way of keeping track of these groups
-		problematic_rows = self.get_problematic_rows
+		problematic_rows = self.get_problematic_rows_per_problematic_column
 		# now make the fewest changes necessary to remove the problem, and determine which row to correct based on the other values in that row
 		# you want to correct the row with the lowest min value first, then the row with the next lowest, then with the next lowest, and so on
 		# point is: you want to minimize the extent to which you have to lower values to get an assignment
