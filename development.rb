@@ -283,6 +283,8 @@ class Matrix
 	end
 
 	# CONSTRAINTS----------------------------------------
+	# perhaps allow the user to set these values eventually
+
 	def max_col_assignment 
 		# ceil rounds a float up to the nearest integer
 		(self.row_count.fdiv(self.column_count)).ceil
@@ -463,9 +465,9 @@ class Matrix
 	def solveable?
 		failure_code = true
 
-		# run this test first, as you want to fix it last (the solveable? method will return the failure code of the last test it fails)
 		# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
 		# if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix, the parent matrix is unsolveable
+		# run this test first, as you want to fix it last (the solveable? method will return the failure code of the last test it fails)
 		matrix_in_array_format = self.to_a
 		test_cases = matrix_in_array_format.every_combination_of_its_members
 		test_cases.each do |submatrix_in_array_format|

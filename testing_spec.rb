@@ -108,6 +108,26 @@ describe Matrix, "add_value_if_zero_else_subtract_value_in_columns" do
 	# it should throw an error if passed a non-number
 end
 
+describe Matrix, "get_problematic_columns_per_problematic_row" do
+		# called on Matrix object; outputs array of arrays [n,m,o] where n is the index of a row with too many lonely zeros
+		# m is the number of lonely zero's in row n
+		# and o is an ORDERED array that contains arrays [p,q] where p is a column index of a lonely zero in row n, 
+		# and q is the min value in that column other than zero, ordered by ascending q value
+
+	# multiple rows have too many lonely zeros
+	it "returns [[1,2,[[1,1],[2,7]]],[4,2,[[0,1],[4,3]]]] when called on Matrix[[3,3,9,0,7],[5,0,0,0,2],[6,6,7,0,3],[0,1,7,6,0],[1,6,8,0,3]]" do
+		matrix = Matrix[[3,3,9,0,7],[5,0,0,0,2],[6,6,7,0,3],[0,1,7,6,0],[1,6,8,0,3]]
+		expect(matrix.get_problematic_columns_per_problematic_row).to eq([[1,2,[[1,1],[2,7]]],[3,2,[[0,1],[4,2]]]])
+	end
+
+	# no rows have too many lonely zeros
+	it "returns [] when called on Matrix[[1,2,0],[3,0,9],[0,5,4]]" do
+		matrix = Matrix[[1,2,0],[3,0,9],[0,5,4]]
+		expect(matrix.get_problematic_columns_per_problematic_row).to eq([])
+	end
+
+end
+
 
 describe Matrix, "zero_fewest_problematic_rows" do
 	# called on matrix object, for each row specified in params, adds min row-value-sans-zero to each zero in the row
@@ -376,6 +396,8 @@ describe Matrix, "solveable?" do
 		matrix = Matrix[[1,6,1,2],[0,7,0,6],[1,1,3,1],[0,0,9,0],[5,1,1,1],[6,0,0,8],[9,23,6,2]]
 		expect(matrix.solveable?).to eq("no, min permitted row assignments > max column assignments possible")
 	end	
+
+	# min_row_assmts_permitted > max_column_assmts_possible for any submatrix
 
 # next test some matrices that will allow for multiple assignments in rows, then in columns
 

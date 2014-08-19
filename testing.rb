@@ -15,7 +15,7 @@ require 'matrix'
 					# [0,8,0,9,0,9,0],[0,4,0,5,0,4,0]]
 # m = Matrix[[5,0,3],[4,0,2],[8,0,8]]
 # m = Matrix[[0,1],[5,0]]
-m = Matrix[[6,1,3,4,5,9]]
+# m = Matrix[[6,1,3,4,5,9]]
 
 class Array
 	# returns an array containing just the rows of the target array that are specified in the rows argument
@@ -113,8 +113,6 @@ class Matrix
 		return 1
 	end
 
-	# called on Matrix object, takes column index and value as inputs
-	# outputs Matrix in which the value provided has been added to each zero in the column and subtracted otherwise
 	def add_value_if_zero_else_subtract_value_in_columns(col_index, value)
 		if !(self.columns[col_index] == nil)
 			self.columns[col_index].each_with_index do |cell_value, row_index|
@@ -128,32 +126,32 @@ class Matrix
 		return self
 	end
 
-		# called on Matrix object; outputs array of arrays [n,m,o] where n is the index of a row with too many lonely zeros
-		# m is the number of lonely zero's in row n
-		# and o is an ORDERED array that contains arrays [p,q] where p is a column index of a lonely zero in row n, 
-		# and q is the min value in that column other than zero, ordered by ascending q value
-		def get_problematic_columns_per_problematic_row
-			problematic_columns_per_problematic_row = []
-			self.lonely_zeros_per_row.each do |array|
-				if array[1] > self.max_row_assignment
-					row_index = array[0]
-					num_lonely_zeros = array[1]
-					columns = []
-					self.lonely_zeros.each do |lonely_zero_coordinates|
-						col_id = lonely_zero_coordinates[1]
-						if row_index == lonely_zero_coordinates[0]
-							col_array = self.column(col_id).to_a
-							col_array.delete(0)
-							column_min_sans_zero = col_array.min
-							columns << [col_id, column_min_sans_zero]
-						end
+	# called on Matrix object; outputs array of arrays [n,m,o] where n is the index of a row with too many lonely zeros
+	# m is the number of lonely zero's in row n
+	# and o is an ORDERED array that contains arrays [p,q] where p is a column index of a lonely zero in row n, 
+	# and q is the min value in that column other than zero, ordered by ascending q value
+	def get_problematic_columns_per_problematic_row
+		problematic_columns_per_problematic_row = []
+		self.lonely_zeros_per_row.each do |array|
+			if array[1] > self.max_row_assignment
+				row_index = array[0]
+				num_lonely_zeros = array[1]
+				columns = []
+				self.lonely_zeros.each do |lonely_zero_coordinates|
+					col_id = lonely_zero_coordinates[1]
+					if row_index == lonely_zero_coordinates[0]
+						col_array = self.column(col_id).to_a
+						col_array.delete(0)
+						column_min_sans_zero = col_array.min
+						columns << [col_id, column_min_sans_zero]
 					end
-					columns = columns.sort { |x,y| x[1] <=> y[1] }
-					problematic_columns_per_problematic_row << [row_index, num_lonely_zeros, columns]
 				end
+				columns = columns.sort { |x,y| x[1] <=> y[1] }
+				problematic_columns_per_problematic_row << [row_index, num_lonely_zeros, columns]
 			end
-			return problematic_columns_per_problematic_row
 		end
+		return problematic_columns_per_problematic_row
+	end
 
 		# called on Matrix object; takes as input an array of arrays [n,m,o] where n is a row index, m is the number of lonely zeros in that row
 		# and o is an ordered array of arrays [p,q] where p is the column index of a lonely zero in row n, and q is the min value in that column other than zero
@@ -439,7 +437,7 @@ end
 
 
 
-m.print_in_readable_format
+# m.print_in_readable_format
 # m.zero_each_row
 # print "m.zero_each_row returns:"
 # m.print_in_readable_format
@@ -450,7 +448,7 @@ m.print_in_readable_format
 # print "m.max_col_assignment returns #{m.max_col_assignment}\n"
 # print "m.max_row_assignment returns #{m.max_row_assignment}\n"
 
-print "m.solvable? #{m.solveable?}\n\n"
+# print "m.solvable? #{m.solveable?}\n\n"
 # print "m.lonely_zeros returns #{m.lonely_zeros}\n\n"
 # print "m.lonely_zeros_per_column returns #{m.lonely_zeros_per_column}\n\n"
 # print "m.lonely_zeros_per_row returns #{m.lonely_zeros_per_row}\n\n"
