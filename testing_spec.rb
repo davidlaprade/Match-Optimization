@@ -114,10 +114,16 @@ describe Matrix, "get_problematic_columns_per_problematic_row" do
 		# and o is an ORDERED array that contains arrays [p,q] where p is a column index of a lonely zero in row n, 
 		# and q is the min value in that column other than zero, ordered by ascending q value
 
-	# multiple rows have too many lonely zeros
-	it "returns [[1,2,[[1,1],[2,7]]],[4,2,[[0,1],[4,3]]]] when called on Matrix[[3,3,9,0,7],[5,0,0,0,2],[6,6,7,0,3],[0,1,7,6,0],[1,6,8,0,3]]" do
+	# multiple rows have too many lonely zeros, but columns are already ordered by ascending min-sans-zero value
+	it "returns [[1,2,[[1,1],[2,7]]],[3,2,[[0,1],[4,3]]]] when called on Matrix[[3,3,9,0,7],[5,0,0,0,2],[6,6,7,0,3],[0,1,7,6,0],[1,6,8,0,3]]" do
 		matrix = Matrix[[3,3,9,0,7],[5,0,0,0,2],[6,6,7,0,3],[0,1,7,6,0],[1,6,8,0,3]]
 		expect(matrix.get_problematic_columns_per_problematic_row).to eq([[1,2,[[1,1],[2,7]]],[3,2,[[0,1],[4,2]]]])
+	end
+
+	# multiple rows have too many lonely zeros, but columns are NOT ordered by ascending min-sans-zero value
+	it "returns [[1,2,[[2,1],[1,7]]],[3,2,[[4,1],[0,3]]]] when called on Matrix[[3,7,1,0,7],[5,0,0,0,1],[6,7,7,0,3],[0,7,7,6,0],[3,7,8,0,3]]" do
+		matrix = Matrix[[3,7,1,0,7],[5,0,0,0,1],[6,7,7,0,3],[0,7,7,6,0],[3,7,8,0,3]]
+		expect(matrix.get_problematic_columns_per_problematic_row).to eq([[1,2,[[2,1],[1,7]]],[3,2,[[4,1],[0,3]]]])
 	end
 
 	# no rows have too many lonely zeros
@@ -128,6 +134,45 @@ describe Matrix, "get_problematic_columns_per_problematic_row" do
 
 end
 
+describe Matrix, "zero_fewest_problematic_columns" do
+	# called on Matrix object; takes as input an array of arrays [n,m,o] where n is a row index, m is the number of lonely zeros in that row
+	# and o is an ordered array of arrays [p,q] where p is the column index of a lonely zero in row n, and q is the min value in that column other than zero
+	# see method "get_problematic_columns_per_problematic_row" for a convenient way to get a parameter like this
+	# for each member of the array passed to this method as a parameter, the method adds min row-value-sans-zero to each zero in the row
+	# subtracts min-row-value-sans-zero from each non-zero in the row; edits as few rows as necessary to remove the problem
+	# returns the edited matrix object it was called on
+	# def zero_fewest_problematic_columns(problematic_columns)
+
+	# corrects minimum number of columns, and only those with the lowest min-sans-zero values
+	it "returns Matrix[[3,7,0,0,6],[5,0,1,0,0],[6,7,6,0,2],[0,7,6,6,1],[3,7,7,0,2]] when called on
+			    Matrix[[3,7,1,0,7],[5,0,0,0,1],[6,7,7,0,3],[0,7,7,6,0],[3,7,8,0,3]] and passed [[1,2,[[2,1],[1,7]]],[3,2,[[4,1],[0,3]]]]" do
+		matrix = Matrix[[3,7,1,0,7],[5,0,0,0,1],[6,7,7,0,3],[0,7,7,6,0],[3,7,8,0,3]]
+		expect(matrix.zero_fewest_problematic_columns([[1,2,[[2,1],[1,7]]],[3,2,[[4,1],[0,3]]]])).to eq(Matrix[[3,7,0,0,6],[5,0,1,0,0],[6,7,6,0,2],[0,7,6,6,1],[3,7,7,0,2]])
+	end
+
+	# corrects minimum number of columns, and only those with the lowest min-sans-zero values
+	it "returns Matrix[[3,7,0,0,6],[5,0,1,0,0],[6,7,6,0,2],[0,7,6,6,1],[3,7,7,0,2]] when called on
+			    Matrix[[3,7,1,0,7],[5,0,0,0,1],[6,7,7,0,3],[0,7,7,6,0],[3,7,8,0,3]] and passed result of get_problematic_columns_per_problematic_row" do
+		matrix = Matrix[[3,7,1,0,7],[5,0,0,0,1],[6,7,7,0,3],[0,7,7,6,0],[3,7,8,0,3]]
+		expect(matrix.zero_fewest_problematic_columns(matrix.get_problematic_columns_per_problematic_row)).to eq(Matrix[[3,7,0,0,6],[5,0,1,0,0],[6,7,6,0,2],[0,7,6,6,1],[3,7,7,0,2]])
+	end
+
+	# already vigorously tested the method that this method was written from, i.e. zero_fewest_problematic_rows
+	# if this test passes, I'm satisfied this is going to work...
+
+end
+
+describe Matrix, "fix_too_many_lonely_zeros_in_rows" do
+	# corrects minimum number of columns, and only those with the lowest min-sans-zero values
+	it "returns Matrix[[3,7,0,0,6],[5,0,1,0,0],[6,7,6,0,2],[0,7,6,6,1],[3,7,7,0,2]] when called on
+			    Matrix[[3,7,1,0,7],[5,0,0,0,1],[6,7,7,0,3],[0,7,7,6,0],[3,7,8,0,3]]" do
+		matrix = Matrix[[3,7,1,0,7],[5,0,0,0,1],[6,7,7,0,3],[0,7,7,6,0],[3,7,8,0,3]]
+		expect(matrix.fix_too_many_lonely_zeros_in_rows).to eq(Matrix[[3,7,0,0,6],[5,0,1,0,0],[6,7,6,0,2],[0,7,6,6,1],[3,7,7,0,2]])
+	end
+
+	# already vigorously tested the method that this method was written from, i.e. fix_too_many_lonely_zeros_in_columns
+	# if this test passes, I'm satisfied this is going to work...
+end
 
 describe Matrix, "zero_fewest_problematic_rows" do
 	# called on matrix object, for each row specified in params, adds min row-value-sans-zero to each zero in the row
