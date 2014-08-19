@@ -201,7 +201,7 @@ class Matrix
 		return self
 	end
 
-	def get_problematic_rows_per_problematic_columns
+	def get_problematic_rows_per_problematic_column
 		problematic_rows = []
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
@@ -237,7 +237,7 @@ class Matrix
 	end
 
 	def fix_too_many_lonely_zeros_in_columns
-		problematic_rows = self.get_problematic_rows_per_problematic_columns
+		problematic_rows = self.get_problematic_rows_per_problematic_column
 		self.zero_fewest_problematic_rows(problematic_rows)
 	end
 
@@ -315,32 +315,32 @@ class Matrix
 
 	# returns false if the matrix has no solution in its current state, nil if the matrix passes the tests
 	def solveable?
-		# checks to see if there are too many lonely zeros in any column
-		self.lonely_zeros_per_column.each do |array|
-			if array[1] > self.max_col_assignment
-				return "no, too many lonely zeros in columns"
-			end
-		end
-
-		# checks to see if there are too many lonely zeros in any row
-		self.lonely_zeros_per_row.each do |array|
-			if array[1] > self.max_row_assignment
-				return "no, too many lonely zeros in rows"
-			end
-		end
+		failure_code = true
 
 		matrix_in_array_format = self.to_a
 		test_cases = matrix_in_array_format.every_combination_of_its_members
 		test_cases.each do |submatrix_in_array_format|
 			min_row_assignments_permitted = self.min_row_assignment * submatrix_in_array_format.length
 			if min_row_assignments_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
-				return "no, min permitted row assignments > max column assignments possible"
+				failure_code = "no, min permitted row assignments > max column assignments possible"
 			end
 		end
 
-		if self.min_column_assmts_permitted > self.max_row_assmts_possible
-			return "no, min permitted column assignments > max row assignments possible"
+		# checks to see if there are too many lonely zeros in any row
+		self.lonely_zeros_per_row.each do |array|
+			if array[1] > self.max_row_assignment
+				failure_code = "no, too many lonely zeros in rows"
+			end
 		end
+
+		# checks to see if there are too many lonely zeros in any column
+		self.lonely_zeros_per_column.each do |array|
+			if array[1] > self.max_col_assignment
+				failure_code = "no, too many lonely zeros in columns"
+			end
+		end
+
+		return failure_code
 
 	end
 

@@ -459,22 +459,11 @@ class Matrix
 		return number_of_max_assignments
 	end
 
-	# returns false if the matrix has no solution in its current state, nil if the matrix passes the tests
+	# returns failure code if the matrix has no solution in its current state, true if the matrix passes the tests
 	def solveable?
-		# checks to see if there are too many lonely zeros in any column
-		self.lonely_zeros_per_column.each do |array|
-			if array[1] > self.max_col_assignment
-				return "no, too many lonely zeros in columns"
-			end
-		end
+		failure_code = true
 
-		# checks to see if there are too many lonely zeros in any row
-		self.lonely_zeros_per_row.each do |array|
-			if array[1] > self.max_row_assignment
-				return "no, too many lonely zeros in rows"
-			end
-		end
-
+		# run this test first, as you want to fix it last (the solveable? method will return the failure code of the last test it fails)
 		# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
 		# if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix, the parent matrix is unsolveable
 		matrix_in_array_format = self.to_a
@@ -482,11 +471,11 @@ class Matrix
 		test_cases.each do |submatrix_in_array_format|
 			min_row_assignments_permitted = self.min_row_assignment * submatrix_in_array_format.length
 			if min_row_assignments_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
-				return "no, min permitted row assignments > max column assignments possible"
+				failure_code = "no, min permitted row assignments > max column assignments possible"
 			end
 		end
 
-			# how this is going to work:
+		# how this works:
 			# 	turn matrix into an array
 			# 	populate array of every combination of the matrix_array rows
 			# 	for each member of the combination array:
@@ -494,13 +483,24 @@ class Matrix
 			# 		find max column assignments possible
 			# 		check if min_row_assmts_permitted > max_col_assmts_poss
 			# 			return false
-		# Now do the same thing for columns!!!
+		# this seems to catch all of the cases where min allowable column assignments > max num of possible row assignments
+		# so I didn't write a corresponding test for that
 
-		# to be effective, this needs to check isolated parts of the matrix
-		# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
-		if self.min_column_assmts_permitted > self.max_row_assmts_possible
-			return "no, min permitted column assignments > max row assignments possible"
+		# checks to see if there are too many lonely zeros in any row
+		self.lonely_zeros_per_row.each do |array|
+			if array[1] > self.max_row_assignment
+				failure_code = "no, too many lonely zeros in rows"
+			end
 		end
+
+		# checks to see if there are too many lonely zeros in any column
+		self.lonely_zeros_per_column.each do |array|
+			if array[1] > self.max_col_assignment
+				failure_code = "no, too many lonely zeros in columns"
+			end
+		end
+
+		return failure_code
 
 	end
 
