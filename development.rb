@@ -72,15 +72,16 @@ def hungarian
 						////////////////////////////////////////////
 						PROBLEM
 						It could be that fixing the problem in one submatrix will eliminate the problem in another submatrix
-						But the way you have things set up right now, your program will continue to make changes for EVERY submatrix
+						But the way you have things set up right now, your program will continue to make changes based on OUTDATED submatrices
 						By the principle of minimum mutilation, you want this method to stop as soon as making a change eliminates all problematic submatrices
+						So, you need to do something like repopulate the problematic submatrices array each time you make a change
 						//////////////////////////////////////////
 
 					end
 				end
-				# In each problematic submarix, identify the minimum value-sans-zero
+
 				problematic_submatrices.each do |submatrix|
-					# get min-sans-zero value for each row in submatrix
+					# In each problematic submarix, identify the minimum value-sans-zero for each row
 					row_id_plus_row_min = []
 					i = 0
 					submatrix.each_with_index do |row, row_id|
@@ -94,6 +95,8 @@ def hungarian
 					end
 					# order row_id_plus_row_min by increasing row.min value
 					row_id_plus_row_min = row_id_plus_row_min.sort { |x,y| x[1] <=> y[1] }
+
+					
 					# Subtract the min-sans-zero from every member-sans-zero of the row in which it occurs
 					# Repeat until min permitted row assignments <= max column assignments possible
 					min_row_assignments_permitted = self.min_row_assignment * submatrix.length
