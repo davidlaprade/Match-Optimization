@@ -52,15 +52,13 @@ def hungarian
 			# do this only as many times as you need to make min permitted row assignments <= max column assignments possible
 
 			1. Find problematic submatrices
-				2. In each such submarix, identify the minimum value-sans-zero
-				3. Subtract the min-sans-zero from every member-sans-zero of the row in which it occurs
-			4. Repeat until min permitted row assignments <= max column assignments possible
-
-			PROBLEM: it could be that running the 
+				2. In each such submarix, identify the minimum value-sans-zero in each row
+				3. Identify the smallest such min-sans-zero
+					4. Subtract the min-sans-zero from every member-sans-zero of the row in which it occurs
+			5. Repeat step 1 until min permitted row assignments <= max column assignments possible
 
 			def make_more_column_assignments_possible
 				# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
-				# if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix, the parent matrix is unsolveable
 				matrix_in_array_format = self.to_a
 				test_cases = matrix_in_array_format.every_combination_of_its_members
 				# find the problematic submatrices
@@ -69,6 +67,15 @@ def hungarian
 					min_row_assignments_permitted = self.min_row_assignment * submatrix_in_array_format.length
 					if min_row_assignments_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
 						problematic_submatrices << submatrix_in_array_format
+
+
+						////////////////////////////////////////////
+						PROBLEM
+						It could be that fixing the problem in one submatrix will eliminate the problem in another submatrix
+						But the way you have things set up right now, your program will continue to make changes for EVERY submatrix
+						By the principle of minimum mutilation, you want this method to stop as soon as making a change eliminates all problematic submatrices
+						//////////////////////////////////////////
+
 					end
 				end
 				# In each problematic submarix, identify the minimum value-sans-zero
