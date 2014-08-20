@@ -61,7 +61,6 @@ def hungarian
 			def make_more_column_assignments_possible
 				# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
 				# if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix, the parent matrix is unsolveable
-				# run this test first, as you want to fix it last (the solveable? method will return the failure code of the last test it fails)
 				matrix_in_array_format = self.to_a
 				test_cases = matrix_in_array_format.every_combination_of_its_members
 				# find the problematic submatrices
@@ -76,32 +75,56 @@ def hungarian
 				problematic_submatrices.each do |submatrix|
 					# get min-sans-zero value for each row in submatrix
 					row_id_plus_row_min = []
+					i = 0
 					submatrix.each_with_index do |row, row_id|
 						row.delete(0)
 						row_id_plus_row_min << [row_id, row.min]
+						# this will also include the second lowest, third lowest, fourth...
+						while !row.empty?
+							row.delete(row.min)
+							row_id_plus_row_min << [row_id, row.min]
+						end
 					end
 					# order row_id_plus_row_min by increasing row.min value
 					row_id_plus_row_min = row_id_plus_row_min.sort { |x,y| x[1] <=> y[1] }
 					# Subtract the min-sans-zero from every member-sans-zero of the row in which it occurs
 					# Repeat until min permitted row assignments <= max column assignments possible
 					min_row_assignments_permitted = self.min_row_assignment * submatrix.length
-					i = min_row_assignments_permitted - submatrix.max_column_assmts_possible(self.max_col_assignment)
+					
+					while min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
 
-						PROBLEM: it could be that the find_by_matching_row_then_subtract method will only add zeros in ONE additional column
-						(It might be that the min-sans-zero value occurs in the same column in each row of the submatrix)  
-						And, if it turns out that the submatrix min_row_assignments is TWO larger than the max_col_assignments possible
-						then using a the variable i to monitor this loop will not be enough
 
-					while i > 0
+						# PROBLEM: it could be that the find_by_matching_row_then_subtract method will only add zeros in ONE additional column
+						# (It might be that the min-sans-zero value occurs in the same column in each row of the submatrix)  
+						# And, if it turns out that the submatrix min_row_assignments is TWO larger than the max_col_assignments possible
+						# then you may need to start zeroing the second lowest value-sans zero in the rows
+
+						# edit the Matrix accordingly
 						row_to_match = submatrix[row_id_plus_row_min[0][0]]
 						value_to_subtract = row_id_plus_row_min[0][1]
 						self.find_matching_row_then_subtract_value(row_to_match, value_to_subtract)
+						
+						# edit the submatrix to check to see if the problem is fixed
+						row_id = row_id_plus_row_min[0][0]
+						submatrix.subtract_value_from_row_in_array(row_id, value_to_subtract)
+
+						# remove the first member of the array, it's been taken care of
 						row_id_plus_row_min.shift
-						i = i + 1
+
 					end
 				end
 				return self
 			end
+
+					# called on Array; subtracts the value given as second parameter from each member of the row specified, unless zero
+					def subtract_value_from_row_in_array(row_id, value_to_subtract)
+						self[row_id].each do |cell|
+							if cell != 0
+								cell = cell - value_to_subtract
+							end
+						end
+						return self
+					end
 
 
 					# called on Matrix; finds all rows matching the row_to_match (data type: array) given as first parameter;
@@ -120,21 +143,6 @@ def hungarian
 					end
 
 
-								self.rows[matrix_row_index].each_with_index do |value, matrix_column_index|
-									if value != 0
-										self.send( :[]=,matrix_row_index, matrix_column_index, value - row_id_plus_row_min[0][1] )
-									end
-								end
-							end
-						end
-
-
-
-
-			4. Repeat until min permitted row assignments <= max column assignments possible
-
-
-		end
 
 	end
 
