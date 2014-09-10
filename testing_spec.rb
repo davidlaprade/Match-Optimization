@@ -229,6 +229,16 @@ describe Matrix, ".make_more_column_assignments_possible" do
 			[1,0,0,1,0,4,1],[4,8,0,9,0,9,4],[4,4,0,5,0,4,9]])
 	end
 
+	# original algorithm does not handle this case correctly; it changes [2,6,1,0,1,8,2] into [1,6,0,0,0,8,1] and then into [0,4,0,0,0,6,0]
+	# to resolve the conflict, when it could have changed [1,0,0,1,0,4,1] into [0,0,0,0,0,3,0] to resolve the conflict;
+	# the former change requires changing values by 2, the latter only by 1; by the principle of minimal mutilation, the second should be
+	# preferred
+	it "works when two distinct problematic submatrices have to be changed" do
+		matrix = Matrix[[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[4,3,0,4,0,7,4],[4,8,0,9,0,9,4],[4,4,0,5,0,4,9]]
+		expect(matrix.make_more_column_assignments_possible).to eq(Matrix[[0,0,0,0,4,5,8],[5,6,0,0,0,0,22],[0,0,2,8,0,0,5],[2,6,1,0,1,8,2],
+			[0,0,0,0,0,3,0],[4,8,0,9,0,9,4],[4,4,0,5,0,4,9]])
+	end
+
 
 end
 
