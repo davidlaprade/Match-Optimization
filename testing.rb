@@ -92,8 +92,6 @@ class Array
 		end
 	end
 
-	# called on submatrix Array; outputs an ordered array of all arrays [p,q] where p is the index of a row in the submatrix
-	# and q is a value in that row; the arrays are ordered by increasing q value
 	def get_ids_and_row_mins
 		return self.collect.with_index {|x,i| x.collect{|y| !y.zero? ? [i,y] : y}-[0] }.flatten(1).uniq.sort_by {|x| [x[1],x[0]]}
 	end
@@ -127,6 +125,19 @@ class Matrix
 
 	def min_col_assignment
 		return 1
+	end
+
+	def subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)
+		row_id_plus_row_min = submatrix.get_ids_and_row_mins
+		min_row_assignments_permitted = self.min_row_assignment * submatrix.length
+		while min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
+			row_id = row_id_plus_row_min[0][0]
+			value_to_subtract = row_id_plus_row_min[0][1]
+			self.find_matching_row_then_subtract_value(submatrix[row_id], value_to_subtract)
+			submatrix.subtract_value_from_row_in_array(row_id, value_to_subtract)
+			row_id_plus_row_min = submatrix.get_ids_and_row_mins
+		end
+		return self
 	end
 
 	def get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible

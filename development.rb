@@ -94,6 +94,7 @@ def hungarian
 			end
 
 
+			# TESTED
 			# called on Matrix object, passed array that is a submatrix of the Matrix
 			# makes changes to the Matrix it's called on, subtracting the min-sans-zero value in the submatrix from every
 			# member in the corresponding row in the Matrix with the exception of zeros
@@ -101,7 +102,7 @@ def hungarian
 			# returns the corrected Matrix object it was called on
 			def subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)
 
-				# identify the minimum value-sans-zero for each row
+				# identify the minimum-sans-zero values for each row
 				row_id_plus_row_min = submatrix.get_ids_and_row_mins
 
 				min_row_assignments_permitted = self.min_row_assignment * submatrix.length
@@ -113,37 +114,26 @@ def hungarian
 					# then you may need to start zeroing the second lowest value-sans zero in the rows
 
 					# edit the Matrix accordingly
-					row_to_match = submatrix[row_id_plus_row_min[0][0]]
+					row_id = row_id_plus_row_min[0][0]
 					value_to_subtract = row_id_plus_row_min[0][1]
-					self.find_matching_row_then_subtract_value(row_to_match, value_to_subtract)
+					self.find_matching_row_then_subtract_value(submatrix[row_id], value_to_subtract)
 					
 					# edit the submatrix to check to see if the problem is fixed
-					row_id = row_id_plus_row_min[0][0]
 					submatrix.subtract_value_from_row_in_array(row_id, value_to_subtract)
 
 					# remove the first member of the array, it's been taken care of; move to second
-					row_id_plus_row_min.shift
+					# the method has to be run again, since when you alter the submatrix you alter the values in its rows
+					row_id_plus_row_min = submatrix.get_ids_and_row_mins
 
 				end
 				return self
 			end
 
-			# TESTINGGGGGGGGGGGGGGGGGG
-			# called on submatrix Array; outputs an ordered array of all arrays [p,q] where p is the index of a row in the submatrix
-			# and q is a value in that row; the arrays are ordered by increasing q value
+			# TESTED
+			# called on submatrix Array; outputs an ordered array of ALL arrays [p,q] where p is the index of a row in the submatrix
+			# and q is a value in that row; the arrays are ordered by increasing q value, then by increasing row index
 			def get_ids_and_row_mins
-				submatrix = Array.new(self)
-				row_id_plus_row_min = []
-				submatrix.each_with_index do |row, row_id|
-					row.delete(0)
-					while !row.empty?
-						row_id_plus_row_min << [row_id, row.min]
-						row.delete(row.min)
-					end
-				end
-				# order row_id_plus_row_min by increasing row.min value
-				row_id_plus_row_min = row_id_plus_row_min.sort { |x,y| x[1] <=> y[1] }
-				return row_id_plus_row_min
+				return self.collect.with_index {|x,i| x.collect{|y| !y.zero? ? [i,y] : y}-[0] }.flatten(1).uniq.sort_by {|x| [x[1],x[0]]}
 			end
 
 			# TESTED
