@@ -123,19 +123,33 @@ class Matrix
 		return 1
 	end
 
+	# called on submatrix Array; outputs an ordered array of all arrays [p,q] where p is the index of a row in the submatrix
+	# and q is a value in that row; the arrays are ordered by increasing q value
+	def get_ids_and_row_mins
 
-	# Call on Matrix object; returns array of submatrices (in array format) for which the number of minimum row assignments permitted
-	# is greater than then number of possible column assignments
+		return self.collect.with_index {|x,i| x.collect{|y| [i,y]}}.flatten(1).uniq.sort { |x,y| x[1] <=> y[1] }
+
+		submatrix = Array.new(self)
+		row_id_plus_row_min = []
+		submatrix.each_with_index do |row, row_id|
+			row.delete(0)
+			while !row.empty?
+				row_id_plus_row_min << [row_id, row.min]
+				row.delete(row.min)
+			end
+		end
+		# order row_id_plus_row_min by increasing row.min value
+		row_id_plus_row_min = row_id_plus_row_min.sort { |x,y| x[1] <=> y[1] }
+		return row_id_plus_row_min
+	end
+
 	def get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
-		# get every possible submatrix
 		matrix_in_array_format = self.to_a
 		test_cases = matrix_in_array_format.every_combination_of_its_members
-		# find the problematic submatrices
 		problematic_submatrices = []
 		min_row_assign = self.min_row_assignment
 		max_col = self.max_col_assignment
 		test_cases.collect {|x| min_row_assign * x.length > x.max_column_assmts_possible(max_col) ? problematic_submatrices << x : x}
-		# return result
 		return problematic_submatrices
 	end
 

@@ -130,7 +130,7 @@ def hungarian
 
 
 			# called on submatrix Array; outputs an ordered array of all arrays [p,q] where p is the index of a row in the submatrix
-			# and q is a min value in that row; the arrays are ordered by increasing q value
+			# and q is a value in that row; the arrays are ordered by increasing q value
 			def get_ids_and_row_mins
 				submatrix = Array.new(self)
 				row_id_plus_row_min = []
