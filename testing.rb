@@ -92,6 +92,12 @@ class Array
 		end
 	end
 
+	# called on submatrix Array; outputs an ordered array of all arrays [p,q] where p is the index of a row in the submatrix
+	# and q is a value in that row; the arrays are ordered by increasing q value
+	def get_ids_and_row_mins
+		return self.collect.with_index {|x,i| x.collect{|y| !y.zero? ? [i,y] : y}-[0] }.flatten(1).uniq.sort_by {|x| [x[1],x[0]]}
+	end
+
 end
  
 
@@ -121,26 +127,6 @@ class Matrix
 
 	def min_col_assignment
 		return 1
-	end
-
-	# called on submatrix Array; outputs an ordered array of all arrays [p,q] where p is the index of a row in the submatrix
-	# and q is a value in that row; the arrays are ordered by increasing q value
-	def get_ids_and_row_mins
-
-		return self.collect.with_index {|x,i| x.collect{|y| [i,y]}}.flatten(1).uniq.sort { |x,y| x[1] <=> y[1] }
-
-		submatrix = Array.new(self)
-		row_id_plus_row_min = []
-		submatrix.each_with_index do |row, row_id|
-			row.delete(0)
-			while !row.empty?
-				row_id_plus_row_min << [row_id, row.min]
-				row.delete(row.min)
-			end
-		end
-		# order row_id_plus_row_min by increasing row.min value
-		row_id_plus_row_min = row_id_plus_row_min.sort { |x,y| x[1] <=> y[1] }
-		return row_id_plus_row_min
 	end
 
 	def get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible

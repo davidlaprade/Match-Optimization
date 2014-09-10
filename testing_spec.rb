@@ -109,6 +109,59 @@ describe Array, ".subtract_value_from_row_in_array" do
 
 end
 
+describe Array, ".get_ids_and_row_mins" do
+	# called on submatrix Array; outputs an ordered array of all arrays [p,q] where p is the index of a row in the submatrix
+	# and q is a value in that row; the arrays are ordered by increasing q value
+	# def get_ids_and_row_mins
+
+	it "outputs elements in order when original array is in order" do
+		submatrix = [[1,2,3],[4,5,6]]
+		expect(submatrix.get_ids_and_row_mins).to eq([[0,1],[0,2],[0,3],[1,4],[1,5],[1,6]])
+	end
+
+	it "outputs elements in order when original array is not in order" do
+		submatrix = [[10,21,3],[4,15,6]]
+		expect(submatrix.get_ids_and_row_mins).to eq([[0,3],[1,4],[1,6],[0,10],[1,15],[0,21]])
+	end
+
+	it "does not include elements with value of zero, when there is only one zero" do
+		submatrix = [[10,0,3],[4,15,6]]
+		expect(submatrix.get_ids_and_row_mins).to eq([[0,3],[1,4],[1,6],[0,10],[1,15]])
+	end
+
+	it "does not include elements with value of zero, when there are multiple zeros" do
+		submatrix = [[10,21,0],[0,15,6]]
+		expect(submatrix.get_ids_and_row_mins).to eq([[1,6],[0,10],[1,15],[0,21]])
+	end
+
+	it "only outputs unique elements per row, multiple rows do not share value" do
+		submatrix = [[1,2,5],[4,4,6]]
+		expect(submatrix.get_ids_and_row_mins).to eq([[0,1],[0,2],[1,4],[0,5],[1,6]])
+	end
+
+	it "only outputs unique elements per row, multiple rows share a value" do
+		submatrix = [[1,2,4],[4,4,6]]
+		expect(submatrix.get_ids_and_row_mins).to eq([[0,1],[0,2],[0,4],[1,4],[1,6]])
+	end
+
+	it "works on a big array" do
+		submatrix = [[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[0,3,0,4,0,7,0],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]
+		expect(submatrix.get_ids_and_row_mins).to eq([[0, 1], [1, 1], [2, 1], [3, 1], [3, 2], [2, 3], [4, 3], [4, 4], [6, 4], [0, 5], [6, 5], [0, 6], [1, 6], [2, 6], 
+		[3, 6], [1, 7], [4, 7], [3, 8], [5, 8], [0, 9], [2, 9], [5, 9], [6, 9], [1, 23]])
+	end
+
+	it "works when there is only one row" do
+		submatrix = [[23,5,0,7,8,9]]
+		expect(submatrix.get_ids_and_row_mins).to eq([[0,5],[0,7],[0,8],[0,9],[0,23]])
+	end
+
+	it "works when there is only one column" do
+		submatrix = [[23],[0],[4],[0],[15]]
+		expect(submatrix.get_ids_and_row_mins).to eq([[2,4],[4,15],[0,23]])
+	end
+
+end
+
 describe Matrix, ".get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible" do
 	# Call on Matrix object; returns array of submatrices (in array format) for which the number of minimum row assignments permitted
 	# is greater than then number of possible column assignments
