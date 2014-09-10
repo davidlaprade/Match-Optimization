@@ -56,7 +56,7 @@ describe Array, "every_combination_of_its_members" do
 end
 
 describe Array, "array_columns" do
-	it "returns [[9,6,3],[8,6,2],[7,4,1] when called on [[9,8,7],[6,5,4],[3,2,1]]" do
+	it "returns [[9,6,3],[8,6,2],[7,4,1]] when called on [[9,8,7],[6,5,4],[3,2,1]]" do
 		array = [[9,8,7],[6,5,4],[3,2,1]]
 		expect(array.array_columns).to eq([[9,6,3],[8,5,2],[7,4,1]])
 	end
@@ -67,7 +67,101 @@ describe Array, "array_columns" do
 	end
 end
 
-describe Matrix, "add_value_if_zero_else_subtract_value_in_columns" do
+describe Array, ".subtract_value_from_row_in_array" do
+	# def subtract_value_from_row_in_array(row_id, value_to_subtract)
+	# called on Array; subtracts the value given as second parameter from each member of the row specified, unless zero
+
+	# raises error when passed a non-existent row_id that is too high
+	it "returns RuntimeError when called on [[9,6,3],[8,6,2],[7,4,1]] and passed 4, 23" do
+		array = [[9,6,3],[8,6,2],[7,4,1]]
+		expect {array.subtract_value_from_row_in_array(4,23)}.to raise_error(RuntimeError, 'Row does not exist in array')
+	end
+
+	# raises error when passed a non-existent row_id that is too low
+	it "returns RuntimeError when called on [[9,6,3],[8,6,2],[7,4,1]] and passed -4, 23" do
+		array = [[9,6,3],[8,6,2],[7,4,1]]
+		expect {array.subtract_value_from_row_in_array(-4,23)}.to raise_error(RuntimeError, 'Row does not exist in array')
+	end
+
+	# changes nothing when passed existing row ID and value_to_subtract of zero
+	it "returns [[19,16,13],[8,6,2],[7,4,1]] when called on [[19,16,13],[8,6,2],[7,4,1]] and passed 1, 0" do
+		array = [[19,16,13],[8,6,2],[7,4,1]]
+		expect(array.subtract_value_from_row_in_array(1,0)).to eq([[19,16,13],[8,6,2],[7,4,1]])
+	end
+
+	# changes nothing when row only includes zeros
+	it "returns [[19,16,13],[0,0,0],[7,4,1]] when called on [[19,16,13],[0,0,0],[7,4,1]] and passed 1, 5" do
+		array = [[19,16,13],[0,0,0],[7,4,1]]
+		expect(array.subtract_value_from_row_in_array(1,5)).to eq([[19,16,13],[0,0,0],[7,4,1]])
+	end
+
+	# changes everything when row includes no zeros
+	it "returns [[6,3,0],[8,6,2],[7,4,1]] when called on [[19,16,13],[8,6,2],[7,4,1]] and passed 0, 13" do
+		array = [[19,16,13],[8,6,2],[7,4,1]]
+		expect(array.subtract_value_from_row_in_array(0,13)).to eq([[6,3,0],[8,6,2],[7,4,1]])
+	end
+
+	# raises error when result of subtracting is negative
+	it "returns RuntimeError when called on [[9,6,3],[8,6,2],[7,4,1]] and passed 1, 3" do
+		array = [[9,6,3],[8,6,2],[7,4,1]]
+		expect {array.subtract_value_from_row_in_array(1,3)}.to raise_error(RuntimeError, 'Would result in negative value')
+	end
+
+end
+
+
+	def subtract_value_from_row_in_array(row_id, value_to_subtract)
+		self[row_id].map! {|x| !x.zero? ? x-value_to_subtract : x }
+		return self
+	end
+
+
+describe Matrix, ".find_matching_row_then_subtract_value" do
+
+	# called on Matrix; finds all rows matching the row_to_match (data type: array) given as first parameter;
+	# subtracts input value from each member of each row matching the row_array, skips over zeros
+	# returns corrected Matrix object
+	# PARAMETERS (row_to_match, value_to_subtract)
+
+	# it should work when passed a Matrix with just one row
+	it "returns Matrix[[0,0,0,2]] when called on Matrix[[2,2,0,4]] and passed [2,2,0,4] and 2" do
+		matrix = Matrix[[2,2,0,4]]
+		expect(matrix.find_matching_row_then_subtract_value([2,2,0,4],2)).to eq(Matrix[[0,0,0,2]])
+	end
+
+	# it should work when passed the same row in a larger Matrix
+	it "returns Matrix[[0,0,0,4],[7,8,9,2],[3,3,1,9]] when called on Matrix[[2,2,0,4],[7,8,9,2],[3,3,1,9]] and passed [2,2,0,4] and 2" do
+		matrix = Matrix[[2,2,0,4],[7,8,9,2],[3,3,1,9]]
+		expect(matrix.find_matching_row_then_subtract_value([2,2,0,4],2)).to eq(Matrix[[0,0,0,2],[7,8,9,2],[3,3,1,9]])
+	end
+
+	# it should work when the row isn't the first row in a larger Matrix
+	it "returns Matrix[[7,8,9,2],[0,0,0,4],[3,3,1,9]] when called on Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]] and passed [2,2,0,4] and 2" do
+		matrix = Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]]
+		expect(matrix.find_matching_row_then_subtract_value([2,2,0,4],2)).to eq(Matrix[[7,8,9,2],[0,0,0,2],[3,3,1,9]])
+	end
+
+	# it shouldn't change anything when passed a row it doesn't contain, but is passed a row CLOSE to a row it contains
+	it "returns Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]] when called on Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]] and passed [2,0,4] and 2" do
+		matrix = Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]]
+		expect(matrix.find_matching_row_then_subtract_value([2,0,4],2)).to eq(Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]])
+	end
+
+	# it shouldn't change anything when passed a row it doesn't contain, but is passed a row CLOSE to a row it contains
+	it "returns Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]] when called on Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]] and passed [2,2,0,4,1] and 2" do
+		matrix = Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]]
+		expect(matrix.find_matching_row_then_subtract_value([2,0,4],2)).to eq(Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]])
+	end
+
+	# it shouldn't change anything when passed a value of zero, along with a row it does contain
+	it "returns Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]] when called on Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]] and passed [2,2,0,4] and 0" do
+		matrix = Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]]
+		expect(matrix.find_matching_row_then_subtract_value([2,0,4],2)).to eq(Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]])
+	end
+
+end
+
+describe Matrix, ".add_value_if_zero_else_subtract_value_in_columns" do
 
 	# called on Matrix object, takes column index and value as inputs
 	# outputs Matrix in which the value provided has been added to each zero in the column and subtracted otherwise
@@ -87,11 +181,19 @@ describe Matrix, "add_value_if_zero_else_subtract_value_in_columns" do
 		expect(matrix.add_value_if_zero_else_subtract_value_in_columns(5,9)).to eq(Matrix[[0,2,9,5,6,-1],[0,4,6,8,1,9],[0,2,4,7,8,9],[0,9,8,4,6,-6],[0,6,4,9,2,-5]])
 	end
 
-	# it should throw an error if passed a negative value
-
 	# it should add the value even if it is very large
+	it "returns Matrix[[1,4,1000006],[8,11,1000013]] when called on 
+		Matrix[[1,4,6],[8,11,13]] and passed 1, 6" do
+		matrix = Matrix[[1,4,0],[8,11,0]]
+		expect(matrix.add_value_if_zero_else_subtract_value_in_columns(2,1000000)).to eq(Matrix[[1,4,1000000],[8,11,1000000]])
+	end
 
 	# it should subtract the value to each member of a column that contains no zeros
+	it "returns Matrix[[0,3,9,5,6,8],[0,3,6,8,1,0],[0,3,4,7,8,0],[0,3,8,4,6,3],[0,0,4,9,2,4],[2,1,7,3,6,3]] when called on 
+		Matrix[[0,9,9,5,6,8],[0,9,6,8,1,0],[0,9,4,7,8,0],[0,9,8,4,6,3],[0,6,4,9,2,4],[2,7,7,3,6,3]] and passed 1, 6" do
+		matrix = Matrix[[0,9,9,5,6,8],[0,9,6,8,1,0],[0,9,4,7,8,0],[0,9,8,4,6,3],[0,6,4,9,2,4],[2,7,7,3,6,3]]
+		expect(matrix.add_value_if_zero_else_subtract_value_in_columns(1,6)).to eq(Matrix[[0,3,9,5,6,8],[0,3,6,8,1,0],[0,3,4,7,8,0],[0,3,8,4,6,3],[0,0,4,9,2,4],[2,1,7,3,6,3]])
+	end
 
 	# it should leave the column unchanged if it is passed a value of zero
 	it "returns Matrix[[0,2,9,5,6,8],[0,4,6,8,1,0],[0,2,4,7,8,0],[0,9,8,4,6,3],[0,6,4,9,2,4]] when called on 
@@ -106,9 +208,11 @@ describe Matrix, "add_value_if_zero_else_subtract_value_in_columns" do
 	# it should throw an error if passed a non-integer
 
 	# it should throw an error if passed a non-number
+
+	# it should throw an error if passed a negative value
 end
 
-describe Matrix, "get_problematic_columns_per_problematic_row" do
+describe Matrix, ".get_problematic_columns_per_problematic_row" do
 		# called on Matrix object; outputs array of arrays [n,m,o] where n is the index of a row with too many lonely zeros
 		# m is the number of lonely zero's in row n
 		# and o is an ORDERED array that contains arrays [p,q] where p is a column index of a lonely zero in row n, 
@@ -134,7 +238,7 @@ describe Matrix, "get_problematic_columns_per_problematic_row" do
 
 end
 
-describe Matrix, "zero_fewest_problematic_columns" do
+describe Matrix, ".zero_fewest_problematic_columns" do
 	# called on Matrix object; takes as input an array of arrays [n,m,o] where n is a row index, m is the number of lonely zeros in that row
 	# and o is an ordered array of arrays [p,q] where p is the column index of a lonely zero in row n, and q is the min value in that column other than zero
 	# see method "get_problematic_columns_per_problematic_row" for a convenient way to get a parameter like this
@@ -162,7 +266,7 @@ describe Matrix, "zero_fewest_problematic_columns" do
 
 end
 
-describe Matrix, "fix_too_many_lonely_zeros_in_rows" do
+describe Matrix, ".fix_too_many_lonely_zeros_in_rows" do
 	# corrects minimum number of columns, and only those with the lowest min-sans-zero values
 	it "returns Matrix[[3,7,0,0,6],[5,0,1,0,0],[6,7,6,0,2],[0,7,6,6,1],[3,7,7,0,2]] when called on
 			    Matrix[[3,7,1,0,7],[5,0,0,0,1],[6,7,7,0,3],[0,7,7,6,0],[3,7,8,0,3]]" do
@@ -174,7 +278,7 @@ describe Matrix, "fix_too_many_lonely_zeros_in_rows" do
 	# if this test passes, I'm satisfied this is going to work...
 end
 
-describe Matrix, "zero_fewest_problematic_rows" do
+describe Matrix, ".zero_fewest_problematic_rows" do
 	# called on matrix object, for each row specified in params, adds min row-value-sans-zero to each zero in the row
 	# subtracts min-row-value-sans-zero from each non-zero in the row; edits as few rows as necessary to remove the problem
 	# returns editted matrix object it was called on
@@ -241,7 +345,7 @@ describe Matrix, "zero_fewest_problematic_rows" do
 end
 
 
-describe Matrix, "fix_too_many_lonely_zeros_in_columns" do
+describe Matrix, ".fix_too_many_lonely_zeros_in_columns" do
 		# isolate the columns that are causing the problem, then the rows in those columns that contain their lonely zeros
 		# PROBLEM: it could be that there are multiple columns with too many lonely zeros, e.g. one col might have 4, another 2
 			# and if the max col assignment were 1, you would want to add_value_if_zero to 3 of the 4 rows in the first group
@@ -293,7 +397,7 @@ describe Matrix, "fix_too_many_lonely_zeros_in_columns" do
 
 end
 
-describe Matrix, "get_problematic_rows_per_problematic_column" do
+describe Matrix, ".get_problematic_rows_per_problematic_column" do
 	# outputs array of arrays [n,m,o] where n is the index of a column with too many lonely zeros
 	# m is the number of lonely zero's in column n
 	# and o is an ORDERED array that contains arrays [p,q] where p is a row index of a lonely zero in column n, 
@@ -340,7 +444,7 @@ describe Matrix, "get_problematic_rows_per_problematic_column" do
 
 end
 
-describe Matrix, "add_value_if_zero_else_subtract_value_in_rows" do
+describe Matrix, ".add_value_if_zero_else_subtract_value_in_rows" do
 	it "returns Matrix[[3,3,0,1,2,6]] when run on Matrix[[0,0,3,4,5,9]] and passed 0 and 3" do
 		matrix = Matrix[[0,0,3,4,5,9]]
 		expect(matrix.add_value_if_zero_else_subtract_value_in_rows(0, 3)).to eq(Matrix[[3,3,0,1,2,6]])
@@ -372,7 +476,7 @@ describe Matrix, "add_value_if_zero_else_subtract_value_in_rows" do
 	end
 end
 
-describe Matrix, "rows" do
+describe Matrix, ".rows" do
 	it "returns an array containing Vectors of each row in the matrix it is called on" do
 		matrix = Matrix[[1,2,3],[9,7,6]]
 		expect(matrix.rows).to eq([Vector[1,2,3],Vector[9,7,6]])
@@ -384,7 +488,7 @@ describe Matrix, "rows" do
 	end
 end
 
-describe Matrix, "solveable?" do
+describe Matrix, ".solveable?" do
 	it "returns failure code when run on Matrix[[1,2],[1,2]]" do
 		matrix = Matrix[[1,2],[1,2]]
 		expect(matrix.solveable?).to eq("no, min permitted row assignments > max column assignments possible")

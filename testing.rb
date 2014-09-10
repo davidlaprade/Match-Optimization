@@ -1,6 +1,5 @@
 require 'matrix'
 
-
 # new challenge for solveablility: the following matrix does not have too many lonely zeros in any column or row
 	# m = Matrix[[0,3,0],[0,5,0],[0,1,0]]
 # m = Matrix[[1,1,7,0,4,5,6,3],[7,4,2,0,6,3,7,1],[6,1,7,0,4,7,1,2]]
@@ -82,6 +81,14 @@ class Array
 		return columns
 	end
 
+	# called on Array; subtracts the value given as second parameter from each member of the row specified, unless zero
+	def subtract_value_from_row_in_array(row_id, value_to_subtract)
+		raise 'Row does not exist in array' if row_id >= self.length || row_id < 0
+		raise 'Would result in negative value' if self[row_id].dup.map {|x| x.zero? ? value_to_subtract : x}.min < value_to_subtract
+		self[row_id].map! {|x| !x.zero? ? x-value_to_subtract : x }
+		return self
+	end
+
 end
  
 
@@ -111,6 +118,19 @@ class Matrix
 
 	def min_col_assignment
 		return 1
+	end
+
+	def find_matching_row_then_subtract_value(row_to_match, value_to_subtract)
+		self.to_a.each_with_index do |matrix_row, matrix_row_index|
+			if matrix_row == row_to_match
+				matrix_row.each_with_index do |cell_value, matrix_column_index|
+					if cell_value != 0
+						self.send( :[]=, matrix_row_index, matrix_column_index, cell_value - value_to_subtract )
+					end
+				end
+			end
+		end
+		return self
 	end
 
 	def add_value_if_zero_else_subtract_value_in_columns(col_index, value)
@@ -401,8 +421,7 @@ class Matrix
 	end
 
 	def rows
-		rows = self.to_a
-		return rows
+		return self.row_vectors
 	end
 
 	def columns

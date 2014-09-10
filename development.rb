@@ -50,7 +50,9 @@ def hungarian
 			# to fix: if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix
 			# find the lowest value-sans-zero in the submatrix, then subtract that value from every member-sans-zero of the row in which it occurs
 			# do this only as many times as you need to make min permitted row assignments <= max column assignments possible
-
+			WORKING_MATRIX.make_more_column_assignments_possible
+		end
+	end
 
 
 			# called on Matrix object; returns Matrix corrected such that min permitted row assignments <= max column assignments possible
@@ -75,7 +77,6 @@ def hungarian
 				# Then rerun the fix method
 				# Repeat until problematic submatrices array is empty on repopulation
 				# ////////////////////////////////////////////
-
 				problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
 				# repeat the following until there are no problematic submatrices
 				while !problematic_submatrices.empty?
@@ -86,7 +87,6 @@ def hungarian
 						# Repeat until min permitted row assignments <= max column assignments possible
 						self.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)
 					end
-
 					# run get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible again to see if the changes made fixed the issues
 					problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible	
 				end
@@ -94,102 +94,100 @@ def hungarian
 			end
 
 
-					# called on Matrix object, passed array that is a submatrix of the Matrix
-					# makes changes to the Matrix it's called on, subtracting the min-sans-zero value in the submatrix from every
-					# member in the corresponding row in the Matrix with the exception of zeros
-					# repeats the process until min_row_permitted <= max_col_assignments_possible
-					# returns the corrected Matrix object it was called on
-					def subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)
+			# called on Matrix object, passed array that is a submatrix of the Matrix
+			# makes changes to the Matrix it's called on, subtracting the min-sans-zero value in the submatrix from every
+			# member in the corresponding row in the Matrix with the exception of zeros
+			# repeats the process until min_row_permitted <= max_col_assignments_possible
+			# returns the corrected Matrix object it was called on
+			def subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)
 
-						# identify the minimum value-sans-zero for each row
-						row_id_plus_row_min = submatrix.get_ids_and_row_mins
+				# identify the minimum value-sans-zero for each row
+				row_id_plus_row_min = submatrix.get_ids_and_row_mins
 
-						min_row_assignments_permitted = self.min_row_assignment * submatrix.length
-						while min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
+				min_row_assignments_permitted = self.min_row_assignment * submatrix.length
+				while min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
 
-							# PROBLEM: it could be that the find_by_matching_row_then_subtract method will only add zeros in ONE additional column
-							# (It might be that the min-sans-zero value occurs in the same column in each row of the submatrix)  
-							# And, if it turns out that the submatrix min_row_assignments is TWO larger than the max_col_assignments possible
-							# then you may need to start zeroing the second lowest value-sans zero in the rows
+					# PROBLEM: it could be that the find_by_matching_row_then_subtract method will only add zeros in ONE additional column
+					# (It might be that the min-sans-zero value occurs in the same column in each row of the submatrix)  
+					# And, if it turns out that the submatrix min_row_assignments is TWO larger than the max_col_assignments possible
+					# then you may need to start zeroing the second lowest value-sans zero in the rows
 
-							# edit the Matrix accordingly
-							row_to_match = submatrix[row_id_plus_row_min[0][0]]
-							value_to_subtract = row_id_plus_row_min[0][1]
-							self.find_matching_row_then_subtract_value(row_to_match, value_to_subtract)
-							
-							# edit the submatrix to check to see if the problem is fixed
-							row_id = row_id_plus_row_min[0][0]
-							submatrix.subtract_value_from_row_in_array(row_id, value_to_subtract)
+					# edit the Matrix accordingly
+					row_to_match = submatrix[row_id_plus_row_min[0][0]]
+					value_to_subtract = row_id_plus_row_min[0][1]
+					self.find_matching_row_then_subtract_value(row_to_match, value_to_subtract)
+					
+					# edit the submatrix to check to see if the problem is fixed
+					row_id = row_id_plus_row_min[0][0]
+					submatrix.subtract_value_from_row_in_array(row_id, value_to_subtract)
 
-							# remove the first member of the array, it's been taken care of; move to second
-							row_id_plus_row_min.shift
+					# remove the first member of the array, it's been taken care of; move to second
+					row_id_plus_row_min.shift
 
-						end
-						return self
+				end
+				return self
+			end
+
+
+			# called on submatrix Array; outputs an ordered array of all arrays [p,q] where p is the index of a row in the submatrix
+			# and q is a min value in that row; the arrays are ordered by increasing q value
+			def get_ids_and_row_mins
+				submatrix = Array.new(self)
+				row_id_plus_row_min = []
+				submatrix.each_with_index do |row, row_id|
+					row.delete(0)
+					while !row.empty?
+						row_id_plus_row_min << [row_id, row.min]
+						row.delete(row.min)
 					end
+				end
+				# order row_id_plus_row_min by increasing row.min value
+				row_id_plus_row_min = row_id_plus_row_min.sort { |x,y| x[1] <=> y[1] }
+				return row_id_plus_row_min
+			end
 
-					# called on submatrix array; outputs an ordered array of all arrays [p,q] where p is the index of a row in the submatrix
-					# and q is a value in that row; the arrays are ordered by increasing q value
-					def get_ids_and_row_mins
-						submatrix = Array.new(self)
-						row_id_plus_row_min = []
-						submatrix.each_with_index do |row, row_id|
-							row.delete(0)
-							while !row.empty?
-								row_id_plus_row_min << [row_id, row.min]
-								row.delete(row.min)
+			# Call on Matrix object; returns array of submatrices (in array format) for which the number of minimum row assignments permitted
+			# is greater than then number of possible column assignments
+			def get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
+				matrix_in_array_format = self.to_a
+				test_cases = matrix_in_array_format.every_combination_of_its_members
+				# find the problematic submatrices
+				problematic_submatrices = []
+				test_cases.each do |submatrix_in_array_format|
+					min_row_assignments_permitted = self.min_row_assignment * submatrix_in_array_format.length
+					if min_row_assignments_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
+						problematic_submatrices << submatrix_in_array_format
+					end
+				end
+				return problematic_submatrices
+			end
+
+			# called on Array; subtracts the value given as second parameter from each member of the row specified, unless zero
+			def subtract_value_from_row_in_array(row_id, value_to_subtract)
+				raise 'Row does not exist in array' if row_id >= self.length || row_id < 0
+				raise 'Would result in negative value' if self[row_id].dup.map {|x| x.zero? ? value_to_subtract : x}.min < value_to_subtract
+				self[row_id].map! {|x| !x.zero? ? x-value_to_subtract : x }
+				return self
+			end
+
+
+			# called on Matrix; finds all rows matching the row_to_match (data type: array) given as first parameter;
+			# subtracts input value from each member of each row matching the row_array, skips over zeros
+			# returns corrected Matrix object
+			def find_matching_row_then_subtract_value(row_to_match, value_to_subtract)
+				self.to_a.each_with_index do |matrix_row, matrix_row_index|
+					if matrix_row == row_to_match
+						matrix_row.each_with_index do |cell_value, matrix_column_index|
+							if cell_value != 0
+								self.send( :[]=, matrix_row_index, matrix_column_index, cell_value - value_to_subtract )
 							end
 						end
-						# order row_id_plus_row_min by increasing row.min value
-						row_id_plus_row_min = row_id_plus_row_min.sort { |x,y| x[1] <=> y[1] }
-						return row_id_plus_row_min
 					end
-
-					# Call on Matrix object, returns array of submatrices (in array format) for which the number of minimum row assignments permitted
-					# is greater than then number of possible column assignments
-					def get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
-						matrix_in_array_format = self.to_a
-						test_cases = matrix_in_array_format.every_combination_of_its_members
-						# find the problematic submatrices
-						problematic_submatrices = []
-						test_cases.each do |submatrix_in_array_format|
-							min_row_assignments_permitted = self.min_row_assignment * submatrix_in_array_format.length
-							if min_row_assignments_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
-								problematic_submatrices << submatrix_in_array_format
-							end
-						end
-						return problematic_submatrices
-					end
-
-					# called on Array; subtracts the value given as second parameter from each member of the row specified, unless zero
-					def subtract_value_from_row_in_array(row_id, value_to_subtract)
-						self[row_id].each do |cell|
-							if cell != 0
-								cell = cell - value_to_subtract
-							end
-						end
-						return self
-					end
+				end
+				return self
+			end
 
 
-					# called on Matrix; finds all rows matching the row_to_match (data type: array) given as first parameter;
-					# subtracts input value from each member of each row matching the row_array, skips over zeros
-					def find_matching_row_then_subtract_value(row_to_match, value_to_subtract)
-						self.rows.each_with_index do |matrix_row, matrix_row_index|
-							if matrix_row == row_to_match
-								matrix_row.each_with_index do |cell_value, matrix_column_index|
-									if cell_value != 0
-										self.send( :[]=, matrix_row_index, matrix_column_index, cell_value - value_to_subtract )
-									end
-								end
-							end
-						end
-						return self
-					end
-
-
-
-	end
 
 	# fourth step in algorithm
 		# make the assignments!
@@ -387,8 +385,7 @@ class Matrix
 
 	# returns an array of the rows (data type: vectors) in the Matrix it's called on
 	def rows
-		rows = self.to_a
-		return rows
+		return self.row_vectors
 	end
 
 	# returns an array of the columns (data type: vectors) in the Matrix it's called on
