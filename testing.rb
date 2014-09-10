@@ -31,17 +31,9 @@ class Array
 
 	# returns an array containing every combination of members of the array it was called on
 	def every_combination_of_its_members
-		combination_class = []
-		i = 2
-		while i <= self.length do
-			new_members = self.combination(i).to_a
-			new_members.each do |member|
-				combination_class << member
-			end
-			i = i + 1
-		end
-		return combination_class
+		return self.each_with_index.map {|x,i| self.combination(i+1).to_a}.flatten(1).drop(self.length).uniq
 	end
+
 
 	# outputs the maximum number of assignments that could be made in columns given the current distribution of values 
 	def max_column_assmts_possible(max_col_assignment)
@@ -87,6 +79,22 @@ class Array
 		raise 'Would result in negative value' if self[row_id].dup.map {|x| x.zero? ? value_to_subtract : x}.min < value_to_subtract
 		self[row_id].map! {|x| !x.zero? ? x-value_to_subtract : x }
 		return self
+	end
+
+	# Call on Matrix object; returns array of submatrices (in array format) for which the number of minimum row assignments permitted
+	# is greater than then number of possible column assignments
+	def get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
+		matrix_in_array_format = self.to_a
+		test_cases = matrix_in_array_format.every_combination_of_its_members
+		# find the problematic submatrices
+		problematic_submatrices = []
+		test_cases.each do |submatrix_in_array_format|
+			min_row_assignments_permitted = self.min_row_assignment * submatrix_in_array_format.length
+			if min_row_assignments_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
+				problematic_submatrices << submatrix_in_array_format
+			end
+		end
+		return problematic_submatrices
 	end
 
 end
