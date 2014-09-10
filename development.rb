@@ -79,6 +79,11 @@ def hungarian
 				# Then rerun the fix method
 				# Repeat until problematic submatrices array is empty on repopulation
 				# ////////////////////////////////////////////
+				# NEW PROBLEM
+				# What I really should be doing to fix this issue is finding the minimum value among COLUMNS that do not contain zeros in 
+				# the problematic submatrices; after all, only changes in those columns will fix the issue
+				# ////////////////////////////////////////////
+
 				problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
 				# repeat the following until there are no problematic submatrices
 				while !problematic_submatrices.empty?
