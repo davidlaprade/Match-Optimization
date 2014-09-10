@@ -195,99 +195,11 @@ def hungarian
 
 
 
-
-	# returns an array of arrays [n,m] where n is the row index and m is the number of lonely zeros in the row
-	def lonely_zeros_per_row
-	# returns an array of arrays [n,m] where n is the column index and m is the number of lonely zeros in the column
-	def lonely_zeros_per_column
-	# returns an array of coordinates [n,m] of every lonely zero in the Matrix it is called on
-	# a lonely zero is one which occurs as the sole zero in EITHER its row or its column
-	def lonely_zeros
-	# returns an array containing coordinates of each zero that lies in a row with the minimum number of assinable zeros
-	def lonely_zeros_in_rows
-	# returns an array containing coordinates of each zero that lies in a column with the minimum number of assinable zeros
-	def lonely_zeros_in_columns
-	# returns false if the matrix has no solution in its current state, nil if the matrix passes the test
-	def solveable?
-	# returns an array of indices of rows with zeros in the specified column index
-	def rows_with_zeros_in_column(column_index)
-	# outputs array of column indexes such that each column contains more zeros than could be assigned in that column
-	def columns_over_max
-	# counts number of cells with the given value in a row or column, must call on Vector
-	def count_with_value(value)
-	# subtracts the lowest value in each row from each member of that row, must call on Matrix
-	def zero_each_row
-	# subtracts the lowest value in each column from each member of that column, must call on Matrix
-	def zero_each_column
-	# returns an array of the rows in the Matrix it's called on
-	def rows
-	# returns an array of the columns in the Matrix it's called on
-	def columns
-	# called on matrix object, for each row specified in params, adds min row-value-sans-zero to each zero in the row
-	# subtracts min-row-value-sans-zero from each non-zero in the row; edits as few rows as necessary to remove the problem
-	# returns the edited matrix object it was called on
-	def zero_fewest_problematic_rows(problematic_rows)
-	# outputs array of arrays [n,m,o] where n is the index of a column with too many lonely zeros
-	# m is the number of lonely zero's in column n
-	# and o is an ORDERED array that contains arrays [p,q] where p is a row index of a lonely zero in column n, 
-	# and q is the min value in that row other than zero, ordered by ascending q value
-	def get_problematic_rows_per_problematic_column
-	# called on Matrix object, takes row index and value as inputs
-	# outputs Matrix in which the value provided has been added to each zero and subtracted otherwise
-	def add_value_if_zero_else_subtract_value_in_rows(row_index, value)
-	# called on Matrix object, takes column index and value as inputs
-	# outputs Matrix in which the value provided has been added to each zero in the column and subtracted otherwise
-	def add_value_if_zero_else_subtract_value_in_columns(col_index, value)
-	# called on Matrix object; outputs array of arrays [n,m,o] where n is the index of a row with too many lonely zeros
-	# m is the number of lonely zero's in row n
-	# and o is an ORDERED array that contains arrays [p,q] where p is a column index of a lonely zero in row n, 
-	# and q is the min value in that column other than zero, ordered by ascending q value
-	def get_problematic_columns_per_problematic_row
-	# called on Matrix object; takes as input an array of arrays [n,m,o] where n is a row index, m is the number of lonely zeros in that row
-	# and o is an ordered array of arrays [p,q] where p is the column index of a lonely zero in row n, and q is the min value in that column other than zero
-	# see method "get_problematic_columns_per_problematic_row" for a convenient way to get a parameter like this
-	# for each member of the array passed to this method as a parameter, the method adds min row-value-sans-zero to each zero in the row
-	# subtracts min-row-value-sans-zero from each non-zero in the row; edits as few rows as necessary to remove the problem
-	# returns the edited matrix object it was called on
-	def zero_fewest_problematic_columns(problematic_columns)
-	# self explanatory
-	def fix_too_many_lonely_zeros_in_rows
-
-
-
-# JUST USE MATRICES! Tells you how to access matrix values, AND change them: http://www.fmendez.com/blog/2013/04/09/working-with-the-ruby-matrix-class/
-# 	matrix.clone = creates a new matrix identical to the old one, not just a new name
-# 	matrix.row_count = number of rows
-# 	matrix.column_count = number of columns
-# 	matrix.row(j) = outputs j-th row in matrix
-# 	matrix.row(j)[k] = outputs the k-th element in the j-th row, i.e. row j column k
-# 	matrix[j,k] = outputs element in the j-th row, in the kth column
-# 	matrix.column(k) = outputs k-th column
-# 	matrix.to_a = converts matrix into an array of arrays
-# 	matrix.send( :[]=,j,k,m) = saves value m to the cell in row j, column k
-# 	matrix.row(k).min = returns the minimum value in the kth row; use the same method on columns
-# 	matrix.row(k).max = returns the max value in the kth row; use the same method on columns
-# 	m.row(k).each_with_index do |value, index| = iterates through each index/value pair in row k, index must be listed second
-
-
-
 end
 
 
 #--------------------- HELPER METHODS-----------------------------------------------------
 class Array
-	# returns an array containing just the rows of the target array that are specified in the rows argument
-	# rows argument is an array of row indexs
-	# def create_new_array_using_rows(rows)
-	# 	new_array = []
-	# 	self.each_with_index do |row, index|
-	# 		if rows.include?(index) == true
-	# 			new_array << row
-	# 		end
-	# 	end
-	# 	return new_array
-	# end
-
 	# returns an array containing every combination of members of the array it was called on
 	def every_combination_of_its_members
 		return self.each_with_index.map {|x,i| self.combination(i+1).to_a}.flatten(1).drop(self.length).uniq
