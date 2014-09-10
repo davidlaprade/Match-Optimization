@@ -163,7 +163,7 @@ describe Array, ".get_ids_and_row_mins" do
 end
 
 
-describe Matrix, 'subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)' do
+describe Matrix, '.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)' do
 	# called on Matrix object, passed array that is a submatrix of the Matrix
 	# makes changes to the Matrix it's called on, subtracting the min-sans-zero value in the submatrix from every
 	# member in the corresponding row in the Matrix with the exception of zeros
@@ -173,14 +173,16 @@ describe Matrix, 'subtract_min_sans_zero_from_rows_to_add_new_column_assignments
 	it "fixes the matrix minimally when submatrix passed in is only problematic submatrix" do
 		matrix = Matrix[[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[0,3,0,4,0,7,0],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]
 		argument = [[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2]]
-		expect(matrix.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(argument)).to eq(Matrix[[0,0,0,0,4,5,8],[6,7,1,0,1,0,23],
+		matrix.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(argument)
+		expect(matrix).to eq(Matrix[[0,0,0,0,4,5,8],[6,7,1,0,1,0,23],
 			[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[0,3,0,4,0,7,0],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]])
 	end
 
 	it "fixes the matrix minimally when submatrix passed in is only one of several problematic submatrices" do
 		matrix = Matrix[[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[8,3,9,0,2,7,1],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]
 		argument = [[2,6,1,0,1,8,2],[8,3,9,0,2,7,1]]
-		expect(matrix.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(argument)).to eq(Matrix[[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],
+		matrix.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(argument)
+		expect(matrix).to eq(Matrix[[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],
 			[1,0,3,9,1,0,6],[1,5,0,0,0,7,1],[8,3,9,0,2,7,1],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]])
 	end
 
@@ -190,12 +192,45 @@ describe Matrix, 'subtract_min_sans_zero_from_rows_to_add_new_column_assignments
 	it "fixes the matrix minimally when more than one value has to be changed" do
 		matrix = Matrix[[1,9,7,0,5,6,9],[2,7,7,0,7,9,23],[7,3,3,0,4,9,6],[2,6,7,0,7,8,4],[8,3,9,0,8,7,4],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]
 		argument = [[1,9,7,0,5,6,9],[2,7,7,0,7,9,23],[7,3,3,0,4,9,6],[2,6,7,0,7,8,4],[8,3,9,0,2,7,4]]
-		expect(matrix.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(argument)).to eq(Matrix[[0,8,6,0,4,5,8],[0,5,5,0,5,7,21],
+		matrix.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(argument)
+		expect(matrix).to eq(Matrix[[0,8,6,0,4,5,8],[0,5,5,0,5,7,21],
 		[7,3,3,0,4,9,6],[0,0,0,0,0,1,0],[8,3,9,0,8,7,4],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]])
 	end
 
 end
 
+describe Matrix, ".make_more_column_assignments_possible" do
+	# called on Matrix object; returns Matrix corrected such that min permitted row assignments <= max column assignments possible
+		# HOW THIS IS GOING TO WORK
+		# 1. Find problematic submatrices
+		# 	2. In each such submarix, identify the minimum value-sans-zero in each row
+		# 	3. Identify the smallest such min-sans-zero
+		# 		4. Subtract the min-sans-zero from every member-sans-zero of the row in which it occurs
+		# 5. Repeat step 1 until min permitted row assignments <= max column assignments possible
+
+	it "works when the smallest problematic submmatrix is all that has to be changed" do
+		matrix = Matrix[[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[0,3,0,4,0,7,0],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]
+		expect(matrix.make_more_column_assignments_possible).to eq(Matrix[[0,0,0,0,4,5,8],[6,7,1,0,1,0,23],
+			[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[0,3,0,4,0,7,0],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]])
+	end
+
+	# should work when there are many problematic submatrices built off the same elements (i.e. which share the same elements)
+	it "works when two overlapping problematic submatrices have to be changed" do
+		matrix = Matrix[[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[8,3,9,0,2,7,1],
+			[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]
+		expect(matrix.make_more_column_assignments_possible).to eq(Matrix[[0,0,0,0,4,5,8],[6,7,1,0,1,0,23],
+				[1,0,3,9,1,0,6],[1,5,0,0,0,7,1],[8,3,9,0,2,7,1],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]])
+	end
+
+	# should work when there are two distinct problematic submatrices (i.e. which do not share any elements)
+	it "works when two distinct problematic submatrices have to be changed" do
+		matrix = Matrix[[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[4,3,0,4,0,7,4],[4,8,0,9,0,9,4],[4,4,0,5,0,4,9]]
+		expect(matrix.make_more_column_assignments_possible).to eq(Matrix[[0,0,0,0,4,5,8],[5,6,0,0,0,0,22],[0,0,2,8,0,0,5],[0,4,0,0,0,6,0],
+			[1,0,0,1,0,4,1],[4,8,0,9,0,9,4],[4,4,0,5,0,4,9]])
+	end
+
+
+end
 
 describe Matrix, ".get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible" do
 	# Call on Matrix object; returns array of submatrices (in array format) for which the number of minimum row assignments permitted
@@ -203,6 +238,10 @@ describe Matrix, ".get_submatrices_where_min_row_permitted_is_greater_than_max_c
 	# def get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
 
 	# returns nothing when there are no such submatrices
+	it "returns [] when called on Matrix[[1,2,0],[0,3,9]]" do
+		matrix = Matrix[[1,2,0],[0,3,9]]
+		expect(matrix.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible).to eq([])
+	end
 
 	# should work when there is exactly one problematic submatrix
 	it "returns one submatrix when called on Matrix[[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],
@@ -237,12 +276,6 @@ describe Matrix, ".get_submatrices_where_min_row_permitted_is_greater_than_max_c
 		[2,6,1,0,1,8,2],[4,3,0,4,0,7,4],[4,8,0,9,0,9,4],[4,4,0,5,0,4,9]]" do
 		matrix = Matrix[[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[4,3,0,4,0,7,4],[4,8,0,9,0,9,4],[4,4,0,5,0,4,9]]
 		expect(matrix.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible.count).to eq(13)
-
-		# print "\n"
-		# matrix.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible.each_with_index do |r,i|
-		# 	print "problem #{i+1}\n#{r.array_print_readable}\n"
-		# end
-
 		expect(matrix.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible).to eq([
 			[[4, 3, 0, 4, 0, 7, 4], [4, 8, 0, 9, 0, 9, 4], [4, 4, 0, 5, 0, 4, 9]], 
 			[[1, 0, 1, 0, 5, 6, 9], [6, 7, 1, 0, 1, 0, 23], [1, 0, 3, 9, 1, 0, 6], [2, 6, 1, 0, 1, 8, 2]], 
@@ -272,37 +305,43 @@ describe Matrix, ".find_matching_row_then_subtract_value" do
 	# it should work when passed a Matrix with just one row
 	it "returns Matrix[[0,0,0,2]] when called on Matrix[[2,2,0,4]] and passed [2,2,0,4] and 2" do
 		matrix = Matrix[[2,2,0,4]]
-		expect(matrix.find_matching_row_then_subtract_value([2,2,0,4],2)).to eq(Matrix[[0,0,0,2]])
+		matrix.find_matching_row_then_subtract_value([2,2,0,4],2)
+		expect(matrix).to eq(Matrix[[0,0,0,2]])
 	end
 
 	# it should work when passed the same row in a larger Matrix
 	it "returns Matrix[[0,0,0,4],[7,8,9,2],[3,3,1,9]] when called on Matrix[[2,2,0,4],[7,8,9,2],[3,3,1,9]] and passed [2,2,0,4] and 2" do
 		matrix = Matrix[[2,2,0,4],[7,8,9,2],[3,3,1,9]]
-		expect(matrix.find_matching_row_then_subtract_value([2,2,0,4],2)).to eq(Matrix[[0,0,0,2],[7,8,9,2],[3,3,1,9]])
+		matrix.find_matching_row_then_subtract_value([2,2,0,4],2)
+		expect(matrix).to eq(Matrix[[0,0,0,2],[7,8,9,2],[3,3,1,9]])
 	end
 
 	# it should work when the row isn't the first row in a larger Matrix
 	it "returns Matrix[[7,8,9,2],[0,0,0,4],[3,3,1,9]] when called on Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]] and passed [2,2,0,4] and 2" do
 		matrix = Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]]
-		expect(matrix.find_matching_row_then_subtract_value([2,2,0,4],2)).to eq(Matrix[[7,8,9,2],[0,0,0,2],[3,3,1,9]])
+		matrix.find_matching_row_then_subtract_value([2,2,0,4],2)
+		expect(matrix).to eq(Matrix[[7,8,9,2],[0,0,0,2],[3,3,1,9]])
 	end
 
 	# it shouldn't change anything when passed a row it doesn't contain, but is passed a row CLOSE to a row it contains
 	it "returns Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]] when called on Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]] and passed [2,0,4] and 2" do
 		matrix = Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]]
-		expect(matrix.find_matching_row_then_subtract_value([2,0,4],2)).to eq(Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]])
+		matrix.find_matching_row_then_subtract_value([2,0,4],2)
+		expect(matrix).to eq(Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]])
 	end
 
 	# it shouldn't change anything when passed a row it doesn't contain, but is passed a row CLOSE to a row it contains
 	it "returns Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]] when called on Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]] and passed [2,2,0,4,1] and 2" do
 		matrix = Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]]
-		expect(matrix.find_matching_row_then_subtract_value([2,0,4],2)).to eq(Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]])
+		matrix.find_matching_row_then_subtract_value([2,0,4],2)
+		expect(matrix).to eq(Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]])
 	end
 
 	# it shouldn't change anything when passed a value of zero, along with a row it does contain
 	it "returns Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]] when called on Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]] and passed [2,2,0,4] and 0" do
 		matrix = Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]]
-		expect(matrix.find_matching_row_then_subtract_value([2,0,4],2)).to eq(Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]])
+		matrix.find_matching_row_then_subtract_value([2,0,4],2)
+		expect(matrix).to eq(Matrix[[7,8,9,2],[2,2,0,4],[3,3,1,9]])
 	end
 
 end

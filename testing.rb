@@ -1,4 +1,5 @@
 require 'matrix'
+require 'pry'
 
 # new challenge for solveablility: the following matrix does not have too many lonely zeros in any column or row
 	# m = Matrix[[0,3,0],[0,5,0],[0,1,0]]
@@ -126,6 +127,16 @@ class Matrix
 	def min_col_assignment
 		return 1
 	end
+
+	def make_more_column_assignments_possible
+		problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
+		while !problematic_submatrices.empty?
+			self.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(problematic_submatrices.first)
+			problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
+		end
+		return self
+	end
+
 
 	def subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)
 		row_id_plus_row_min = submatrix.get_ids_and_row_mins

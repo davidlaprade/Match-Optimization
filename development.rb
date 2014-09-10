@@ -55,6 +55,8 @@ def hungarian
 	end
 
 
+
+			# TESTINGGGGGGGGGGGGGGG
 			# called on Matrix object; returns Matrix corrected such that min permitted row assignments <= max column assignments possible
 			def make_more_column_assignments_possible
 				# //////////////////////////////////////////////
@@ -67,7 +69,7 @@ def hungarian
 				# ////////////////////////////////////////////
 				# PROBLEM
 				# It could be that fixing the problem in one submatrix will eliminate the problem in another submatrix
-				# But the way you have things set up right now, your program will continue to make changes based on OUTDATED submatrices
+				# So, you don't want the program to continue to make changes based on OUTDATED submatrices
 				# By the principle of minimum mutilation, you want this method to stop as soon as making a change eliminates all problematic submatrices
 				# So, you need to do something like repopulate the problematic submatrices array each time you make a change
 				# //////////////////////////////////////////
@@ -82,11 +84,10 @@ def hungarian
 				while !problematic_submatrices.empty?
 
 					# fix the problem in the first submatrix
-					problematic_submatrices.first do |submatrix|
 						# Subtract the min-sans-zero from every member-sans-zero of the row in which it occurs
 						# Repeat until min permitted row assignments <= max column assignments possible
-						self.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)
-					end
+					self.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(problematic_submatrices.first)
+
 					# run get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible again to see if the changes made fixed the issues
 					problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible	
 				end
