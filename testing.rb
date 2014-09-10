@@ -17,17 +17,6 @@ require 'matrix'
 # m = Matrix[[6,1,3,4,5,9]]
 
 class Array
-	# returns an array containing just the rows of the target array that are specified in the rows argument
-	# rows argument is an array of row indexs
-	def create_new_array_using_rows(rows)
-		new_array = []
-		self.each_with_index do |row, index|
-			if rows.include?(index) == true
-				new_array << row
-			end
-		end
-		return new_array
-	end
 
 	# returns an array containing every combination of members of the array it was called on
 	def every_combination_of_its_members
@@ -97,6 +86,12 @@ class Array
 		return problematic_submatrices
 	end
 
+	def array_print_readable
+		self.each do |r|
+			print "#{r}\n"
+		end
+	end
+
 end
  
 
@@ -127,6 +122,24 @@ class Matrix
 	def min_col_assignment
 		return 1
 	end
+
+
+	# Call on Matrix object; returns array of submatrices (in array format) for which the number of minimum row assignments permitted
+	# is greater than then number of possible column assignments
+	def get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
+		# get every possible submatrix
+		matrix_in_array_format = self.to_a
+		test_cases = matrix_in_array_format.every_combination_of_its_members
+		# find the problematic submatrices
+		problematic_submatrices = []
+		min_row_assign = self.min_row_assignment
+		max_col = self.max_col_assignment
+		test_cases.collect {|x| min_row_assign * x.length > x.max_column_assmts_possible(max_col) ? problematic_submatrices << x : x}
+		# return result
+		return problematic_submatrices
+	end
+
+
 
 	def find_matching_row_then_subtract_value(row_to_match, value_to_subtract)
 		self.to_a.each_with_index do |matrix_row, matrix_row_index|

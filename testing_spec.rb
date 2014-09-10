@@ -109,11 +109,69 @@ describe Array, ".subtract_value_from_row_in_array" do
 
 end
 
+describe Matrix, ".get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible" do
+	# Call on Matrix object; returns array of submatrices (in array format) for which the number of minimum row assignments permitted
+	# is greater than then number of possible column assignments
+	# def get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
 
-	def subtract_value_from_row_in_array(row_id, value_to_subtract)
-		self[row_id].map! {|x| !x.zero? ? x-value_to_subtract : x }
-		return self
+	# returns nothing when there are no such submatrices
+
+	# should work when there is exactly one problematic submatrix
+	it "returns one submatrix when called on Matrix[[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],
+		[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[0,3,0,4,0,7,0],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]" do
+		matrix = Matrix[[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[0,3,0,4,0,7,0],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]
+		expect(matrix.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible.count).to eq(1)
+		expect(matrix.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible).to eq([ [[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],
+			[1,0,3,9,1,0,6],[2,6,1,0,1,8,2]]])
 	end
+
+	# should work when there are many problematic submatrices built off the same elements (i.e. which share the same elements)
+	it "returns nine submatrices when called on Matrix[[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],
+		[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[8,3,9,0,2,7,1],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]" do
+		matrix = Matrix[[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[8,3,9,0,2,7,1],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]
+		expect(matrix.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible.count).to eq(9)
+		expect(matrix.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible).to eq([
+			[[2, 6, 1, 0, 1, 8, 2], [8, 3, 9, 0, 2, 7, 1]], 
+			[[1, 0, 1, 0, 5, 6, 9], [2, 6, 1, 0, 1, 8, 2], [8, 3, 9, 0, 2, 7, 1]], 
+			[[6, 7, 1, 0, 1, 0, 23], [2, 6, 1, 0, 1, 8, 2], [8, 3, 9, 0, 2, 7, 1]], 
+			[[1, 0, 1, 0, 5, 6, 9], [6, 7, 1, 0, 1, 0, 23], [1, 0, 3, 9, 1, 0, 6], [2, 6, 1, 0, 1, 8, 2]], 
+			[[1, 0, 1, 0, 5, 6, 9], [6, 7, 1, 0, 1, 0, 23], [1, 0, 3, 9, 1, 0, 6], [8, 3, 9, 0, 2, 7, 1]], 
+			[[1, 0, 1, 0, 5, 6, 9], [6, 7, 1, 0, 1, 0, 23], [2, 6, 1, 0, 1, 8, 2], [8, 3, 9, 0, 2, 7, 1]], 
+			[[1, 0, 1, 0, 5, 6, 9], [1, 0, 3, 9, 1, 0, 6], [2, 6, 1, 0, 1, 8, 2], [8, 3, 9, 0, 2, 7, 1]], 
+			[[6, 7, 1, 0, 1, 0, 23], [1, 0, 3, 9, 1, 0, 6], [2, 6, 1, 0, 1, 8, 2], [8, 3, 9, 0, 2, 7, 1]], 
+			[[1, 0, 1, 0, 5, 6, 9], [6, 7, 1, 0, 1, 0, 23], [1, 0, 3, 9, 1, 0, 6], [2, 6, 1, 0, 1, 8, 2], [8, 3, 9, 0, 2, 7, 1]]
+			])
+	end
+
+	# should work when there are two distinct problematic submatrices (i.e. which do not share any elements)
+	# it should identify the minimal distinct problematic submatrices first, then combine any parts of them which are problematic
+	it "returns one submatrix when called on Matrix[[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],
+		[2,6,1,0,1,8,2],[4,3,0,4,0,7,4],[4,8,0,9,0,9,4],[4,4,0,5,0,4,9]]" do
+		matrix = Matrix[[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[4,3,0,4,0,7,4],[4,8,0,9,0,9,4],[4,4,0,5,0,4,9]]
+		expect(matrix.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible.count).to eq(13)
+
+		# print "\n"
+		# matrix.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible.each_with_index do |r,i|
+		# 	print "problem #{i+1}\n#{r.array_print_readable}\n"
+		# end
+
+		expect(matrix.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible).to eq([
+			[[4, 3, 0, 4, 0, 7, 4], [4, 8, 0, 9, 0, 9, 4], [4, 4, 0, 5, 0, 4, 9]], 
+			[[1, 0, 1, 0, 5, 6, 9], [6, 7, 1, 0, 1, 0, 23], [1, 0, 3, 9, 1, 0, 6], [2, 6, 1, 0, 1, 8, 2]], 
+			[[2, 6, 1, 0, 1, 8, 2], [4, 3, 0, 4, 0, 7, 4], [4, 8, 0, 9, 0, 9, 4], [4, 4, 0, 5, 0, 4, 9]], 
+			[[1, 0, 1, 0, 5, 6, 9], [2, 6, 1, 0, 1, 8, 2], [4, 3, 0, 4, 0, 7, 4], [4, 8, 0, 9, 0, 9, 4], [4, 4, 0, 5, 0, 4, 9]], 
+			[[6, 7, 1, 0, 1, 0, 23], [2, 6, 1, 0, 1, 8, 2], [4, 3, 0, 4, 0, 7, 4], [4, 8, 0, 9, 0, 9, 4], [4, 4, 0, 5, 0, 4, 9]], 
+			[[1, 0, 1, 0, 5, 6, 9], [6, 7, 1, 0, 1, 0, 23], [1, 0, 3, 9, 1, 0, 6], [2, 6, 1, 0, 1, 8, 2], [4, 3, 0, 4, 0, 7, 4], [4, 8, 0, 9, 0, 9, 4]], 
+			[[1, 0, 1, 0, 5, 6, 9], [6, 7, 1, 0, 1, 0, 23], [1, 0, 3, 9, 1, 0, 6], [2, 6, 1, 0, 1, 8, 2], [4, 3, 0, 4, 0, 7, 4], [4, 4, 0, 5, 0, 4, 9]], 
+			[[1, 0, 1, 0, 5, 6, 9], [6, 7, 1, 0, 1, 0, 23], [1, 0, 3, 9, 1, 0, 6], [2, 6, 1, 0, 1, 8, 2], [4, 8, 0, 9, 0, 9, 4], [4, 4, 0, 5, 0, 4, 9]], 
+			[[1, 0, 1, 0, 5, 6, 9], [6, 7, 1, 0, 1, 0, 23], [1, 0, 3, 9, 1, 0, 6], [4, 3, 0, 4, 0, 7, 4], [4, 8, 0, 9, 0, 9, 4], [4, 4, 0, 5, 0, 4, 9]], 
+			[[1, 0, 1, 0, 5, 6, 9], [6, 7, 1, 0, 1, 0, 23], [2, 6, 1, 0, 1, 8, 2], [4, 3, 0, 4, 0, 7, 4], [4, 8, 0, 9, 0, 9, 4], [4, 4, 0, 5, 0, 4, 9]], 
+			[[1, 0, 1, 0, 5, 6, 9], [1, 0, 3, 9, 1, 0, 6], [2, 6, 1, 0, 1, 8, 2], [4, 3, 0, 4, 0, 7, 4], [4, 8, 0, 9, 0, 9, 4], [4, 4, 0, 5, 0, 4, 9]], 
+			[[6, 7, 1, 0, 1, 0, 23], [1, 0, 3, 9, 1, 0, 6], [2, 6, 1, 0, 1, 8, 2], [4, 3, 0, 4, 0, 7, 4], [4, 8, 0, 9, 0, 9, 4], [4, 4, 0, 5, 0, 4, 9]], 
+			[[1, 0, 1, 0, 5, 6, 9], [6, 7, 1, 0, 1, 0, 23], [1, 0, 3, 9, 1, 0, 6], [2, 6, 1, 0, 1, 8, 2], [4, 3, 0, 4, 0, 7, 4], [4, 8, 0, 9, 0, 9, 4], [4, 4, 0, 5, 0, 4, 9]]])
+	end
+
+end
 
 
 describe Matrix, ".find_matching_row_then_subtract_value" do

@@ -146,22 +146,23 @@ def hungarian
 				return row_id_plus_row_min
 			end
 
+			# TESTED
 			# Call on Matrix object; returns array of submatrices (in array format) for which the number of minimum row assignments permitted
 			# is greater than then number of possible column assignments
 			def get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
+				# get every possible submatrix
 				matrix_in_array_format = self.to_a
 				test_cases = matrix_in_array_format.every_combination_of_its_members
 				# find the problematic submatrices
 				problematic_submatrices = []
-				test_cases.each do |submatrix_in_array_format|
-					min_row_assignments_permitted = self.min_row_assignment * submatrix_in_array_format.length
-					if min_row_assignments_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
-						problematic_submatrices << submatrix_in_array_format
-					end
-				end
+				min_row_assign = self.min_row_assignment
+				max_col = self.max_col_assignment
+				test_cases.collect {|x| min_row_assign * x.length > x.max_column_assmts_possible(max_col) ? problematic_submatrices << x : x}
+				# return result
 				return problematic_submatrices
 			end
 
+			# TESTED
 			# called on Array; subtracts the value given as second parameter from each member of the row specified, unless zero
 			def subtract_value_from_row_in_array(row_id, value_to_subtract)
 				raise 'Row does not exist in array' if row_id >= self.length || row_id < 0
@@ -170,7 +171,7 @@ def hungarian
 				return self
 			end
 
-
+			# TESTED
 			# called on Matrix; finds all rows matching the row_to_match (data type: array) given as first parameter;
 			# subtracts input value from each member of each row matching the row_array, skips over zeros
 			# returns corrected Matrix object
@@ -289,16 +290,7 @@ class Array
 
 	# returns an array containing every combination of members of the array it was called on
 	def every_combination_of_its_members
-		combination_class = []
-		i = 2
-		while i <= self.length do
-			new_members = self.combination(i).to_a
-			new_members.each do |member|
-				combination_class << member
-			end
-			i = i + 1
-		end
-		return combination_class
+		return self.each_with_index.map {|x,i| self.combination(i+1).to_a}.flatten(1).drop(self.length).uniq
 	end
 
 	# outputs the maximum number of assignments that could be made in columns given the current distribution of values and the max permitted column assignment
