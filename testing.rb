@@ -405,7 +405,6 @@ class Matrix
 		return number_of_max_assignments
 	end
 
-	# returns false if the matrix has no solution in its current state, nil if the matrix passes the tests
 	def solveable?
 		failure_code = []
 
@@ -531,9 +530,9 @@ class Matrix
 end
 
 
-10.times do
+5.times do
 	# create 6x6 matrix filled with random elements
-	matrix = Array.new(6){Array.new(6){rand(11)}}.to_m
+	matrix = Array.new(10){Array.new(5){rand(11)}}.to_m
 	print "original matrix:"
 	matrix.print_in_readable_format
 	matrix.make_matrix_solveable

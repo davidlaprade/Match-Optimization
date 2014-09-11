@@ -326,7 +326,7 @@ class Matrix
 
 	# returns failure code if the matrix has no solution in its current state, true if the matrix passes the tests
 	def solveable?
-		failure_code = true
+		failure_code = []
 
 		# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
 		# if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix, the parent matrix is unsolveable
@@ -336,7 +336,7 @@ class Matrix
 		test_cases.each do |submatrix_in_array_format|
 			min_row_assignments_permitted = self.min_row_assignment * submatrix_in_array_format.length
 			if min_row_assignments_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
-				failure_code = "no, min permitted row assignments > max column assignments possible"
+				failure_code.unshift("no, min permitted row assignments > max column assignments possible")
 			end
 		end
 
@@ -354,20 +354,30 @@ class Matrix
 		# checks to see if there are too many lonely zeros in any row
 		self.lonely_zeros_per_row.each do |array|
 			if array[1] > self.max_row_assignment
-				failure_code = "no, too many lonely zeros in rows"
+				failure_code.unshift("no, too many lonely zeros in rows")
 			end
 		end
 
 		# checks to see if there are too many lonely zeros in any column
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
-				failure_code = "no, too many lonely zeros in columns"
+				failure_code.unshift("no, too many lonely zeros in columns")
 			end
 		end
 
-		return failure_code
+		failure_code.unshift("no, there are columns without zeros") if self.to_a.transpose.collect {|m| !m.include?(0)}.include?(true)
+		failure_code.unshift("no, there are rows without zeros") if self.to_a.collect {|m| !m.include?(0)}.include?(true)
+
+		if !failure_code.empty?
+			return failure_code.first
+		else
+			return "true"
+		end
 
 	end
+
+
+
 
 	# called on Matrix object, takes row index and value as inputs
 	# outputs Matrix in which the value provided has been added to each zero and subtracted otherwise
@@ -625,6 +635,16 @@ class Matrix
 	# caled on Matrix object; changes the Matrix (if need be) to return a Matrix object which supports complete assignment
 	def make_matrix_solveable
 		while self.solveable? != true
+			# you want to include the following two methods in case the methods below them change the Matrix in such a way
+			# as to remove a lonely zero from a row/column
+			while self.solveable? == "no, there are rows without zeros"
+				self.zero_each_row
+			end
+
+			while self.solveable? == "no, there are columns without zeros"
+				self.zero_each_column
+			end
+
 			while self.solveable? == "no, too many lonely zeros in columns"
 				# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
 				# find the lowest member in that row besides the zero, add the value of that member to each zero, 
