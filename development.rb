@@ -55,167 +55,8 @@ def hungarian
 	end
 
 
-
-			# TESTED
-			# called on Matrix object; returns Matrix corrected such that min permitted row assignments <= max column assignments possible
-			def make_more_column_assignments_possible
-				# //////////////////////////////////////////////
-				# HOW THIS IS GOING TO WORK
-				# 1. Find problematic submatrices
-				# 	2. In each such submarix, identify the minimum value-sans-zero in each row
-				# 	3. Identify the smallest such min-sans-zero
-				# 		4. Subtract the min-sans-zero from every member-sans-zero of the row in which it occurs
-				# 5. Repeat step 1 until min permitted row assignments <= max column assignments possible
-				# ////////////////////////////////////////////
-				# PROBLEM
-				# It could be that fixing the problem in one submatrix will eliminate the problem in another submatrix
-				# So, you don't want the program to continue to make changes based on OUTDATED submatrices
-				# By the principle of minimum mutilation, you want this method to stop as soon as making a change eliminates all problematic submatrices
-				# So, you need to do something like repopulate the problematic submatrices array each time you make a change
-				# //////////////////////////////////////////
-				# POSSIBLE SOLUTION
-				# Run the fix method below on the first member of the problematic submatrix
-				# Then repopulate the test_cases class, then repopulate the problematic submatrices array
-				# Then rerun the fix method
-				# Repeat until problematic submatrices array is empty on repopulation
-				# ////////////////////////////////////////////
-				# NEW PROBLEM
-				# What I really should be doing to fix this issue is finding the minimum value among COLUMNS that do not contain zeros in 
-				# the problematic submatrices; after all, only changes in those columns will fix the issue.
-				# There is a bigger problem here, that was hidden before: it could be that running the fix methods I have will just result
-				# in changes to a single row, which will result in a Matrix that's unsolveable.
-				# ///////////////////////////////////////////
-				# SOLUTION
-				# Find the lowest min-sans-zero in a column (that does not contain a zero) in the problematic submatrix
-				# Then: change the row it occurs in, or the column? Choice: change the row. Reason: by changing the row, you will make
-				# it more likely that other zeros will open up in other columns. And, given that the problem is that not enough columns
-				# contain zeros, this seems like it will bring you to a solution faster than making there be multiple zeros in a new column.
-				# There is the issue, however, that changing the values in the rows will solve the minor problem of having too few column
-				# assignments possible by producing a matrix that is not solveable! Actually, this does not seem possible; the unsolveable
-				# cases I have in mind are all cases in which some submatrix still has too few column assingments possible, and this algorithm
-				# specifically takes care of all of the submatrices
-				# ////////////////////////////////////////////////////////////////
-
-				problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
-				# repeat the following until there are no problematic submatrices
-				while !problematic_submatrices.empty?
-
-					# fix the problem in the first submatrix
-						# Subtract the min-sans-zero from every member-sans-zero of the row in which it occurs
-						# Repeat until min permitted row assignments <= max column assignments possible
-					self.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(problematic_submatrices.first)
-
-					# run get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible again to see if the changes made fixed the issues
-					problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible	
-				end
-				return self
-			end
-
-
-			# TESTED
-			# called on Matrix object, passed array that is a submatrix of the Matrix
-			# makes changes to the Matrix it's called on, subtracting the min-sans-zero value in the submatrix from every
-			# member in the corresponding row in the Matrix with the exception of zeros
-			# repeats the process until min_row_permitted <= max_col_assignments_possible
-			# returns the corrected Matrix object it was called on
-			def subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)
-
-				# identify the minimum-sans-zero values for each row
-				row_id_plus_row_min = submatrix.get_ids_and_row_mins
-
-				min_row_assignments_permitted = self.min_row_assignment * submatrix.length
-				while min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
-
-					# PROBLEM: it could be that the find_by_matching_row_then_subtract method will only add zeros in ONE additional column
-					# (It might be that the min-sans-zero value occurs in the same column in each row of the submatrix)  
-					# And, if it turns out that the submatrix min_row_assignments is TWO larger than the max_col_assignments possible
-					# then you may need to start zeroing the second lowest value-sans zero in the rows
-
-					# PROBLEM: it could be that, say, the first column contains only 1 zero and otherwise all 1's; hence, what this method
-					# will currently do is turn the first column into all zeros; this will probably make it so that min_row_assignments_permitted 
-					# > submatrix.max_column_assmts_possible(self.max_col_assignment), thus terminating the loop; but this doesn't result in a
-					# a matrix that is even close to solveable! 
-					# SOLUTION: It's not clear that this is actually an issue. As the algorithm is set up, what would happen to the array next is 
-					# the too_many_lonley_zeros_in_columns method would be called on it to fix that issue. The only question is whether this
-					# accords with the principle of minimal mutilation... Actually, it's not clear that that method would solve anything. See the
-					# problem outlined in comments in the testing_spec file.
-
-					# edit the Matrix accordingly
-					row_id = row_id_plus_row_min[0][0]
-					value_to_subtract = row_id_plus_row_min[0][1]
-					self.find_matching_row_then_subtract_value(submatrix[row_id], value_to_subtract)
-					
-					# edit the submatrix to check to see if the problem is fixed
-					submatrix.subtract_value_from_row_in_array(row_id, value_to_subtract)
-
-					# remove the first member of the array, it's been taken care of; move to second
-					# the method has to be run again, since when you alter the submatrix you alter the values in its rows
-					row_id_plus_row_min = submatrix.get_ids_and_row_mins
-
-				end
-				return self
-			end
-
-			# TESTED
-			# called on submatrix Array; finds columns that do not contain zeros; outputs an ordered array of ALL arrays [p,q] where 
-			# p is the index of a row in the submatrix, and q is a value in that row such that no zeros occur in that value's column
-			# in the submatrix; the arrays are ordered by increasing q value, then by increasing row index
-			def get_ids_and_row_mins
-				col_wo_zeros = []
-				self.array_columns.find_all {|column| !column.include?(0)}.each {|col| col.each_with_index {|v,i| col_wo_zeros << [i, v]} }
-				return col_wo_zeros.uniq.sort_by {|x| [x[1],x[0]]}
-
-				# PREVIOUS VERSION--TESTED
-				# called on submatrix Array; outputs an ordered array of ALL arrays [p,q] where p is the index of a row in the submatrix
-				# and q is a value in that row; the arrays are ordered by increasing q value, then by increasing row index
-				# return self.collect.with_index {|x,i| x.collect{|y| !y.zero? ? [i,y] : y}-[0] }.flatten(1).uniq.sort_by {|x| [x[1],x[0]]}
-			end
-
-			# TESTED
-			# Call on Matrix object; returns array of submatrices (in array format) for which the number of minimum row assignments permitted
-			# is greater than then number of possible column assignments
-			def get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
-				# get every possible submatrix
-				matrix_in_array_format = self.to_a
-				test_cases = matrix_in_array_format.every_combination_of_its_members
-				# find the problematic submatrices
-				problematic_submatrices = []
-				min_row_assign = self.min_row_assignment
-				max_col = self.max_col_assignment
-				test_cases.collect {|x| min_row_assign * x.length > x.max_column_assmts_possible(max_col) ? problematic_submatrices << x : x}
-				# return result
-				return problematic_submatrices
-			end
-
-			# TESTED
-			# called on Array; subtracts the value given as second parameter from each member of the row specified, unless zero
-			def subtract_value_from_row_in_array(row_id, value_to_subtract)
-				raise 'Row does not exist in array' if row_id >= self.length || row_id < 0
-				raise 'Would result in negative value' if self[row_id].dup.map {|x| x.zero? ? value_to_subtract : x}.min < value_to_subtract
-				self[row_id].map! {|x| !x.zero? ? x-value_to_subtract : x }
-				return self
-			end
-
-			# TESTED
-			# called on Matrix; finds all rows matching the row_to_match (data type: array) given as first parameter;
-			# subtracts input value from each member of each row matching the row_array, skips over zeros
-			# returns corrected Matrix object
-			def find_matching_row_then_subtract_value(row_to_match, value_to_subtract)
-				self.to_a.each_with_index do |matrix_row, matrix_row_index|
-					if matrix_row == row_to_match
-						matrix_row.each_with_index do |cell_value, matrix_column_index|
-							if cell_value != 0
-								self.send( :[]=, matrix_row_index, matrix_column_index, cell_value - value_to_subtract )
-							end
-						end
-					end
-				end
-				return self
-			end
-
-
-
 	# fourth step in algorithm
+		# by now the Matrix should be solveable
 		# make the assignments!
 
 
@@ -263,6 +104,28 @@ class Array
 			i = i + 1
 		end
 		return columns
+	end
+
+	# called on submatrix Array; finds columns that do not contain zeros; outputs an ordered array of ALL arrays [p,q] where 
+	# p is the index of a row in the submatrix, and q is a value in that row such that no zeros occur in that value's column
+	# in the submatrix; the arrays are ordered by increasing q value, then by increasing row index
+	def get_ids_and_row_mins
+		col_wo_zeros = []
+		self.array_columns.find_all {|column| !column.include?(0)}.each {|col| col.each_with_index {|v,i| col_wo_zeros << [i, v]} }
+		return col_wo_zeros.uniq.sort_by {|x| [x[1],x[0]]}
+
+		# PREVIOUS VERSION--TESTED
+		# called on submatrix Array; outputs an ordered array of ALL arrays [p,q] where p is the index of a row in the submatrix
+		# and q is a value in that row; the arrays are ordered by increasing q value, then by increasing row index
+		# return self.collect.with_index {|x,i| x.collect{|y| !y.zero? ? [i,y] : y}-[0] }.flatten(1).uniq.sort_by {|x| [x[1],x[0]]}
+	end
+
+	# called on Array; subtracts the value given as second parameter from each member of the row specified, unless zero
+	def subtract_value_from_row_in_array(row_id, value_to_subtract)
+		raise 'Row does not exist in array' if row_id >= self.length || row_id < 0
+		raise 'Would result in negative value' if self[row_id].dup.map {|x| x.zero? ? value_to_subtract : x}.min < value_to_subtract
+		self[row_id].map! {|x| !x.zero? ? x-value_to_subtract : x }
+		return self
 	end
 
 end
@@ -649,6 +512,95 @@ class Matrix
 		# you want to correct the column with the lowest min value first, then the column with the next lowest, then with the next lowest, and so on
 		# point is: you want to minimize the extent to which you have to lower values to get an assignment
 		self.zero_fewest_problematic_columns(problematic_columns)
+	end
+
+	# called on Matrix object; returns Matrix corrected such that min permitted row assignments <= max column assignments possible
+	def make_more_column_assignments_possible
+		# see commit f533448e9cec3ceedd for additional (and extensive) comments on the issues that went into developing this
+		# //////////////////////////////////////////////
+		# HOW THIS IS GOING TO WORK
+		# 1. Find problematic submatrices
+		# 	2. In each such submarix, identify the minimum value-sans-zero in each column that doesn't contain a zero
+		# 	3. Identify the smallest such min-sans-zero
+		# 		4. Subtract the smallest min-sans-zero from every member-sans-zero of the row in which it occurs
+		# 5. Repeat step 1 until min permitted row assignments <= max column assignments possible
+		# ////////////////////////////////////////////
+
+		problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
+		# repeat the following until there are no problematic submatrices
+		while !problematic_submatrices.empty?
+
+			# fix the problem in the first submatrix
+				# Subtract the min-sans-zero from every member-sans-zero of the row in which it occurs
+				# Repeat until min permitted row assignments <= max column assignments possible
+			self.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(problematic_submatrices.first)
+
+			# run get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible again to see if the changes made fixed the issues
+			problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible	
+		end
+		return self
+	end
+
+	# called on Matrix object, passed array that is a submatrix of the Matrix
+	# makes changes to the Matrix it's called on, subtracting the smallest min-sans-zero value that resides in a column
+	# that does not contain a zero in the submatrix from every
+	# member in its row with the exception of zeros; changes the corresponding values in the Matrix;
+	# repeats the process until min_row_permitted <= max_col_assignments_possible
+	# returns the corrected Matrix object it was called on
+	def subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)
+
+		# identify the minimum-sans-zero values for each row
+		row_id_plus_row_min = submatrix.get_ids_and_row_mins
+
+		min_row_assignments_permitted = self.min_row_assignment * submatrix.length
+		while min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
+
+			# edit the Matrix accordingly
+			row_id = row_id_plus_row_min[0][0]
+			value_to_subtract = row_id_plus_row_min[0][1]
+			self.find_matching_row_then_subtract_value(submatrix[row_id], value_to_subtract)
+			
+			# edit the submatrix to check to see if the problem is fixed
+			submatrix.subtract_value_from_row_in_array(row_id, value_to_subtract)
+
+			# remove the first member of the array, it's been taken care of; move to second
+			# the method has to be run again, since when you alter the submatrix you alter the values in its rows
+			row_id_plus_row_min = submatrix.get_ids_and_row_mins
+
+		end
+		return self
+	end
+
+	# Call on Matrix object; returns array of submatrices (in array format) for which the number of minimum row assignments permitted
+	# is greater than then number of possible column assignments
+	def get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
+		# get every possible submatrix
+		matrix_in_array_format = self.to_a
+		test_cases = matrix_in_array_format.every_combination_of_its_members
+		# find the problematic submatrices
+		problematic_submatrices = []
+		min_row_assign = self.min_row_assignment
+		max_col = self.max_col_assignment
+		test_cases.collect {|x| min_row_assign * x.length > x.max_column_assmts_possible(max_col) ? problematic_submatrices << x : x}
+		# return result
+		return problematic_submatrices
+	end
+
+	
+	# called on Matrix; finds all rows matching the row_to_match (data type: array) given as first parameter;
+	# subtracts input value from each member of each row matching the row_array, skips over zeros
+	# returns corrected Matrix object
+	def find_matching_row_then_subtract_value(row_to_match, value_to_subtract)
+		self.to_a.each_with_index do |matrix_row, matrix_row_index|
+			if matrix_row == row_to_match
+				matrix_row.each_with_index do |cell_value, matrix_column_index|
+					if cell_value != 0
+						self.send( :[]=, matrix_row_index, matrix_column_index, cell_value - value_to_subtract )
+					end
+				end
+			end
+		end
+		return self
 	end
 
 end
