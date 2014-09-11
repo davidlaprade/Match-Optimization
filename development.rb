@@ -56,7 +56,7 @@ def hungarian
 
 
 
-			# MUST BE RETESTED
+			# TESTED
 			# called on Matrix object; returns Matrix corrected such that min permitted row assignments <= max column assignments possible
 			def make_more_column_assignments_possible
 				# //////////////////////////////////////////////
@@ -81,13 +81,19 @@ def hungarian
 				# ////////////////////////////////////////////
 				# NEW PROBLEM
 				# What I really should be doing to fix this issue is finding the minimum value among COLUMNS that do not contain zeros in 
-				# the problematic submatrices; after all, only changes in those columns will fix the issue
+				# the problematic submatrices; after all, only changes in those columns will fix the issue.
+				# There is a bigger problem here, that was hidden before: it could be that running the fix methods I have will just result
+				# in changes to a single row, which will result in a Matrix that's unsolveable.
 				# ///////////////////////////////////////////
 				# SOLUTION
 				# Find the lowest min-sans-zero in a column (that does not contain a zero) in the problematic submatrix
 				# Then: change the row it occurs in, or the column? Choice: change the row. Reason: by changing the row, you will make
 				# it more likely that other zeros will open up in other columns. And, given that the problem is that not enough columns
 				# contain zeros, this seems like it will bring you to a solution faster than making there be multiple zeros in a new column.
+				# There is the issue, however, that changing the values in the rows will solve the minor problem of having too few column
+				# assignments possible by producing a matrix that is not solveable! Actually, this does not seem possible; the unsolveable
+				# cases I have in mind are all cases in which some submatrix still has too few column assingments possible, and this algorithm
+				# specifically takes care of all of the submatrices
 				# ////////////////////////////////////////////////////////////////
 
 				problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
@@ -106,7 +112,7 @@ def hungarian
 			end
 
 
-			# MUST BE RETESTED
+			# TESTED
 			# called on Matrix object, passed array that is a submatrix of the Matrix
 			# makes changes to the Matrix it's called on, subtracting the min-sans-zero value in the submatrix from every
 			# member in the corresponding row in the Matrix with the exception of zeros
@@ -125,13 +131,14 @@ def hungarian
 					# And, if it turns out that the submatrix min_row_assignments is TWO larger than the max_col_assignments possible
 					# then you may need to start zeroing the second lowest value-sans zero in the rows
 
-					PROBLEM: it could be that, say, the first column contains only 1 zero and otherwise all 1's; hence, what this method
-					will currently do is turn the first column into all zeros; this will probably make it so that min_row_assignments_permitted 
-					> submatrix.max_column_assmts_possible(self.max_col_assignment), thus terminating the loop; but this doesn't result in a
-					a matrix that is even close to solveable! 
-					SOLUTION: It's not clear that this is actually an issue. As the algorithm is set up, what would happen to the array next is 
-					the too_many_lonley_zeros_in_columns method would be called on it to fix that issue. The only question is whether this
-					accords with the principle of minimal mutilation...
+					# PROBLEM: it could be that, say, the first column contains only 1 zero and otherwise all 1's; hence, what this method
+					# will currently do is turn the first column into all zeros; this will probably make it so that min_row_assignments_permitted 
+					# > submatrix.max_column_assmts_possible(self.max_col_assignment), thus terminating the loop; but this doesn't result in a
+					# a matrix that is even close to solveable! 
+					# SOLUTION: It's not clear that this is actually an issue. As the algorithm is set up, what would happen to the array next is 
+					# the too_many_lonley_zeros_in_columns method would be called on it to fix that issue. The only question is whether this
+					# accords with the principle of minimal mutilation... Actually, it's not clear that that method would solve anything. See the
+					# problem outlined in comments in the testing_spec file.
 
 					# edit the Matrix accordingly
 					row_id = row_id_plus_row_min[0][0]
