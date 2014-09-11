@@ -50,13 +50,7 @@ class Array
 	# outputs an ordered array of arrays, each of which containing a column from the array it is called on
 	# column and row indexes were preserved: array_columns[0][2] returns the cell in the 1st column in the 3rd row 
 	def array_columns
-		columns = []
-		i = 0
-		while i < self[0].length
-			columns << self.map {|row| row[i]}
-			i = i + 1
-		end
-		return columns
+		return self.transpose
 	end
 
 	# called on Array; subtracts the value given as second parameter from each member of the row specified, unless zero
@@ -124,6 +118,18 @@ class Matrix
 
 	def min_col_assignment
 		return 1
+	end
+
+	# call on Matrix object; return Matrix object which has been normalized in rows and in columns
+	def zero_rows_and_columns
+		if self.row_count >= self.column_count
+			self.zero_each_row
+			self.zero_each_column
+		else
+			self.zero_each_column
+			self.zero_each_row
+		end
+		return self
 	end
 
 	def make_more_column_assignments_possible

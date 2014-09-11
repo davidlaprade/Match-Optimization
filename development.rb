@@ -17,15 +17,14 @@ class Hungarian
 		@degree_of_diff = 0
 		# solution array: will contain coordinates of each assignment in the optimal match
 		@solution = []
+		attr_accessor :working_matrix, :original_form, :degree_of_diff, :solution
 
 		@min_row_assignment = min_row_assignment unless min_row_assignment <= 0
 		@min_col_assignment = min_col_assignment unless min_col_assignment <= 0
-
 		@max_col_assignment = (matrix.row_count/matrix.column_count.to_f).ceil
 		@max_row_assignment = (matrix.column_count/matrix.row_count.to_f).ceil
-
 		attr_reader :min_row_assignment, :min_col_assignment, :max_col_assignment, :max_row_assignment
-		attr_accessor :working_matrix, :original_form, :degree_of_diff, :solution
+
 	end
 
 	# call on Hungarian object; refreshes its degree_of_diff attribute; returns the updated Hungarian object
@@ -93,13 +92,7 @@ class Array
 	# called on array; outputs an ordered array of arrays, each of which containing a column from the array it is called on
 	# column and row indexes were preserved: array_columns[0][2] returns the cell in the 1st column in the 3rd row 
 	def array_columns
-		columns = []
-		i = 0
-		while i < self[0].length
-			columns << self.map {|row| row[i]}
-			i = i + 1
-		end
-		return columns
+		return self.transpose
 	end
 
 	# called on submatrix Array; finds columns that do not contain zeros; outputs an ordered array of ALL arrays [p,q] where 
