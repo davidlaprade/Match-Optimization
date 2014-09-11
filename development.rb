@@ -7,57 +7,42 @@ require 'matrix'
 require 'matrix_class_additions'
 
 # called on Matrix object, returns an array of coordinates, one for each assignment in the optimal match
-def hungarian
-	# these assignments are going to pose problems for the following reason: http://stackoverflow.com/questions/6712298/dynamic-constant-assignment
-	ORIGINAL_MATRIX = self
-	WORKING_MATRIX = self.clone
-	ASSIGNING_MATRIX = Matrix.build(self.row_count, self.column_count) {}
+class Hungarian
+
+	def intitialize(matrix)
+		@working = matrix
+		@original_form = matrix
+		@degree_of_diff = 0
+		@solution = []
+
+		attr_accessor :working, :original_form, :degree_of_diff, :solution
+	end
+
+	# call on Hungarian object; refreshes its degree_of_diff attribute; returns the updated Hungarian object
+	def calc_degree_of_diff
+		self.degree_of_diff = self.original_form.to_a.flatten.inject(:+) - self.working.to_a.flatten.inject(:+)
+		return self
+	end
+
+	
+	ORIGINAL_MATRIX = self.to_a
 
 	# ensure self matrix has only integers in each row, and that each row contains each integer...
 
 	# first two steps of algorithm
-	if WORKING_MATRIX.row_count >= WORKING_MATRIX.column_count
-		WORKING_MATRIX.zero_each_row
-		WORKING_MATRIX.zero_each_column
-	else
-		WORKING_MATRIX.zero_each_column
-		WORKING_MATRIX.zero_each_row
-	end
+		# if there are more rows than columns, or the same number, normalize (i.e. "zero") each row, then zero each column
+		# if there are more columns than than rows, zero each column then zero each row
+		# whatever gets zeroed first (rows, or columns) will end up with more zeros
+	self.zero_rows_and_columns
 
 	# third step in algorithm
-	while WORKING_MATRIX.solveable? != true
-		while WORKING_MATRIX.solveable? == "no, too many lonely zeros in columns"
-			# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
-			# find the lowest member in that row besides the zero, add the value of that member to each zero, 
-			# subtract it from every other member (including itself)
-			WORKING_MATRIX.fix_too_many_lonely_zeros_in_columns
-			# Running the fix method might result in a matrix with the same problem, so run solveable? method again
-			# Repeat until the matrix no longer has too many lonely zeros in columns
-			# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
-		end
-
-		while WORKING_MATRIX.solveable? == "no, too many lonely zeros in rows"
-			# to fix: isolate the lonely zeros causing the problem, take each column they occur in
-			# find the lowest member in that column besides the zero, add the value of that lowest member to each zero,
-			# subtract the value of that lowest member from every other member (including itself)
-			WORKING_MATRIX.fix_too_many_lonely_zeros_in_rows
-			# Running the fix method might result in a matrix with the same problem, so run solveable? method again
-			# Repeat until the matrix no longer has too many lonely zeros in rows
-			# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
-		end
-
-		while WORKING_MATRIX.solveable? == "no, min permitted row assignments > max column assignments possible"
-			# to fix: if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix
-			# find the lowest value-sans-zero in the submatrix, then subtract that value from every member-sans-zero of the row in which it occurs
-			# do this only as many times as you need to make min permitted row assignments <= max column assignments possible
-			WORKING_MATRIX.make_more_column_assignments_possible
-		end
-	end
+		# check to see if the Matrix currently supports a complete assignment
+		# if it doesn't, fix it so that it does
+	self.make_matrix_solveable
 
 
 	# fourth step in algorithm
-		# by now the Matrix should be solveable
-		# make the assignments!
+		# by now the Matrix should be solveable; so make the assignments!
 
 
 
@@ -151,6 +136,7 @@ class Matrix
 
 	# CONSTRAINTS----------------------------------------
 	# perhaps allow the user to set these values eventually
+	# better idea: just make hungarian a class, then set these as attributes
 
 	def max_col_assignment 
 		# ceil rounds a float up to the nearest integer
@@ -598,6 +584,53 @@ class Matrix
 						self.send( :[]=, matrix_row_index, matrix_column_index, cell_value - value_to_subtract )
 					end
 				end
+			end
+		end
+		return self
+	end
+
+	# UNTESTED
+	# call on Matrix object; return Matrix object which has been normalized in rows and in columns
+	def zero_rows_and_columns
+		if self.row_count >= self.column_count
+			self.zero_each_row
+			self.zero_each_column
+		else
+			self.zero_each_column
+			self.zero_each_row
+		end
+		return self
+	end
+
+	# UNTESTED
+	# caled on Matrix object; changes the Matrix (if need be) to return a Matrix object which supports complete assignment
+	def make_matrix_solveable
+		while WORKING_MATRIX.solveable? != true
+			while WORKING_MATRIX.solveable? == "no, too many lonely zeros in columns"
+				# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
+				# find the lowest member in that row besides the zero, add the value of that member to each zero, 
+				# subtract it from every other member (including itself)
+				WORKING_MATRIX.fix_too_many_lonely_zeros_in_columns
+				# Running the fix method might result in a matrix with the same problem, so run solveable? method again
+				# Repeat until the matrix no longer has too many lonely zeros in columns
+				# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
+			end
+
+			while WORKING_MATRIX.solveable? == "no, too many lonely zeros in rows"
+				# to fix: isolate the lonely zeros causing the problem, take each column they occur in
+				# find the lowest member in that column besides the zero, add the value of that lowest member to each zero,
+				# subtract the value of that lowest member from every other member (including itself)
+				WORKING_MATRIX.fix_too_many_lonely_zeros_in_rows
+				# Running the fix method might result in a matrix with the same problem, so run solveable? method again
+				# Repeat until the matrix no longer has too many lonely zeros in rows
+				# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
+			end
+
+			while WORKING_MATRIX.solveable? == "no, min permitted row assignments > max column assignments possible"
+				# to fix: if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix
+				# find the lowest value-sans-zero in the submatrix, then subtract that value from every member-sans-zero of the row in which it occurs
+				# do this only as many times as you need to make min permitted row assignments <= max column assignments possible
+				WORKING_MATRIX.make_more_column_assignments_possible
 			end
 		end
 		return self
