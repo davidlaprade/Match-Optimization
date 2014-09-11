@@ -6,43 +6,54 @@ $LOAD_PATH << '.'
 require 'matrix'
 require 'matrix_class_additions'
 
-# called on Matrix object, returns an array of coordinates, one for each assignment in the optimal match
 class Hungarian
 
-	def intitialize(matrix)
-		@working = matrix
-		@original_form = matrix
+	def intitialize(matrix, min_row_assignment, min_col_assignment)
+		# this is the matrix that will be modified as the algorithm runs
+		@working_matrix = matrix
+		# keep a copy of the original, unchanged matrix in array form
+		@original_form = matrix.to_a
+		# quantifies the difference between the working matrix and its original form
 		@degree_of_diff = 0
+		# solution array: will contain coordinates of each assignment in the optimal match
 		@solution = []
 
-		attr_accessor :working, :original_form, :degree_of_diff, :solution
+		@min_row_assignment = min_row_assignment unless min_row_assignment <= 0
+		@min_col_assignment = min_col_assignment unless min_col_assignment <= 0
+
+		@max_col_assignment = (matrix.row_count/matrix.column_count.to_f).ceil
+		@max_row_assignment = (matrix.column_count/matrix.row_count.to_f).ceil
+
+		attr_reader :min_row_assignment, :min_col_assignment, :max_col_assignment, :max_row_assignment
+		attr_accessor :working_matrix, :original_form, :degree_of_diff, :solution
 	end
 
 	# call on Hungarian object; refreshes its degree_of_diff attribute; returns the updated Hungarian object
 	def calc_degree_of_diff
-		self.degree_of_diff = self.original_form.to_a.flatten.inject(:+) - self.working.to_a.flatten.inject(:+)
+		self.degree_of_diff = self.original_form.flatten.inject(:+) - self.working.to_a.flatten.inject(:+)
 		return self
 	end
 
-	
-	ORIGINAL_MATRIX = self.to_a
+	# call on Hungarian object; returns solution array containing coordinates of each assignment in the optimal match
+	def solve
+		# first two steps of algorithm
+		# perform following opererations on working_matrix, save the result
+			# if there are more rows than columns, or the same number, normalize (i.e. "zero") each row, then zero each column
+			# if there are more columns than than rows, zero each column then zero each row
+			# whatever gets zeroed first (rows, or columns) will end up with more zeros
+		self.working_matrix = self.working_matrix.zero_rows_and_columns
 
-	# ensure self matrix has only integers in each row, and that each row contains each integer...
+		# third step in algorithm
+			# check to see if the working matrix currently supports a complete assignment
+			# if it doesn't, fix it so that it does, then calculate how much you've had to change the matrix to generate the solution
+		self.working_matrix = self.working_matrix.make_matrix_solveable
+		self.calc_degree_of_diff
 
-	# first two steps of algorithm
-		# if there are more rows than columns, or the same number, normalize (i.e. "zero") each row, then zero each column
-		# if there are more columns than than rows, zero each column then zero each row
-		# whatever gets zeroed first (rows, or columns) will end up with more zeros
-	self.zero_rows_and_columns
+		# fourth step in algorithm
+			# the working matrix is solveable; so make the assignments!
 
-	# third step in algorithm
-		# check to see if the Matrix currently supports a complete assignment
-		# if it doesn't, fix it so that it does
-	self.make_matrix_solveable
+	end
 
-
-	# fourth step in algorithm
-		# by now the Matrix should be solveable; so make the assignments!
 
 
 
