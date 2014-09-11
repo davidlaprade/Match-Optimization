@@ -89,8 +89,11 @@ class Array
 		end
 	end
 
+
 	def get_ids_and_row_mins
-		return self.collect.with_index {|x,i| x.collect{|y| !y.zero? ? [i,y] : y}-[0] }.flatten(1).uniq.sort_by {|x| [x[1],x[0]]}
+		col_wo_zeros = []
+		self.array_columns.find_all {|column| !column.include?(0)}.each {|col| col.each_with_index {|v,i| col_wo_zeros << [i, v]} }
+		return col_wo_zeros.uniq.sort_by {|x| [x[1],x[0]]}
 	end
 
 end
