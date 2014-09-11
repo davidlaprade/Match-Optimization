@@ -65,6 +65,11 @@ describe Array, "array_columns" do
 		array = [[1]]
 		expect(array.array_columns).to eq([[1]])
 	end
+
+	it "works when columns are uneven in size" do
+		array = [[1,2,3],[9],[6,5]]
+		expect(array.array_columns).to eq([[1,9,6],[2,nil,5],[3,nil,nil]])
+	end
 end
 
 describe Array, ".subtract_value_from_row_in_array" do

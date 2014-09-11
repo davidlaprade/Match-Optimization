@@ -53,11 +53,7 @@ class Array
 		columns = []
 		i = 0
 		while i < self[0].length
-			column_i = []
-			self.each do |row|
-				column_i << row[i]
-			end
-			columns << column_i
+			columns << self.map {|row| row[i]}
 			i = i + 1
 		end
 		return columns
