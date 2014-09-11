@@ -82,7 +82,13 @@ def hungarian
 				# NEW PROBLEM
 				# What I really should be doing to fix this issue is finding the minimum value among COLUMNS that do not contain zeros in 
 				# the problematic submatrices; after all, only changes in those columns will fix the issue
-				# ////////////////////////////////////////////
+				# ///////////////////////////////////////////
+				# SOLUTION
+				# Find the lowest min-sans-zero in a column (that does not contain a zero) in the problematic submatrix
+				# Then: change the row it occurs in, or the column? Choice: change the row. Reason: by changing the row, you will make
+				# it more likely that other zeros will open up in other columns. And, given that the problem is that not enough columns
+				# contain zeros, this seems like it will bring you to a solution faster than making there be multiple zeros in a new column.
+				# ////////////////////////////////////////////////////////////////
 
 				problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
 				# repeat the following until there are no problematic submatrices
@@ -135,11 +141,19 @@ def hungarian
 				return self
 			end
 
-			# TESTED
-			# called on submatrix Array; outputs an ordered array of ALL arrays [p,q] where p is the index of a row in the submatrix
-			# and q is a value in that row; the arrays are ordered by increasing q value, then by increasing row index
+			# UNTESTED
+			# called on submatrix Array; finds columns that do not contain zeros; outputs an ordered array of ALL arrays [p,q] where 
+			# p is the index of a row in the submatrix, and q is a value in that row such that no zeros occur in that value's column
+			# in the submatrix; the arrays are ordered by increasing q value, then by increasing row index
 			def get_ids_and_row_mins
-				return self.collect.with_index {|x,i| x.collect{|y| !y.zero? ? [i,y] : y}-[0] }.flatten(1).uniq.sort_by {|x| [x[1],x[0]]}
+				col_wo_zeros = []
+				self.array_columns.find_all {|column| !column.include?(0)}.each {|col| col.each_with_index {|v,i| col_wo_zeros << [i, v]} }
+				return col_wo_zeros.uniq.sort_by {|x| [x[1],x[0]]}
+				
+				# PREVIOUS VERSION--TESTED
+				# called on submatrix Array; outputs an ordered array of ALL arrays [p,q] where p is the index of a row in the submatrix
+				# and q is a value in that row; the arrays are ordered by increasing q value, then by increasing row index
+				# return self.collect.with_index {|x,i| x.collect{|y| !y.zero? ? [i,y] : y}-[0] }.flatten(1).uniq.sort_by {|x| [x[1],x[0]]}
 			end
 
 			# TESTED
@@ -224,17 +238,13 @@ class Array
 		return count
 	end
 
-	# outputs an ordered array of arrays, each of which containing a column from the array it is called on
+	# called on array; outputs an ordered array of arrays, each of which containing a column from the array it is called on
 	# column and row indexes were preserved: array_columns[0][2] returns the cell in the 1st column in the 3rd row 
 	def array_columns
 		columns = []
 		i = 0
 		while i < self[0].length
-			column_i = []
-			self.each do |row|
-				column_i << row[i]
-			end
-			columns << column_i
+			columns << self.map {|row| row[i]}
 			i = i + 1
 		end
 		return columns
