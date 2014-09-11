@@ -240,7 +240,10 @@ describe Matrix, "zero_rows_and_columns" do
 		solution_matrix = Matrix[[0,0,0,0,0,0],[0,3,4,5,2,0],[0,8,2,7,4,0],[0,4,7,6,2,0],[0,2,8,4,6,0],[0,0,0,0,0,0]]	
 		expect(matrix.zero_rows_and_columns).to eq(solution_matrix)
 	end
+end
 
+describe Matrix, '.make_matrix_solveable' do
+	# caled on Matrix object; changes the Matrix (if need be) to return a Matrix object which supports complete assignment
 
 end
 

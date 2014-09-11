@@ -27,9 +27,16 @@ class Hungarian
 
 	end
 
+	# UNTESTED
 	# call on Hungarian object; refreshes its degree_of_diff attribute; returns the updated Hungarian object
 	def calc_degree_of_diff
 		self.degree_of_diff = self.original_form.flatten.inject(:+) - self.working.to_a.flatten.inject(:+)
+		# //////////////////////
+		# Actually, this isn't what you want. Imagine a 3x3 matrix containing only 10s and a 3x3 matrix containing
+		# all zeros except for a 90; these matrices would be scored as having no degree of difference; that's not right
+		# what it seems like you want is this: calculate the difference between the nth member of the original array and
+		# the nth member of the working array, then sum all of said differences together for each member
+		# //////////////////////
 		return self
 	end
 
@@ -61,6 +68,11 @@ end
 
 #--------------------- HELPER METHODS-----------------------------------------------------
 class Array
+	# called on Array object; returns array in Matrix form
+	def to_m
+		return Matrix.columns(self.transpose)
+	end
+
 	# returns an array containing every combination of members of the array it was called on
 	def every_combination_of_its_members
 		return self.each_with_index.map {|x,i| self.combination(i+1).to_a}.flatten(1).drop(self.length).uniq
@@ -593,13 +605,16 @@ class Matrix
 		return self
 	end
 
-	# UNTESTED
 	# call on Matrix object; return Matrix object which has been normalized in rows and in columns
 	def zero_rows_and_columns
 		if self.row_count >= self.column_count
+			# you can get the same result with a single line of code without invoking helper methods:
+			# return Matrix.columns(self.to_a.each.map {|r| r.map {|v| v - r.min}}.transpose.each.map {|r| r.map {|v| v - r.min}})
 			self.zero_each_row
 			self.zero_each_column
 		else
+			# you can get the same result with a single line of code without invoking helper methods:
+			# return Matrix.columns(self.to_a.transpose.each.map {|r| r.map {|v| v - r.min}}.transpose.each.map {|r| r.map {|v| v - r.min}}.transpose)
 			self.zero_each_column
 			self.zero_each_row
 		end
@@ -609,32 +624,32 @@ class Matrix
 	# UNTESTED
 	# caled on Matrix object; changes the Matrix (if need be) to return a Matrix object which supports complete assignment
 	def make_matrix_solveable
-		while WORKING_MATRIX.solveable? != true
-			while WORKING_MATRIX.solveable? == "no, too many lonely zeros in columns"
+		while self.solveable? != true
+			while self.solveable? == "no, too many lonely zeros in columns"
 				# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
 				# find the lowest member in that row besides the zero, add the value of that member to each zero, 
 				# subtract it from every other member (including itself)
-				WORKING_MATRIX.fix_too_many_lonely_zeros_in_columns
+				self.fix_too_many_lonely_zeros_in_columns
 				# Running the fix method might result in a matrix with the same problem, so run solveable? method again
 				# Repeat until the matrix no longer has too many lonely zeros in columns
 				# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
 			end
 
-			while WORKING_MATRIX.solveable? == "no, too many lonely zeros in rows"
+			while self.solveable? == "no, too many lonely zeros in rows"
 				# to fix: isolate the lonely zeros causing the problem, take each column they occur in
 				# find the lowest member in that column besides the zero, add the value of that lowest member to each zero,
 				# subtract the value of that lowest member from every other member (including itself)
-				WORKING_MATRIX.fix_too_many_lonely_zeros_in_rows
+				self.fix_too_many_lonely_zeros_in_rows
 				# Running the fix method might result in a matrix with the same problem, so run solveable? method again
 				# Repeat until the matrix no longer has too many lonely zeros in rows
 				# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
 			end
 
-			while WORKING_MATRIX.solveable? == "no, min permitted row assignments > max column assignments possible"
+			while self.solveable? == "no, min permitted row assignments > max column assignments possible"
 				# to fix: if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix
 				# find the lowest value-sans-zero in the submatrix, then subtract that value from every member-sans-zero of the row in which it occurs
 				# do this only as many times as you need to make min permitted row assignments <= max column assignments possible
-				WORKING_MATRIX.make_more_column_assignments_possible
+				self.make_more_column_assignments_possible
 			end
 		end
 		return self

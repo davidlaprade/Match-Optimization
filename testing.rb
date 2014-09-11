@@ -19,6 +19,11 @@ require 'pry'
 
 class Array
 
+	# called on Array object; returns array in Matrix form
+	def to_m
+		return Matrix.columns(self.transpose)
+	end
+
 	# returns an array containing every combination of members of the array it was called on
 	def every_combination_of_its_members
 		return self.each_with_index.map {|x,i| self.combination(i+1).to_a}.flatten(1).drop(self.length).uniq
@@ -120,7 +125,34 @@ class Matrix
 		return 1
 	end
 
-	# call on Matrix object; return Matrix object which has been normalized in rows and in columns
+	# caled on Matrix object; changes the Matrix (if need be) to return a Matrix object which supports complete assignment
+	def make_matrix_solveable
+		while self.solveable? != "true"
+
+			while self.solveable? == "no, there are rows without zeros"
+				self.zero_each_row
+			end
+
+			while self.solveable? == "no, there are columns without zeros"
+				self.zero_each_column
+			end
+
+			while self.solveable? == "no, too many lonely zeros in columns"
+				self.fix_too_many_lonely_zeros_in_columns
+			end
+
+			while self.solveable? == "no, too many lonely zeros in rows"
+				self.fix_too_many_lonely_zeros_in_rows
+			end
+
+			while self.solveable? == "no, min permitted row assignments > max column assignments possible"
+				self.make_more_column_assignments_possible
+			end
+		end
+		return self
+	end
+
+
 	def zero_rows_and_columns
 		if self.row_count >= self.column_count
 			self.zero_each_row
@@ -375,32 +407,39 @@ class Matrix
 
 	# returns false if the matrix has no solution in its current state, nil if the matrix passes the tests
 	def solveable?
-		failure_code = true
+		failure_code = []
 
 		matrix_in_array_format = self.to_a
 		test_cases = matrix_in_array_format.every_combination_of_its_members
 		test_cases.each do |submatrix_in_array_format|
 			min_row_assignments_permitted = self.min_row_assignment * submatrix_in_array_format.length
 			if min_row_assignments_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
-				failure_code = "no, min permitted row assignments > max column assignments possible"
+				failure_code.unshift("no, min permitted row assignments > max column assignments possible")
 			end
 		end
 
 		# checks to see if there are too many lonely zeros in any row
 		self.lonely_zeros_per_row.each do |array|
 			if array[1] > self.max_row_assignment
-				failure_code = "no, too many lonely zeros in rows"
+				failure_code.unshift("no, too many lonely zeros in rows")
 			end
 		end
 
 		# checks to see if there are too many lonely zeros in any column
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
-				failure_code = "no, too many lonely zeros in columns"
+				failure_code.unshift("no, too many lonely zeros in columns")
 			end
 		end
 
-		return failure_code
+		failure_code.unshift("no, there are columns without zeros") if self.to_a.transpose.collect {|m| !m.include?(0)}.include?(true)
+		failure_code.unshift("no, there are rows without zeros") if self.to_a.collect {|m| !m.include?(0)}.include?(true)
+
+		if !failure_code.empty?
+			return failure_code.first
+		else
+			return "true"
+		end
 
 	end
 
@@ -490,6 +529,19 @@ class Matrix
 	end
 
 end
+
+
+10.times do
+	# create 6x6 matrix filled with random elements
+	matrix = Array.new(6){Array.new(6){rand(11)}}.to_m
+	print "original matrix:"
+	matrix.print_in_readable_format
+	matrix.make_matrix_solveable
+	print "solveable matrix:"
+	matrix.print_in_readable_format
+	print "--------------------------------------------------------\n"
+end
+
 
 
 
