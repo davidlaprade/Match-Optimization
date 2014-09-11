@@ -89,7 +89,6 @@ class Array
 		end
 	end
 
-
 	def get_ids_and_row_mins
 		col_wo_zeros = []
 		self.array_columns.find_all {|column| !column.include?(0)}.each {|col| col.each_with_index {|v,i| col_wo_zeros << [i, v]} }
@@ -138,13 +137,21 @@ class Matrix
 
 
 	def subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)
+					# binding.pry
 		row_id_plus_row_min = submatrix.get_ids_and_row_mins
+					# binding.pry
 		min_row_assignments_permitted = self.min_row_assignment * submatrix.length
+					# binding.pry
 		while min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
+					# binding.pry
 			row_id = row_id_plus_row_min[0][0]
+					# binding.pry
 			value_to_subtract = row_id_plus_row_min[0][1]
+					# binding.pry
 			self.find_matching_row_then_subtract_value(submatrix[row_id], value_to_subtract)
+					# binding.pry
 			submatrix.subtract_value_from_row_in_array(row_id, value_to_subtract)
+					# binding.pry
 			row_id_plus_row_min = submatrix.get_ids_and_row_mins
 		end
 		return self

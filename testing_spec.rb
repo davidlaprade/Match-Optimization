@@ -3,6 +3,30 @@
 $LOAD_PATH << '.'
 require 'testing'
 
+# //////////////////////////////////////////////////////////////////////////////////////////////////////
+# THE OVERALL CHECKING ALGORITHM HAS TO PASS THIS TEST
+# [1,1,1,1,1,1]
+# [1,4,5,6,3,1]
+# [1,9,3,8,5,1]
+# [1,5,8,7,3,1]
+# [1,3,9,5,7,1]
+# [1,1,1,1,1,1]
+# After rows and columns are zeroed, this becomes:
+# [0,0,0,0,0,0]
+# [0,3,4,5,2,0]
+# [0,8,2,7,4,0]
+# [0,4,7,6,2,0]
+# [0,2,8,4,6,0]
+# [0,0,0,0,0,0]
+# Now, none of these zeros is lonely, so the first two steps in the algorithm should pass it.
+# Moreover, the third step in the algorithm should pass it as well, since 
+# min_row_assmts_permitted = 6 and max_col_assignments_possible=6! But this matrix is plainly unsolveable
+# in its current state.
+# ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 describe Array, "max_column_assmts_possible(max_col_assignment)" do
 	it "returns 2 when called on [[0,4,0],[0,9,0],[0,2,0]] and passed 1" do
 		array = [[0,4,0],[0,9,0],[0,2,0]]
@@ -169,6 +193,8 @@ describe Array, ".get_ids_and_row_mins" do
 		expect(submatrix.get_ids_and_row_mins).to eq([[1,1],[3,1],[2,4],[4,15],[0,23]])
 	end
 
+
+
 end
 
 
@@ -200,7 +226,7 @@ describe Matrix, '.subtract_min_sans_zero_from_rows_to_add_new_column_assignment
 	# other rows, meaning that the min values for the rows are constantly changing
 	it "fixes the matrix minimally when more than one value has to be changed" do
 		matrix = Matrix[[1,9,7,0,5,6,9],[2,7,7,0,7,9,23],[7,3,3,0,4,9,6],[2,6,7,0,7,8,4],[8,3,9,0,8,7,4],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]
-		argument = [[1,9,7,0,5,6,9],[2,7,7,0,7,9,23],[7,3,3,0,4,9,6],[2,6,7,0,7,8,4],[8,3,9,0,2,7,4]]
+		argument = [[1,9,7,0,5,6,9],[2,7,7,0,7,9,23],[7,3,3,0,4,9,6],[2,6,7,0,7,8,4],[8,3,9,0,8,7,4]]
 		matrix.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(argument)
 		expect(matrix).to eq(Matrix[[0,8,6,0,4,5,8],[0,5,5,0,5,7,21],
 		[7,3,3,0,4,9,6],[0,0,0,0,0,1,0],[8,3,9,0,8,7,4],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]])

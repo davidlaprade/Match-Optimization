@@ -56,7 +56,7 @@ def hungarian
 
 
 
-			# TESTINGGGGGGGGGGGGGGG
+			# MUST BE RETESTED
 			# called on Matrix object; returns Matrix corrected such that min permitted row assignments <= max column assignments possible
 			def make_more_column_assignments_possible
 				# //////////////////////////////////////////////
@@ -106,7 +106,7 @@ def hungarian
 			end
 
 
-			# TESTED
+			# MUST BE RETESTED
 			# called on Matrix object, passed array that is a submatrix of the Matrix
 			# makes changes to the Matrix it's called on, subtracting the min-sans-zero value in the submatrix from every
 			# member in the corresponding row in the Matrix with the exception of zeros
@@ -125,6 +125,14 @@ def hungarian
 					# And, if it turns out that the submatrix min_row_assignments is TWO larger than the max_col_assignments possible
 					# then you may need to start zeroing the second lowest value-sans zero in the rows
 
+					PROBLEM: it could be that, say, the first column contains only 1 zero and otherwise all 1's; hence, what this method
+					will currently do is turn the first column into all zeros; this will probably make it so that min_row_assignments_permitted 
+					> submatrix.max_column_assmts_possible(self.max_col_assignment), thus terminating the loop; but this doesn't result in a
+					a matrix that is even close to solveable! 
+					SOLUTION: It's not clear that this is actually an issue. As the algorithm is set up, what would happen to the array next is 
+					the too_many_lonley_zeros_in_columns method would be called on it to fix that issue. The only question is whether this
+					accords with the principle of minimal mutilation...
+
 					# edit the Matrix accordingly
 					row_id = row_id_plus_row_min[0][0]
 					value_to_subtract = row_id_plus_row_min[0][1]
@@ -141,7 +149,7 @@ def hungarian
 				return self
 			end
 
-			# UNTESTED
+			# TESTED
 			# called on submatrix Array; finds columns that do not contain zeros; outputs an ordered array of ALL arrays [p,q] where 
 			# p is the index of a row in the submatrix, and q is a value in that row such that no zeros occur in that value's column
 			# in the submatrix; the arrays are ordered by increasing q value, then by increasing row index
@@ -149,7 +157,7 @@ def hungarian
 				col_wo_zeros = []
 				self.array_columns.find_all {|column| !column.include?(0)}.each {|col| col.each_with_index {|v,i| col_wo_zeros << [i, v]} }
 				return col_wo_zeros.uniq.sort_by {|x| [x[1],x[0]]}
-				
+
 				# PREVIOUS VERSION--TESTED
 				# called on submatrix Array; outputs an ordered array of ALL arrays [p,q] where p is the index of a row in the submatrix
 				# and q is a value in that row; the arrays are ordered by increasing q value, then by increasing row index
