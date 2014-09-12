@@ -5,7 +5,7 @@ require 'benchmark'
 
 
 class Array
-	# ARRAY FRIENDLY, BUT COULD REFACTOR TO SIMPLIFY + TESTED**
+	# ARRAY FRIENDLY, BUT COULD REFACTOR TO SIMPLIF + TESTED
 	# called on Array object, takes column index and value as inputs
 	# outputs Array in which the value provided has been added to each zero in the column and subtracted otherwise
 	def add_value_if_zero_else_subtract_value_in_columns(col_index, value)
@@ -117,7 +117,7 @@ class Array
 		return problematic_columns_per_problematic_row
 	end
 
-	# ARRAY FRIENDLY + TESTED**
+	# ARRAY FRIENDL + TESTED
 	def get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
 		test_cases = self.every_combination_of_its_members
 		problematic_submatrices = []
@@ -133,7 +133,7 @@ class Array
 		return self.each_with_index.map {|x,i| self.combination(i+1).to_a}.flatten(1).drop(self.length).uniq
 	end
 
-	# ARRAY FRIENDLY + TESTED**
+	# ARRAY FRIENDL + TESTED
 	def find_matching_row_then_subtract_value(row_to_match, value_to_subtract)
 		return self.map! {|row| row==row_to_match ? row.map {|value| value!=0 ? value - value_to_subtract : value}  : row}
 	end
@@ -195,18 +195,18 @@ class Array
 		dup = working_matrix.dup
 		working_matrix = working_matrix.transpose if dup.row_count > dup.column_count
 
-		while working_matrix.solveable? != true
+		while working_matrix.solveable? != "true"
 			# you want to include the following two methods in case the methods below them change the Matrix in such a way
 			# as to remove a lonely zero from a row/column
-			if working_matrix.solveable? == "no, there are rows without zeros"
+			if working_matrix.solveable?.include?("no, there are rows without zeros")
 				working_matrix = working_matrix.zero_each_row
 			end
 
-			while working_matrix.solveable? == "no, there are columns without zeros"
+			while working_matrix.solveable?.include?("no, there are columns without zeros")
 				working_matrix = working_matrix.zero_each_column
 			end
 
-			while working_matrix.solveable? == "no, too many lonely zeros in columns"
+			while working_matrix.solveable?.include?("no, too many lonely zeros in columns")
 				# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
 				# find the lowest member in that row besides the zero, add the value of that member to each zero, 
 				# subtract it from every other member (including itworking_matrix)
@@ -216,7 +216,7 @@ class Array
 				# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
 			end
 
-			while working_matrix.solveable? == "no, too many lonely zeros in rows"
+			while working_matrix.solveable?.include?("no, too many lonely zeros in rows")
 				# to fix: isolate the lonely zeros causing the problem, take each column they occur in
 				# find the lowest member in that column besides the zero, add the value of that lowest member to each zero,
 				# subtract the value of that lowest member from every other member (including itworking_matrix)
@@ -225,7 +225,7 @@ class Array
 				# Repeat until the matrix no longer has too many lonely zeros in rows
 				# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
 			end
-			while working_matrix.solveable? == "no, min permitted row assignments > max column assignments possible"
+			while working_matrix.solveable?.include?("no, min permitted row assignments > max column assignments possible")
 				# to fix: if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix
 				# find the lowest value-sans-zero in the submatrix, then subtract that value from every member-sans-zero of the row in which it occurs
 				# do this only as many times as you need to make min permitted row assignments <= max column assignments possible
@@ -240,7 +240,7 @@ class Array
 		return working_matrix
 	end
 
-	# ARRAY FRIENDLY + TESTED**
+	# ARRAY FRIENDL + TESTED
 	def make_more_column_assignments_possible
 		problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
 		while !problematic_submatrices.empty?
@@ -301,16 +301,10 @@ class Array
 		return Matrix.columns(self.transpose)
 	end
 
-	# ARRAY FRIENDLY
-	# UNTESTED
-	# called on Array object; returns failure code if the matrix-array has no solution in its current state, 
-	# returns true if the matrix-array passes the tests
+	# ARRAY FRIENDLY + TESTED
 	def solveable?
 		failure_code = []
 
-		# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
-		# if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix, the parent matrix is unsolveable
-		# run this test first, as you want to fix it last (the solveable? method will return the failure code of the last test it fails)
 		test_cases = self.every_combination_of_its_members
 		test_cases.each do |submatrix|
 			min_row_assignments_permitted = self.min_row_assignment * submatrix.length
@@ -319,24 +313,12 @@ class Array
 			end
 		end
 
-		# how this ^^ works:
-			# 	populate array of every combination of the matrix_array rows
-			# 	for each member of the combination array:
-			# 		find min row assignments permitted
-			# 		find max column assignments possible
-			# 		check if min_row_assmts_permitted > max_col_assmts_poss
-			# 			return false
-		# this seems to catch all of the cases where min allowable column assignments > max num of possible row assignments
-		# so I didn't write a corresponding test for that
-
-		# checks to see if there are too many lonely zeros in any row
 		self.lonely_zeros_per_row.each do |array|
 			if array[1] > self.max_row_assignment
 				failure_code.unshift("no, too many lonely zeros in rows")
 			end
 		end
 
-		# checks to see if there are too many lonely zeros in any column
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
 				failure_code.unshift("no, too many lonely zeros in columns")
@@ -347,15 +329,14 @@ class Array
 		failure_code.unshift("no, there are rows without zeros") if self.collect {|row| row.include?(0)}.include?(false)
 
 		if !failure_code.empty?
-			return failure_code.first
+			return failure_code
 		else
 			return "true"
 		end
 
 	end
 
-	# ARRAY FRIENDLY
-	# TESTED**
+	# ARRAY FRIENDLY + TESTED
 	def subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)
 		row_id_plus_row_min = submatrix.get_ids_and_row_mins
 		min_row_assignments_permitted = self.min_row_assignment * submatrix.length
@@ -421,10 +402,6 @@ class Array
 	# call on Array object; return Array object which has been normalized in rows and in columns
 	def zero_rows_and_columns
 		new_array = self.dup
-		# if there are more rows than columns, zeroing rows first will produce many zeros in columns, making it likely
-		# that additional changes won't have to be made once the columns are zeroed; the same holds the other way around
-		# in the case in which there are more columns than rows; thus it accords with the principle of minimal mutilation
-		# to run these steps based on the number of rows vs the number of columns
 		if new_array.row_count >= new_array.column_count
 			new_array = new_array.zero_each_row
 			new_array = new_array.zero_each_column
