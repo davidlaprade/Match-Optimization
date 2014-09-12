@@ -1,5 +1,6 @@
 require 'matrix'
 require 'pry'
+require 'benchmark'
 
 # new challenge for solveablility: the following matrix does not have too many lonely zeros in any column or row
 	# m = Matrix[[0,3,0],[0,5,0],[0,1,0]]
@@ -532,10 +533,10 @@ end
 
 1.times do
 	# create 6x6 matrix filled with random elements
-	matrix = Array.new(20){Array.new(10){rand(9)+1}}.to_m
+	matrix = Array.new(8){Array.new(60){rand(9)+1}}.to_m
 	print "original matrix:"
 	matrix.print_in_readable_format
-	matrix.make_matrix_solveable
+	print "Time to get solution: %f seconds\n" % Benchmark.realtime { matrix.make_matrix_solveable }.to_f
 	print "solveable matrix:"
 	matrix.print_in_readable_format
 	print "--------------------------------------------------------\n"
