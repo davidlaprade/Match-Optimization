@@ -25,15 +25,8 @@ class Hungarian
 		@solution = []
 		attr_accessor :working_matrix, :original_form, :degree_of_diff, :solution
 
-		# @min_row_assignment = min_row_assignment unless min_row_assignment <= 0
-		# @min_col_assignment = min_col_assignment unless min_col_assignment <= 0
-		# @max_col_assignment = (matrix.row_count/matrix.column_count.to_f).ceil
-		# @max_row_assignment = (matrix.column_count/matrix.row_count.to_f).ceil
-		# attr_reader :min_row_assignment, :min_col_assignment, :max_col_assignment, :max_row_assignment
-
 	end
 
-	# ARRAY FRIENDLY
 	# UNTESTED
 	# call on Hungarian object; refreshes its degree_of_diff attribute; returns the updated Hungarian object
 	def calc_degree_of_diff
@@ -47,17 +40,39 @@ class Hungarian
 	# call on Hungarian object; returns solution array containing coordinates of each assignment in the optimal match
 	def solve
 		# first step in algorithm
-		self.working_matrix = self.working_matrix.zero_rows_and_columns
-
-		# second step in algorithm
 			# check to see if the working matrix currently supports a complete assignment
 			# if it doesn't, fix whatever is preventing it from supporting an assignment, then check again for new issues
 			# once there are no issues, calculate how much you've had to change the matrix to generate the solution
 		self.working_matrix = make_matrix_solveable(self.working_matrix)
 		self.calc_degree_of_diff
 
-		# third step in algorithm
+		# second step in algorithm
 			# the working matrix is solveable; so make the assignments!
+
+
+
+
+			PROBLEM
+			How will I represent assignments?
+				Answer: make a duplicate of the working array, called MASK, then designate assignments with "!"
+				So, when I assign a zero, I will replace it with "!" in the mask array
+
+				Here is how you get the coordinates of each assignment represented by a "!"
+				mask.map.with_index {|row,row_index| row.map.with_index {|v,col_index| v=="!" ? [row_index,col_index] : v}}.flatten(1).find_all {|x| x.class==Array}
+
+
+			Step 1
+				Code the following:
+					Assign to all lonely zeros; you can get the coordinates with array.lonely_zeros, replace them with "!"s
+					Replace each zero that occurs in a row or column with the max_allowable_assignments with a "X"
+					Search for lonely zeros again; repeat until this process changes nothing
+
+
+
+
+
+
+
 
 	end
 
