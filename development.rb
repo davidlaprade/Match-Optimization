@@ -52,13 +52,16 @@ class Hungarian
 	# call on Hungarian object; returns solution array containing coordinates of each assignment in the optimal match
 	def solve
 		# first step in algorithm
+		self.working_matrix = self.working_matrix.zero_rows_and_columns
+
+		# second step in algorithm
 			# check to see if the working matrix currently supports a complete assignment
 			# if it doesn't, fix whatever is preventing it from supporting an assignment, then check again for new issues
 			# once there are no issues, calculate how much you've had to change the matrix to generate the solution
 		self.working_matrix = self.working_matrix.make_matrix_solveable
 		self.calc_degree_of_diff
 
-		# fourth step in algorithm
+		# third step in algorithm
 			# the working matrix is solveable; so make the assignments!
 
 	end
@@ -520,7 +523,7 @@ class Array
 
 	# ARRAY FRIENDLY
 	# UNTESTED
-	# called on Array object; subtracts the lowest value in each row from each member of that row, returns correct array
+	# called on Array object; subtracts the lowest value in each row from each member of that row, returns corrected array
 	def zero_each_row
 		self = self.each.map {|r| r.map {|v| v - r.min}}
 		return self
@@ -528,7 +531,7 @@ class Array
 
 	# ARRAY FRIENDLY
 	# UNTESTED
-	# called on Array object; subtracts the lowest value in each column from each member of that column, returns correct array
+	# called on Array object; subtracts the lowest value in each column from each member of that column, returns corrected array
 	def zero_each_column
 		self = self.transpose.each.map {|r| r.map {|v| v - r.min}}.transpose
 		return self
@@ -572,6 +575,24 @@ class Array
 			end
 		end
 		return self
+	end
+
+	# ARRAY FRIENDLY, TESTED
+	# call on Array object; return Array object which has been normalized in rows and in columns
+	def zero_rows_and_columns
+		new_array = self.dup
+		# if there are more rows than columns, zeroing rows first will produce many zeros in columns, making it likely
+		# that additional changes won't have to be made once the columns are zeroed; the same holds the other way around
+		# in the case in which there are more columns than rows; thus it accords with the principle of minimal mutilation
+		# to run these steps based on the number of rows vs the number of columns
+		if new_array.row_count >= new_array.column_count
+			new_array = new_array.zero_each_row
+			new_array = new_array.zero_each_column
+		else
+			new_array = new_array.zero_each_column
+			new_array = new_array.zero_each_row
+		end
+		return new_array
 	end
 
 

@@ -191,9 +191,9 @@ describe Array, ".get_ids_and_row_mins" do
 
 end
 
-# NONEXISTENT
+# No longer using this method
 describe Array, "zero_rows_and_columns" do
-	# call on Matrix object; return Matrix object which has been normalized in rows and in columns
+	# call on Array object; return Array object which has been normalized in rows and in columns
 
 	# generates array of arrays N rows by M columns filled with random integers from 1-P inclusive
 	# Array.new(N) {Array.new(M) {rand(P)+1}}
@@ -206,47 +206,37 @@ describe Array, "zero_rows_and_columns" do
 
 
 	it "works when # of columns = # of rows" do
-		matrix = Matrix[[4,11,9,7,4,6,3,3],[12,5,11,11,12,9,2,14],[3,14,14,11,2,4,7,3],[14,3,12,1,2,15,0,1],
+		matrix = [[4,11,9,7,4,6,3,3],[12,5,11,11,12,9,2,14],[3,14,14,11,2,4,7,3],[14,3,12,1,2,15,0,1],
 				[0,11,9,3,5,7,5,14],[13,9,15,7,3,5,3,1],[3,2,15,11,2,12,12,14],[14,8,6,14,7,7,2,4]]
-		expect(matrix.zero_rows_and_columns).to eq(Matrix[[1, 8, 2,  3, 1,  1,  0, 0], [10, 3, 5,  8, 10, 5,  0, 12], [1, 12, 8,  8, 0,  0,  5, 1], [14, 3, 8,  0, 2,  13, 0, 1], 
+		expect(matrix.zero_rows_and_columns).to eq([[1, 8, 2,  3, 1,  1,  0, 0], [10, 3, 5,  8, 10, 5,  0, 12], [1, 12, 8,  8, 0,  0,  5, 1], [14, 3, 8,  0, 2,  13, 0, 1], 
 				[0, 11, 5,  2, 5,  5,  5, 14], [12, 8, 10, 5, 2,  2,  2,  0], [1,  0, 9,  8, 0,  8,  10, 12], [12, 6, 0, 11, 5,  3,  0,  2]])
 	end
 
 	it "works when # of rows > # of columns" do
-		rand_array = Array.new(40) {Array.new(10) {rand(11)}}
-		solution = rand_array.each.map {|r| r.map {|v| v - r.min}}.transpose.each.map {|r| r.map {|v| v - r.min}}.transpose
-		matrix = Matrix.columns(rand_array.transpose)
-		solution_matrix = Matrix.columns(solution.transpose)
-		expect(matrix.zero_rows_and_columns).to eq(solution_matrix)
+		matrix = Array.new(40) {Array.new(10) {rand(11)}}
+		solution = matrix.each.map {|r| r.map {|v| v - r.min}}.transpose.each.map {|r| r.map {|v| v - r.min}}.transpose
+		expect(matrix.zero_rows_and_columns).to eq(solution)
 	end
 
 	it "works when # of columns > # of rows" do
-		rand_array = Array.new(20) {Array.new(80) {rand(11)}}
-		solution = rand_array.transpose.each.map {|r| r.map {|v| v - r.min}}.transpose.each.map {|r| r.map {|v| v - r.min}}
-		matrix = Matrix.columns(rand_array.transpose)
-		solution_matrix = Matrix.columns(solution.transpose)
-		expect(matrix.zero_rows_and_columns).to eq(solution_matrix)
+		matrix = Array.new(20) {Array.new(80) {rand(11)}}
+		solution = matrix.transpose.each.map {|r| r.map {|v| v - r.min}}.transpose.each.map {|r| r.map {|v| v - r.min}}
+		expect(matrix.zero_rows_and_columns).to eq(solution)
 	end
 
 	it "changes nothing when called on a Matrix that is already normalized" do
-		rand_array = Array.new(20) {Array.new(80) {rand(11)}}
-		solution = rand_array.transpose.each.map {|r| r.map {|v| v - r.min}}.transpose.each.map {|r| r.map {|v| v - r.min}}
-		matrix = Matrix.columns(rand_array.transpose)
-		solution_matrix = Matrix.columns(solution.transpose)
-		expect(solution_matrix.zero_rows_and_columns).to eq(solution_matrix)
+		matrix = Array.new(20) {Array.new(80) {rand(11)}}
+		solution = matrix.transpose.each.map {|r| r.map {|v| v - r.min}}.transpose.each.map {|r| r.map {|v| v - r.min}}
+		expect(solution.zero_rows_and_columns).to eq(solution)
 	end
 
 	it "changes nothing in problem case" do
-		matrix = Matrix[[1,1,1,1,1,1],[1,4,5,6,3,1],[1,9,3,8,5,1],[1,5,8,7,3,1],[1,3,9,5,7,1],[1,1,1,1,1,1]]
-		solution_matrix = Matrix[[0,0,0,0,0,0],[0,3,4,5,2,0],[0,8,2,7,4,0],[0,4,7,6,2,0],[0,2,8,4,6,0],[0,0,0,0,0,0]]	
+		matrix = [[1,1,1,1,1,1],[1,4,5,6,3,1],[1,9,3,8,5,1],[1,5,8,7,3,1],[1,3,9,5,7,1],[1,1,1,1,1,1]]
+		solution_matrix = [[0,0,0,0,0,0],[0,3,4,5,2,0],[0,8,2,7,4,0],[0,4,7,6,2,0],[0,2,8,4,6,0],[0,0,0,0,0,0]]	
 		expect(matrix.zero_rows_and_columns).to eq(solution_matrix)
 	end
 end
 
-describe Array, 'make_matrix_solveable' do
-	# passed an array object (Hungarian.working_matrix); minimally changes the array to return an array which supports complete assignment
-	# make_matrix_solveable(array_matrix)
-end
 
 describe Array, '.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)' do
 	# called on Array object, passed array that is a submatrix (Array format) of the Array-matrix

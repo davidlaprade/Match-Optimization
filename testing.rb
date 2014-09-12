@@ -198,7 +198,7 @@ class Array
 		while working_matrix.solveable? != true
 			# you want to include the following two methods in case the methods below them change the Matrix in such a way
 			# as to remove a lonely zero from a row/column
-			while working_matrix.solveable? == "no, there are rows without zeros"
+			if working_matrix.solveable? == "no, there are rows without zeros"
 				working_matrix = working_matrix.zero_each_row
 			end
 
@@ -417,6 +417,23 @@ class Array
 		return self
 	end
 
+	# ARRAY FRIENDLY, TESTED
+	# call on Array object; return Array object which has been normalized in rows and in columns
+	def zero_rows_and_columns
+		new_array = self.dup
+		# if there are more rows than columns, zeroing rows first will produce many zeros in columns, making it likely
+		# that additional changes won't have to be made once the columns are zeroed; the same holds the other way around
+		# in the case in which there are more columns than rows; thus it accords with the principle of minimal mutilation
+		# to run these steps based on the number of rows vs the number of columns
+		if new_array.row_count >= new_array.column_count
+			new_array = new_array.zero_each_row
+			new_array = new_array.zero_each_column
+		else
+			new_array = new_array.zero_each_column
+			new_array = new_array.zero_each_row
+		end
+		return new_array
+	end
 
 end
 
