@@ -11,6 +11,10 @@ class Hungarian
 	# ARRAY FRIENDLY
 	# passed an Array object; consider also passing in min_row_assignment, min_col_assignment
 	def intitialize(matrix_array)
+		# ensure that matrix_array is in matrix format
+		# will throw an ExceptionForMatrix::ErrDimensionMismatch error if it is not
+		matrix_array.to_m
+
 		# this is the matrix that will be modified as the algorithm runs
 		@working_matrix = matrix_array
 		# keep a copy of the original, unchanged matrix in array form
@@ -107,7 +111,26 @@ class Array
 		return self.each_with_index.map {|x,i| self.combination(i+1).to_a}.flatten(1).drop(self.length).uniq
 	end
 
-	# BECOMING ARRAY FRIENDLY
+	# ARRAY FRIENDLY
+	# UNTESTED
+	# called on Array object; returns an array of arrays [n,m] where n is the row index and m is the number of lonely zeros in the row
+	def lonely_zeros_per_row
+		zeros = []
+		self.map.with_index {|row,i| zeros<<[i, row.find_all.with_index {|value,col_index| value==0 && self.transpose[col_index].count(0)==1}.count]}
+		return zeros
+	end
+
+	# ARRAY FRIENDLY
+	# UNTESTED
+	# called on Array object; returns an array of arrays [n,m] where n is the column index and m is the number of lonely 
+	# zeros in the column
+	def lonely_zeros_per_column
+		zeros = []
+		self.transpose.map.with_index {|col,i| zeros<<[i, col.find_all.with_index {|value,row_index| value==0 && self[row_index].count(0)==1}.count]}
+		return zeros
+	end
+
+	# BECOMING .........................ARRAY FRIENDLY
 	# UNTESTED
 	# caled on array object (Hungarian.working_matrix); minimally changes the array to return an array which supports complete assignment
 	def make_matrix_solveable
@@ -115,6 +138,8 @@ class Array
 		# so, just transpose the array to create an array with more columns than rows
 		dup = self.dup
 		self = self.transpose if dup.row_count > dup.column_count
+
+		# ------ARRAY FRIENDLY UP TO HERE, WORKING ON MAKING SOLVEABLE ARRAY FRIENDLY------------------------------------
 
 		while self.solveable? != true
 			# you want to include the following two methods in case the methods below them change the Matrix in such a way
@@ -155,14 +180,16 @@ class Array
 			end
 		end
 
-		# tanspose the Matrix back into its original form if it was flipped to speed things up
-		self = self.to_a.transpose.to_m if dup.row_count > dup.column_count
+		# tanspose the matrix back into its original form if it was flipped
+		self = self.transpose if dup.row_count > dup.column_count
 
 		return self
 	end
 
-	# outputs the maximum number of assignments that could be made in columns given the current distribution of values and the max permitted column assignment
-	# does not take into account row assignments or loneliness; must be called on an array
+	# ARRAY FRIENDLY
+	# TESTED
+	# called on Array object; outputs the maximum number of assignments that could be made in columns given the current 
+	# distribution of values and the max permitted column assignment does not take into account row assignments or loneliness
 	def max_column_assmts_possible(max_col_assignment)
 		number_of_max_assignments = 0
 		self.array_columns.each do |column|
@@ -175,6 +202,30 @@ class Array
 		return number_of_max_assignments
 	end
 
+	# ARRAY FRIENDLY
+	# UNTESTED
+	# CONSTRAINTS----------------------------------------
+	# consider allowing the user to set these values eventually, or just making them attribtes of the Hungarian object
+	# for now, though, it is easier to be able to call these as if they were attributes of the working_matrix attribute
+
+	def max_col_assignment 
+		return (self.row_count/self.column_count.to_f).ceil
+	end
+
+	def max_row_assignment
+		return (self.column_count/self.row_count.to_f).ceil
+	end
+
+	def min_row_assignment
+		return 1
+	end
+
+	def min_col_assignment
+		return 1
+	end
+	# -----------------------------------------------------
+
+
 	# UNTESTED
 	# called on Array object; returns number of rows in array
 	def row_count
@@ -186,6 +237,61 @@ class Array
 		return Matrix.columns(self.transpose)
 	end
 
+	# BECOMING...............ARRAY FRIENDLY
+	# UNTESTED
+	# called on Array object; returns failure code if the matrix-array has no solution in its current state, 
+	# returns true if the matrix-array passes the tests
+	def solveable?
+		failure_code = []
+
+		# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
+		# if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix, the parent matrix is unsolveable
+		# run this test first, as you want to fix it last (the solveable? method will return the failure code of the last test it fails)
+		test_cases = self.every_combination_of_its_members
+		test_cases.each do |submatrix|
+			min_row_assignments_permitted = self.min_row_assignment * submatrix.length
+			if min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
+				failure_code.unshift("no, min permitted row assignments > max column assignments possible")
+			end
+		end
+
+		# how this ^^ works:
+			# 	populate array of every combination of the matrix_array rows
+			# 	for each member of the combination array:
+			# 		find min row assignments permitted
+			# 		find max column assignments possible
+			# 		check if min_row_assmts_permitted > max_col_assmts_poss
+			# 			return false
+		# this seems to catch all of the cases where min allowable column assignments > max num of possible row assignments
+		# so I didn't write a corresponding test for that
+
+		# checks to see if there are too many lonely zeros in any row
+		self.lonely_zeros_per_row.each do |array|
+			if array[1] > self.max_row_assignment
+				failure_code.unshift("no, too many lonely zeros in rows")
+			end
+		end
+
+# ----------------------------------ARRAY FRIENDLY UP TO HERE
+
+		# checks to see if there are too many lonely zeros in any column
+		self.lonely_zeros_per_column.each do |array|
+			if array[1] > self.max_col_assignment
+				failure_code.unshift("no, too many lonely zeros in columns")
+			end
+		end
+
+		failure_code.unshift("no, there are columns without zeros") if self.to_a.transpose.collect {|m| !m.include?(0)}.include?(true)
+		failure_code.unshift("no, there are rows without zeros") if self.to_a.collect {|m| !m.include?(0)}.include?(true)
+
+		if !failure_code.empty?
+			return failure_code.first
+		else
+			return "true"
+		end
+
+	end
+
 	# called on Array; subtracts the value given as second parameter from each member of the row specified, unless zero
 	def subtract_value_from_row_in_array(row_id, value_to_subtract)
 		raise 'Row does not exist in array' if row_id >= self.length || row_id < 0
@@ -194,7 +300,21 @@ class Array
 		return self
 	end
 
+	# ARRAY FRIENDLY
+	# UNTESTED
+	# called on Array object; subtracts the lowest value in each row from each member of that row, returns correct array
+	def zero_each_row
+		self = self.each.map {|r| r.map {|v| v - r.min}}
+		return self
+	end
 
+	# ARRAY FRIENDLY
+	# UNTESTED
+	# called on Array object; subtracts the lowest value in each column from each member of that column, returns correct array
+	def zero_each_column
+		self = self.transpose.each.map {|r| r.map {|v| v - r.min}}.transpose
+		return self
+	end
 
 
 end
@@ -217,29 +337,6 @@ class Matrix
 	def []=(row, column, value)
 		@rows[row][column] = value
 	end
-
-	# CONSTRAINTS----------------------------------------
-	# perhaps allow the user to set these values eventually
-	# better idea: just make hungarian a class, then set these as attributes
-
-	def max_col_assignment 
-		# ceil rounds a float up to the nearest integer
-		(self.row_count.fdiv(self.column_count)).ceil
-	end
-
-	def max_row_assignment
-		# ceil rounds a float up to the nearest integer
-		(self.column_count.fdiv(self.row_count)).ceil
-	end
-
-	def min_row_assignment
-		return 1
-	end
-
-	def min_col_assignment
-		return 1
-	end
-	# -----------------------------------------------------
 
 	# returns an array of the rows (data type: vectors) in the Matrix it's called on
 	def rows
@@ -289,28 +386,6 @@ class Matrix
 		return columns_over
 	end
 
-	# subtracts the lowest value in each row from each member of that row
-	def zero_each_row
-		self.rows.each_with_index do |row, row_index|
-			min = row.min
-			row.each_with_index do |value, col_index|
-				self.send( :[]=,row_index,col_index,value-min )
-			end
-		end
-		return self
-	end
-
-	# subtracts the lowest value in each column from each member of that column
-	def zero_each_column
-		self.columns.each_with_index do |column, column_index|
-			min = column.min
-			column.each_with_index do |value, row_index|
-				self.send( :[]=,row_index,col_index,value-min )
-			end
-		end
-		return self
-	end
-
 	# returns an array of coordinates [n,m] of every lonely zero
 	# a lonely zero is one which occurs as the sole zero in EITHER its row or its column
 	# number of lonely zeros
@@ -324,36 +399,6 @@ class Matrix
 			end
 		end
 		return zeros
-	end
-
-	# returns an array of arrays [n,m] where n is the column index and m is the number of lonely zeros in the column
-	def lonely_zeros_per_column
-		zeros_per_column = []
-		self.columns.each_with_index do |column, col_index|
-			zeros = 0
-			self.lonely_zeros.each do |array|
-				if array[1] == col_index
-					zeros = zeros + 1
-				end
-			end
-			zeros_per_column << [col_index, zeros]
-		end
-		return zeros_per_column
-	end
-
-	# returns an array of arrays [n,m] where n is the row index and m is the number of lonely zeros in the row
-	def lonely_zeros_per_row
-		zeros_per_row = []
-		self.rows.each_with_index do |row, row_index|
-			zeros = 0
-			self.lonely_zeros.each do |array|
-				if array[0] == row_index
-					zeros = zeros + 1
-				end
-			end
-			zeros_per_row << [row_index, zeros]
-		end
-		return zeros_per_row
 	end
 
 	# outputs the lowest permitted number of row assignments
@@ -392,59 +437,7 @@ class Matrix
 		return number_of_max_assignments
 	end
 
-	# returns failure code if the matrix has no solution in its current state, true if the matrix passes the tests
-	def solveable?
-		failure_code = []
-
-		# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
-		# if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix, the parent matrix is unsolveable
-		# run this test first, as you want to fix it last (the solveable? method will return the failure code of the last test it fails)
-		matrix_in_array_format = self.to_a
-		test_cases = matrix_in_array_format.every_combination_of_its_members
-		test_cases.each do |submatrix_in_array_format|
-			min_row_assignments_permitted = self.min_row_assignment * submatrix_in_array_format.length
-			if min_row_assignments_permitted > submatrix_in_array_format.max_column_assmts_possible(self.max_col_assignment)
-				failure_code.unshift("no, min permitted row assignments > max column assignments possible")
-			end
-		end
-
-		# how this works:
-			# 	turn matrix into an array
-			# 	populate array of every combination of the matrix_array rows
-			# 	for each member of the combination array:
-			# 		find min row assignments permitted
-			# 		find max column assignments possible
-			# 		check if min_row_assmts_permitted > max_col_assmts_poss
-			# 			return false
-		# this seems to catch all of the cases where min allowable column assignments > max num of possible row assignments
-		# so I didn't write a corresponding test for that
-
-		# checks to see if there are too many lonely zeros in any row
-		self.lonely_zeros_per_row.each do |array|
-			if array[1] > self.max_row_assignment
-				failure_code.unshift("no, too many lonely zeros in rows")
-			end
-		end
-
-		# checks to see if there are too many lonely zeros in any column
-		self.lonely_zeros_per_column.each do |array|
-			if array[1] > self.max_col_assignment
-				failure_code.unshift("no, too many lonely zeros in columns")
-			end
-		end
-
-		failure_code.unshift("no, there are columns without zeros") if self.to_a.transpose.collect {|m| !m.include?(0)}.include?(true)
-		failure_code.unshift("no, there are rows without zeros") if self.to_a.collect {|m| !m.include?(0)}.include?(true)
-
-		if !failure_code.empty?
-			return failure_code.first
-		else
-			return "true"
-		end
-
-	end
-
-
+	
 
 
 	# called on Matrix object, takes row index and value as inputs

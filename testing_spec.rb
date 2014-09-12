@@ -194,8 +194,8 @@ end
 describe Matrix, "zero_rows_and_columns" do
 	# call on Matrix object; return Matrix object which has been normalized in rows and in columns
 
-	# generates array of arrays N rows by M columns filled with random integers from 0-(P-1)
-	# Array.new(N) {Array.new(M) {rand(P)}}
+	# generates array of arrays N rows by M columns filled with random integers from 1-P inclusive
+	# Array.new(N) {Array.new(M) {rand(P)+1}}
 
 	# normalizes rows and then columns:
 	# .each.map {|r| r.map {|v| v - r.min}}.transpose.each.map {|r| r.map {|v| v - r.min}}.transpose
