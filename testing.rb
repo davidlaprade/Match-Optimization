@@ -5,10 +5,9 @@ require 'benchmark'
 
 
 class Array
-	# ARRAY FRIENDLY, BUT COULD REFACTOR TO SIMPLIFY
-	# UNTESTED
-	# called on Matrix object, takes column index and value as inputs
-	# outputs Matrix in which the value provided has been added to each zero in the column and subtracted otherwise
+	# ARRAY FRIENDLY, BUT COULD REFACTOR TO SIMPLIFY + TESTED**
+	# called on Array object, takes column index and value as inputs
+	# outputs Array in which the value provided has been added to each zero in the column and subtracted otherwise
 	def add_value_if_zero_else_subtract_value_in_columns(col_index, value)
 		if !(self.array_columns[col_index] == nil)
 			self.array_columns[col_index].each_with_index do |cell_value, row_index|
@@ -22,10 +21,7 @@ class Array
 		return self
 	end
 
-	# ARRAY FRIENDLY, BUT COULD BE REFACTORED
-	# UNTESTED
-	# called on Array object, takes row index and value as inputs
-	# outputs Array in which the value provided has been added to each zero and subtracted otherwise
+	# ARRAY FRIENDLY + TESTED
 	def add_value_if_zero_else_subtract_value_in_rows(row_index, value)
 		if !(self[row_index] == nil)
 			self[row_index].each_with_index do |cell_value, col_index|
@@ -74,12 +70,7 @@ class Array
 		# return self.collect.with_index {|x,i| x.collect{|y| !y.zero? ? [i,y] : y}-[0] }.flatten(1).uniq.sort_by {|x| [x[1],x[0]]}
 	end
 
-	# ARRAY FRIENDLY, BUT COULD BE REFACTORED TO SIMPLIFY
-	# UNTESTED
-	# called on Matrix object; outputs array of arrays [n,m,o] where n is the index of a column with too many lonely zeros
-	# m is the number of lonely zero's in column n
-	# and o is an ORDERED array that contains arrays [p,q] where p is a row index of a lonely zero in column n, 
-	# and q is the min value in that row other than zero, ordered by ascending q value
+	# ARRAY FRIENDLY + TESTED
 	def get_problematic_rows_per_problematic_column
 		problematic_rows = []
 		self.lonely_zeros_per_column.each do |array|
@@ -103,12 +94,6 @@ class Array
 		return problematic_rows
 	end
 
-	# ARRAY FRIENDLY - COULD BE REFACTORED TO SIMPLIFY
-	# UNTESTED
-	# called on Array object; outputs array of arrays [n,m,o] where n is the index of a row with too many lonely zeros
-	# m is the number of lonely zero's in row n
-	# and o is an ORDERED array that contains arrays [p,q] where p is a column index of a lonely zero in row n, 
-	# and q is the min value in that column other than zero, ordered by ascending q value
 	def get_problematic_columns_per_problematic_row
 		problematic_columns_per_problematic_row = []
 		self.lonely_zeros_per_row.each do |array|
@@ -132,19 +117,13 @@ class Array
 		return problematic_columns_per_problematic_row
 	end
 
-	# ARRAY FRIENDLY
-	# UNTESTED
-	# Call on Matrix object; returns array of submatrices (in array format) for which the number of minimum row assignments permitted
-	# is greater than then number of possible column assignments
+	# ARRAY FRIENDLY + TESTED**
 	def get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
-		# get every possible submatrix
 		test_cases = self.every_combination_of_its_members
-		# find the problematic submatrices
 		problematic_submatrices = []
 		min_row_assign = self.min_row_assignment
 		max_col = self.max_col_assignment
 		test_cases.collect {|x| min_row_assign * x.length > x.max_column_assmts_possible(max_col) ? problematic_submatrices << x : x}
-		# return result
 		return problematic_submatrices
 	end
 
@@ -154,46 +133,20 @@ class Array
 		return self.each_with_index.map {|x,i| self.combination(i+1).to_a}.flatten(1).drop(self.length).uniq
 	end
 
-	# ARRAY FRIENDLY
-	# UNTESTED
-	# called on Array; finds all rows matching the row_to_match (data type: array) given as first parameter;
-	# subtracts input value from each member of each row matching the row_array, skips over zeros
-	# returns corrected Array object
+	# ARRAY FRIENDLY + TESTED**
 	def find_matching_row_then_subtract_value(row_to_match, value_to_subtract)
 		return self.map! {|row| row==row_to_match ? row.map {|value| value!=0 ? value - value_to_subtract : value}  : row}
 	end
 
-	# ARRAY FRIENDLY
-	# UNTESTED
-	# called on Array object; finds columns that have too many lonely zeros, then the rows in those columns that contain the lonely zeros
-	# changes the values in the fewest rows possible to remove the problem
+	# ARRAY FRIENDLY + TESTED
 	def fix_too_many_lonely_zeros_in_columns
-		# isolate the columns that are causing the problem, then the rows in those columns that contain their lonely zeros
-		# PROBLEM: it could be that there are multiple columns with too many lonely zeros, e.g. one col might have 4, another 2
-			# and if the max col assignment were 1, you would want to add_value_if_zero to 3 of the 4 rows in the first group
-			# and only 1 of the 2 rows in the second group
-			# so you need some way of keeping track of these groups
 		problematic_rows = self.get_problematic_rows_per_problematic_column
-
-		# now make the fewest changes necessary to remove the problem, and determine which row to correct based on the other values in that row
-		# you want to correct the row with the lowest min value first, then the row with the next lowest, then with the next lowest, and so on
-		# point is: you want to minimize the extent to which you have to lower values to get an assignment
 		self.zero_fewest_problematic_rows(problematic_rows)
 	end
 
-	# ARRAY FRIENDLY
-	# UNTESTED
-	# called on Array object; finds rows that have too many lonely zeros, then the columnss in those rows that contain the lonely zeros
-	# changes the values in the fewest columns possible to remove the problem
+	# ARRAY FRIENDLY + TESTED
 	def fix_too_many_lonely_zeros_in_rows
-		# isolate the rows that are causing the problem, then the columns in those rows that contain their lonely zeros
-		# PROBLEM: it could be that there are multiple rows with too many lonely zeros, e.g. one row might have 4, another 2
-			# and if the max row assignment were 1, you would want to add_value_if_zero to 3 of the 4 columns in the first group
-			# and only 1 of the 2 columnss in the second group; so you need some way of keeping track of these groups
 		problematic_columns = self.get_problematic_columns_per_problematic_row
-		# now make the fewest changes necessary to remove the problem, and determine which column to correct based on the other values in that column
-		# you want to correct the column with the lowest min value first, then the column with the next lowest, then with the next lowest, and so on
-		# point is: you want to minimize the extent to which you have to lower values to get an assignment
 		self.zero_fewest_problematic_columns(problematic_columns)
 	end
 
@@ -287,30 +240,11 @@ class Array
 		return working_matrix
 	end
 
-	# ARRAY FRIENDLY
-	# UNTESTED
-	# called on Array object; returns Array corrected such that min permitted row assignments <= max column assignments possible
+	# ARRAY FRIENDLY + TESTED**
 	def make_more_column_assignments_possible
-		# see commit f533448e9cec3ceedd for additional (and extensive) comments on the issues that went into developing this
-		# //////////////////////////////////////////////
-		# HOW THIS IS GOING TO WORK
-		# 1. Find problematic submatrices
-		# 	2. In each such submarix, identify the minimum value-sans-zero in each column that doesn't contain a zero
-		# 	3. Identify the smallest such min-sans-zero
-		# 		4. Subtract the smallest min-sans-zero from every member-sans-zero of the row in which it occurs
-		# 5. Repeat step 1 until min permitted row assignments <= max column assignments possible
-		# ////////////////////////////////////////////
-
 		problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
-		# repeat the following until there are no problematic submatrices
 		while !problematic_submatrices.empty?
-
-			# fix the problem in the first submatrix
-				# Subtract the min-sans-zero from every member-sans-zero of the row in which it occurs
-				# Repeat until min permitted row assignments <= max column assignments possible
 			self.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(problematic_submatrices.first)
-
-			# run get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible again to see if the changes made fixed the issues
 			problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible	
 		end
 		return self
@@ -421,31 +355,16 @@ class Array
 	end
 
 	# ARRAY FRIENDLY
-	# UNTESTED
-	# called on Array object, passed array that is a submatrix (Array format) of the Array-matrix
-	# makes changes to the Array it's called on, subtracting the smallest min-sans-zero value that resides in a column
-	# (that does not contain a zero in the submatrix) from every member in its row with the exception of zeros; changes 
-	# the corresponding values in the Array; repeats the process until min_row_permitted <= max_col_assignments_possible
-	# returns the corrected Array object it was called on
+	# TESTED**
 	def subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)
-		# identify the minimum-sans-zero values for each row
 		row_id_plus_row_min = submatrix.get_ids_and_row_mins
-
 		min_row_assignments_permitted = self.min_row_assignment * submatrix.length
 		while min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
-
-			# edit the Matrix accordingly
 			row_id = row_id_plus_row_min[0][0]
 			value_to_subtract = row_id_plus_row_min[0][1]
 			self.find_matching_row_then_subtract_value(submatrix[row_id], value_to_subtract)
-			
-			# edit the submatrix to check to see if the problem is fixed
 			submatrix.subtract_value_from_row_in_array(row_id, value_to_subtract)
-
-			# remove the first member of the array, it's been taken care of; move to second
-			# the method has to be run again, since when you alter the submatrix you alter the values in its rows
 			row_id_plus_row_min = submatrix.get_ids_and_row_mins
-
 		end
 		return self
 	end
@@ -472,17 +391,8 @@ class Array
 		return self.transpose.each.map {|r| r.map {|v| v - r.min}}.transpose
 	end
 
-	# ARRAY FRIENDLY
-	# UNTESTED
-	# called on Array object, for each row specified in params, adds min row-value-sans-zero to each zero in the row
-	# subtracts min-row-value-sans-zero from each non-zero in the row; edits as few rows as necessary to remove the problem
-	# returns the edited Array object it was called on
+	# ARRAY FRIENDLY + TESTED
 	def zero_fewest_problematic_rows(problematic_rows)
-		# problematic rows must be an array of arrays [n,m,o], one for each problematic column
-		# n is the column index, m is the number of lonely zeros in column n
-		# o is an ORDERED array containing all arrays [p,q] where p is the row index of a row containing a lonely zero in column n
-		# and q is the minimum value in that row-sans-zero; o is ordered by ascending q value
-		# the "get_problematic_rows_per_problematic_column" method returns exactly this array
 		problematic_rows.each do |array|
 			i = 0
 			while array[1] > self.max_col_assignment
@@ -494,14 +404,7 @@ class Array
 		return self
 	end
 
-	# ARRAY FRIENDLY, BUT COULD REFACTOR TO SIMPLIFY
-	# UNTESTED
-	# called on Array object; takes as input an array of arrays [n,m,o] where n is a row index, m is the number of lonely zeros in that row
-	# and o is an ordered array of arrays [p,q] where p is the column index of a lonely zero in row n, and q is the min value in that column other than zero
-	# see method "get_problematic_columns_per_problematic_row" for a convenient way to get a parameter like this
-	# for each member of the array passed to this method as a parameter, the method adds min row-value-sans-zero to each zero in the row
-	# subtracts min-row-value-sans-zero from each non-zero in the row; edits as few rows as necessary to remove the problem
-	# returns the edited Array object it was called on
+	# ARRAY FRIENDLY + TESTED
 	def zero_fewest_problematic_columns(problematic_columns)
 		problematic_columns.each do |array|
 			i = 0

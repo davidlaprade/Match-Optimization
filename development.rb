@@ -71,10 +71,9 @@ end
 
 #--------------------- HELPER METHODS----IN-ALPHABETICAL-ORDER----------------------------------------------------
 class Array
-	# ARRAY FRIENDLY, BUT COULD REFACTOR TO SIMPLIFY
-	# UNTESTED
-	# called on Matrix object, takes column index and value as inputs
-	# outputs Matrix in which the value provided has been added to each zero in the column and subtracted otherwise
+	# ARRAY FRIENDLY, BUT COULD REFACTOR TO SIMPLIFY + TESTED**
+	# called on Array object, takes column index and value as inputs
+	# outputs Array in which the value provided has been added to each zero in the column and subtracted otherwise
 	def add_value_if_zero_else_subtract_value_in_columns(col_index, value)
 		if !(self.array_columns[col_index] == nil)
 			self.array_columns[col_index].each_with_index do |cell_value, row_index|
@@ -88,8 +87,7 @@ class Array
 		return self
 	end
 
-	# ARRAY FRIENDLY, BUT COULD BE REFACTORED
-	# UNTESTED
+	# ARRAY FRIENDLY + TESTED, BUT COULD BE REFACTORED
 	# called on Array object, takes row index and value as inputs
 	# outputs Array in which the value provided has been added to each zero and subtracted otherwise
 	def add_value_if_zero_else_subtract_value_in_rows(row_index, value)
@@ -140,9 +138,8 @@ class Array
 		# return self.collect.with_index {|x,i| x.collect{|y| !y.zero? ? [i,y] : y}-[0] }.flatten(1).uniq.sort_by {|x| [x[1],x[0]]}
 	end
 
-	# ARRAY FRIENDLY, BUT COULD BE REFACTORED TO SIMPLIFY
-	# UNTESTED
-	# called on Matrix object; outputs array of arrays [n,m,o] where n is the index of a column with too many lonely zeros
+	# ARRAY FRIENDLY, BUT COULD BE REFACTORED TO SIMPLIFY + TESTED
+	# called on Array object; outputs array of arrays [n,m,o] where n is the index of a column with too many lonely zeros
 	# m is the number of lonely zero's in column n
 	# and o is an ORDERED array that contains arrays [p,q] where p is a row index of a lonely zero in column n, 
 	# and q is the min value in that row other than zero, ordered by ascending q value
@@ -169,8 +166,7 @@ class Array
 		return problematic_rows
 	end
 
-	# ARRAY FRIENDLY - COULD BE REFACTORED TO SIMPLIFY
-	# UNTESTED
+	# ARRAY FRIENDLY - COULD BE REFACTORED TO SIMPLIFY + TESTED
 	# called on Array object; outputs array of arrays [n,m,o] where n is the index of a row with too many lonely zeros
 	# m is the number of lonely zero's in row n
 	# and o is an ORDERED array that contains arrays [p,q] where p is a column index of a lonely zero in row n, 
@@ -229,8 +225,7 @@ class Array
 		return self.map! {|row| row==row_to_match ? row.map {|value| value!=0 ? value - value_to_subtract : value}  : row}
 	end
 
-	# ARRAY FRIENDLY
-	# UNTESTED
+	# ARRAY FRIENDLY + TESTED
 	# called on Array object; finds columns that have too many lonely zeros, then the rows in those columns that contain the lonely zeros
 	# changes the values in the fewest rows possible to remove the problem
 	def fix_too_many_lonely_zeros_in_columns
@@ -247,8 +242,7 @@ class Array
 		self.zero_fewest_problematic_rows(problematic_rows)
 	end
 
-	# ARRAY FRIENDLY
-	# UNTESTED
+	# ARRAY FRIENDLY + TESTED
 	# called on Array object; finds rows that have too many lonely zeros, then the columnss in those rows that contain the lonely zeros
 	# changes the values in the fewest columns possible to remove the problem
 	def fix_too_many_lonely_zeros_in_rows
@@ -540,8 +534,7 @@ class Array
 		return self
 	end
 
-	# ARRAY FRIENDLY
-	# UNTESTED
+	# ARRAY FRIENDLY + TESTED
 	# called on Array object, for each row specified in params, adds min row-value-sans-zero to each zero in the row
 	# subtracts min-row-value-sans-zero from each non-zero in the row; edits as few rows as necessary to remove the problem
 	# returns the edited Array object it was called on
@@ -562,8 +555,7 @@ class Array
 		return self
 	end
 
-	# ARRAY FRIENDLY, BUT COULD REFACTOR TO SIMPLIFY
-	# UNTESTED
+	# ARRAY FRIENDLY, BUT COULD REFACTOR TO SIMPLIFY + TESTED
 	# called on Array object; takes as input an array of arrays [n,m,o] where n is a row index, m is the number of lonely zeros in that row
 	# and o is an ordered array of arrays [p,q] where p is the column index of a lonely zero in row n, and q is the min value in that column other than zero
 	# see method "get_problematic_columns_per_problematic_row" for a convenient way to get a parameter like this
