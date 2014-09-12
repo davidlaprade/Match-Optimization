@@ -8,11 +8,13 @@ require 'matrix_class_additions'
 
 class Hungarian
 
-	def intitialize(matrix, min_row_assignment, min_col_assignment)
+	# ARRAY FRIENDLY
+	# passed an Array object; consider also passing in min_row_assignment, min_col_assignment
+	def intitialize(matrix_array)
 		# this is the matrix that will be modified as the algorithm runs
-		@working_matrix = matrix
+		@working_matrix = matrix_array
 		# keep a copy of the original, unchanged matrix in array form
-		@original_form = matrix.to_a
+		@original_matrix = matrix_array
 		# quantifies the difference between the working matrix and its original form
 		@degree_of_diff = 0
 		# solution array: will contain coordinates of each assignment in the optimal match
@@ -27,10 +29,11 @@ class Hungarian
 
 	end
 
+	# ARRAY FRIENDLY
 	# UNTESTED
 	# call on Hungarian object; refreshes its degree_of_diff attribute; returns the updated Hungarian object
 	def calc_degree_of_diff
-		self.degree_of_diff = self.original_form.flatten.inject(:+) - self.working.to_a.flatten.inject(:+)
+		self.degree_of_diff = self.original_matrix.flatten.inject(:+) - self.working.flatten.inject(:+)
 		# //////////////////////
 		# Actually, this isn't what you want. Imagine a 3x3 matrix containing only 10s and a 3x3 matrix containing
 		# all zeros except for a 90; these matrices would be scored as having no degree of difference; that's not right
@@ -40,18 +43,14 @@ class Hungarian
 		return self
 	end
 
+	# BECOMING ARRAY FRIENDLY.....
+	# UNTESTED
 	# call on Hungarian object; returns solution array containing coordinates of each assignment in the optimal match
 	def solve
-		# first two steps of algorithm
-		# perform following opererations on working_matrix, save the result
-			# if there are more rows than columns, or the same number, normalize (i.e. "zero") each row, then zero each column
-			# if there are more columns than than rows, zero each column then zero each row
-			# whatever gets zeroed first (rows, or columns) will end up with more zeros
-		self.working_matrix = self.working_matrix.zero_rows_and_columns
-
-		# third step in algorithm
+		# first step in algorithm
 			# check to see if the working matrix currently supports a complete assignment
-			# if it doesn't, fix it so that it does, then calculate how much you've had to change the matrix to generate the solution
+			# if it doesn't, fix whatever is preventing it from supporting an assignment, then check again for new issues
+			# once there are no issues, calculate how much you've had to change the matrix to generate the solution
 		self.working_matrix = self.working_matrix.make_matrix_solveable
 		self.calc_degree_of_diff
 
@@ -68,30 +67,6 @@ end
 
 #--------------------- HELPER METHODS-----------------------------------------------------
 class Array
-	# called on Array object; returns array in Matrix form
-	def to_m
-		return Matrix.columns(self.transpose)
-	end
-
-	# returns an array containing every combination of members of the array it was called on
-	def every_combination_of_its_members
-		return self.each_with_index.map {|x,i| self.combination(i+1).to_a}.flatten(1).drop(self.length).uniq
-	end
-
-	# outputs the maximum number of assignments that could be made in columns given the current distribution of values and the max permitted column assignment
-	# does not take into account row assignments or loneliness; must be called on an array
-	def max_column_assmts_possible(max_col_assignment)
-		number_of_max_assignments = 0
-		self.array_columns.each do |column|
-			if column.array_count_with_value(0) > max_col_assignment
-				number_of_max_assignments = number_of_max_assignments + max_col_assignment
-			else 
-				number_of_max_assignments = number_of_max_assignments + column.array_count_with_value(0)
-			end
-		end
-		return number_of_max_assignments
-	end
-
 	# counts number of cells with the given value in an array
 	def array_count_with_value(value)
 		count = 0
@@ -105,6 +80,12 @@ class Array
 	# column and row indexes were preserved: array_columns[0][2] returns the cell in the 1st column in the 3rd row 
 	def array_columns
 		return self.transpose
+	end
+
+	# UNTESTED
+	# called on array; outputs the number of columns in the array
+	def column_count
+		return self.transpose.length
 	end
 
 	# called on submatrix Array; finds columns that do not contain zeros; outputs an ordered array of ALL arrays [p,q] where 
@@ -121,6 +102,90 @@ class Array
 		# return self.collect.with_index {|x,i| x.collect{|y| !y.zero? ? [i,y] : y}-[0] }.flatten(1).uniq.sort_by {|x| [x[1],x[0]]}
 	end
 
+	# returns an array containing every combination of members of the array it was called on
+	def every_combination_of_its_members
+		return self.each_with_index.map {|x,i| self.combination(i+1).to_a}.flatten(1).drop(self.length).uniq
+	end
+
+	# BECOMING ARRAY FRIENDLY
+	# UNTESTED
+	# caled on array object (Hungarian.working_matrix); minimally changes the array to return an array which supports complete assignment
+	def make_matrix_solveable
+		# the algorithm runs 2 orders of magnitute faster when there are fewer rows than columns
+		# so, just transpose the array to create an array with more columns than rows
+		dup = self.dup
+		self = self.transpose if dup.row_count > dup.column_count
+
+		while self.solveable? != true
+			# you want to include the following two methods in case the methods below them change the Matrix in such a way
+			# as to remove a lonely zero from a row/column
+			while self.solveable? == "no, there are rows without zeros"
+				self.zero_each_row
+			end
+
+			while self.solveable? == "no, there are columns without zeros"
+				self.zero_each_column
+			end
+
+			while self.solveable? == "no, too many lonely zeros in columns"
+				# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
+				# find the lowest member in that row besides the zero, add the value of that member to each zero, 
+				# subtract it from every other member (including itself)
+				self.fix_too_many_lonely_zeros_in_columns
+				# Running the fix method might result in a matrix with the same problem, so run solveable? method again
+				# Repeat until the matrix no longer has too many lonely zeros in columns
+				# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
+			end
+
+			while self.solveable? == "no, too many lonely zeros in rows"
+				# to fix: isolate the lonely zeros causing the problem, take each column they occur in
+				# find the lowest member in that column besides the zero, add the value of that lowest member to each zero,
+				# subtract the value of that lowest member from every other member (including itself)
+				self.fix_too_many_lonely_zeros_in_rows
+				# Running the fix method might result in a matrix with the same problem, so run solveable? method again
+				# Repeat until the matrix no longer has too many lonely zeros in rows
+				# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
+			end
+
+			while self.solveable? == "no, min permitted row assignments > max column assignments possible"
+				# to fix: if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix
+				# find the lowest value-sans-zero in the submatrix, then subtract that value from every member-sans-zero of the row in which it occurs
+				# do this only as many times as you need to make min permitted row assignments <= max column assignments possible
+				self.make_more_column_assignments_possible
+			end
+		end
+
+		# tanspose the Matrix back into its original form if it was flipped to speed things up
+		self = self.to_a.transpose.to_m if dup.row_count > dup.column_count
+
+		return self
+	end
+
+	# outputs the maximum number of assignments that could be made in columns given the current distribution of values and the max permitted column assignment
+	# does not take into account row assignments or loneliness; must be called on an array
+	def max_column_assmts_possible(max_col_assignment)
+		number_of_max_assignments = 0
+		self.array_columns.each do |column|
+			if column.array_count_with_value(0) > max_col_assignment
+				number_of_max_assignments = number_of_max_assignments + max_col_assignment
+			else 
+				number_of_max_assignments = number_of_max_assignments + column.array_count_with_value(0)
+			end
+		end
+		return number_of_max_assignments
+	end
+
+	# UNTESTED
+	# called on Array object; returns number of rows in array
+	def row_count
+		return self.length
+	end
+
+	# called on Array object; returns array in Matrix form
+	def to_m
+		return Matrix.columns(self.transpose)
+	end
+
 	# called on Array; subtracts the value given as second parameter from each member of the row specified, unless zero
 	def subtract_value_from_row_in_array(row_id, value_to_subtract)
 		raise 'Row does not exist in array' if row_id >= self.length || row_id < 0
@@ -128,6 +193,9 @@ class Array
 		self[row_id].map! {|x| !x.zero? ? x-value_to_subtract : x }
 		return self
 	end
+
+
+
 
 end
 
@@ -631,58 +699,7 @@ class Matrix
 		return self
 	end
 
-	# UNTESTED
-	# caled on Matrix object; changes the Matrix (if need be) to return a Matrix object which supports complete assignment
-	def make_matrix_solveable
-		# the algorithm runs 2 orders of magnitute faster when there are fewer rows than columns
-		# so, just transpose the matrix to create a Matrix with more columns than rows
-		dup = self.to_a.dup.to_m
-		self = self.to_a.transpose.to_m if dup.row_count > dup.column_count
 
-		while self.solveable? != true
-			# you want to include the following two methods in case the methods below them change the Matrix in such a way
-			# as to remove a lonely zero from a row/column
-			while self.solveable? == "no, there are rows without zeros"
-				self.zero_each_row
-			end
-
-			while self.solveable? == "no, there are columns without zeros"
-				self.zero_each_column
-			end
-
-			while self.solveable? == "no, too many lonely zeros in columns"
-				# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
-				# find the lowest member in that row besides the zero, add the value of that member to each zero, 
-				# subtract it from every other member (including itself)
-				self.fix_too_many_lonely_zeros_in_columns
-				# Running the fix method might result in a matrix with the same problem, so run solveable? method again
-				# Repeat until the matrix no longer has too many lonely zeros in columns
-				# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
-			end
-
-			while self.solveable? == "no, too many lonely zeros in rows"
-				# to fix: isolate the lonely zeros causing the problem, take each column they occur in
-				# find the lowest member in that column besides the zero, add the value of that lowest member to each zero,
-				# subtract the value of that lowest member from every other member (including itself)
-				self.fix_too_many_lonely_zeros_in_rows
-				# Running the fix method might result in a matrix with the same problem, so run solveable? method again
-				# Repeat until the matrix no longer has too many lonely zeros in rows
-				# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
-			end
-
-			while self.solveable? == "no, min permitted row assignments > max column assignments possible"
-				# to fix: if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix
-				# find the lowest value-sans-zero in the submatrix, then subtract that value from every member-sans-zero of the row in which it occurs
-				# do this only as many times as you need to make min permitted row assignments <= max column assignments possible
-				self.make_more_column_assignments_possible
-			end
-		end
-
-		# tanspose the Matrix back into its original form if it was flipped to speed things up
-		self = self.to_a.transpose.to_m if dup.row_count > dup.column_count
-
-		return self
-	end
 
 end
 
