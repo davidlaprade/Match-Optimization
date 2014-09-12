@@ -634,6 +634,11 @@ class Matrix
 	# UNTESTED
 	# caled on Matrix object; changes the Matrix (if need be) to return a Matrix object which supports complete assignment
 	def make_matrix_solveable
+		# the algorithm runs 2 orders of magnitute faster when there are fewer rows than columns
+		# so, just transpose the matrix to create a Matrix with more columns than rows
+		dup = self.to_a.dup.to_m
+		self = self.to_a.transpose.to_m if dup.row_count > dup.column_count
+
 		while self.solveable? != true
 			# you want to include the following two methods in case the methods below them change the Matrix in such a way
 			# as to remove a lonely zero from a row/column
@@ -672,6 +677,10 @@ class Matrix
 				self.make_more_column_assignments_possible
 			end
 		end
+
+		# tanspose the Matrix back into its original form if it was flipped to speed things up
+		self = self.to_a.transpose.to_m if dup.row_count > dup.column_count
+
 		return self
 	end
 

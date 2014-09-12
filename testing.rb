@@ -126,8 +126,10 @@ class Matrix
 		return 1
 	end
 
-	# caled on Matrix object; changes the Matrix (if need be) to return a Matrix object which supports complete assignment
+	# called on Matrix object; changes the Matrix (if need be) to return a Matrix object which supports complete assignment
 	def make_matrix_solveable
+		dup = self.to_a.dup.to_m
+		self = self.to_a.transpose.to_m if dup.row_count > dup.column_count
 		while self.solveable? != "true"
 
 			while self.solveable? == "no, there are rows without zeros"
@@ -150,6 +152,7 @@ class Matrix
 				self.make_more_column_assignments_possible
 			end
 		end
+		self = self.to_a.transpose.to_m if dup.row_count > dup.column_count
 		return self
 	end
 
@@ -531,11 +534,11 @@ class Matrix
 end
 
 
-1.times do
+[[40,10], [10,40]].each do |v|
 	# create 6x6 matrix filled with random elements
-	matrix = Array.new(8){Array.new(60){rand(9)+1}}.to_m
-	print "original matrix:"
-	matrix.print_in_readable_format
+	matrix = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
+	print "original matrix: #{v[0]}x#{v[1]}\n"
+	# matrix.print_in_readable_format
 	print "Time to get solution: %f seconds\n" % Benchmark.realtime { matrix.make_matrix_solveable }.to_f
 	print "solveable matrix:"
 	matrix.print_in_readable_format
