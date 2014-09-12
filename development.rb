@@ -19,11 +19,11 @@ class Hungarian
 		@solution = []
 		attr_accessor :working_matrix, :original_form, :degree_of_diff, :solution
 
-		@min_row_assignment = min_row_assignment unless min_row_assignment <= 0
-		@min_col_assignment = min_col_assignment unless min_col_assignment <= 0
-		@max_col_assignment = (matrix.row_count/matrix.column_count.to_f).ceil
-		@max_row_assignment = (matrix.column_count/matrix.row_count.to_f).ceil
-		attr_reader :min_row_assignment, :min_col_assignment, :max_col_assignment, :max_row_assignment
+		# @min_row_assignment = min_row_assignment unless min_row_assignment <= 0
+		# @min_col_assignment = min_col_assignment unless min_col_assignment <= 0
+		# @max_col_assignment = (matrix.row_count/matrix.column_count.to_f).ceil
+		# @max_row_assignment = (matrix.column_count/matrix.row_count.to_f).ceil
+		# attr_reader :min_row_assignment, :min_col_assignment, :max_col_assignment, :max_row_assignment
 
 	end
 
