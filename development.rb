@@ -88,15 +88,15 @@ def make_matrix_solveable(working_matrix)
 	while working_matrix.solveable? != "true"
 		# you want to include the following two methods in case the methods below them change the Matrix in such a way
 		# as to remove a lonely zero from a row/column
-		if working_matrix.solveable?.include?("no, there are rows without zeros")
+		while working_matrix.solveable? == "no, there are rows without zeros"
 			working_matrix = working_matrix.zero_each_row
 		end
 
-		while working_matrix.solveable?.include?("no, there are columns without zeros")
+		while working_matrix.solveable? == "no, there are columns without zeros"
 			working_matrix = working_matrix.zero_each_column
 		end
 
-		while working_matrix.solveable?.include?("no, too many lonely zeros in columns")
+		while working_matrix.solveable? == "no, too many lonely zeros in columns"
 			# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
 			# find the lowest member in that row besides the zero, add the value of that member to each zero, 
 			# subtract it from every other member (including itworking_matrix)
@@ -106,7 +106,7 @@ def make_matrix_solveable(working_matrix)
 			# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
 		end
 
-		while working_matrix.solveable?.include?("no, too many lonely zeros in rows")
+		while working_matrix.solveable? == "no, too many lonely zeros in rows"
 			# to fix: isolate the lonely zeros causing the problem, take each column they occur in
 			# find the lowest member in that column besides the zero, add the value of that lowest member to each zero,
 			# subtract the value of that lowest member from every other member (including itworking_matrix)
@@ -115,7 +115,7 @@ def make_matrix_solveable(working_matrix)
 			# Repeat until the matrix no longer has too many lonely zeros in rows
 			# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
 		end
-		while working_matrix.solveable?.include?("no, min permitted row assignments > max column assignments possible")
+		while working_matrix.solveable? == "no, min permitted row assignments > max column assignments possible"
 			# to fix: if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix
 			# find the lowest value-sans-zero in the submatrix, then subtract that value from every member-sans-zero of the row in which it occurs
 			# do this only as many times as you need to make min permitted row assignments <= max column assignments possible
@@ -437,16 +437,34 @@ class Array
 	# called on Array object; returns failure code if the matrix-array has no solution in its current state, 
 	# returns true if the matrix-array passes the tests
 	def solveable?
-		failure_code = []
+		if self.collect {|row| row.include?(0)}.include?(false)
+			return "no, there are rows without zeros"
+		elsif self.transpose.collect {|col| col.include?(0)}.include?(false)
+			return "no, there are columns without zeros"
+		end
+
+		# checks to see if there are too many lonely zeros in any column
+		self.lonely_zeros_per_column.each do |array|
+			if array[1] > self.max_col_assignment
+				return ("no, too many lonely zeros in columns")
+			end
+		end
+
+		# checks to see if there are too many lonely zeros in any row
+		self.lonely_zeros_per_row.each do |array|
+			if array[1] > self.max_row_assignment
+				return "no, too many lonely zeros in rows"
+			end
+		end
 
 		# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
 		# if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix, the parent matrix is unsolveable
-		# run this test first, as you want to fix it last (the solveable? method will return the failure code of the last test it fails)
+		# run this test last, since calculating every_combination_of_its_members takes a long time for big arrays
 		test_cases = self.every_combination_of_its_members
 		test_cases.each do |submatrix|
 			min_row_assignments_permitted = self.min_row_assignment * submatrix.length
 			if min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
-				failure_code.unshift("no, min permitted row assignments > max column assignments possible")
+				return ("no, min permitted row assignments > max column assignments possible")
 			end
 		end
 
@@ -460,29 +478,8 @@ class Array
 		# this seems to catch all of the cases where min allowable column assignments > max num of possible row assignments
 		# so I didn't write a corresponding test for that
 
-		# checks to see if there are too many lonely zeros in any row
-		self.lonely_zeros_per_row.each do |array|
-			if array[1] > self.max_row_assignment
-				failure_code.unshift("no, too many lonely zeros in rows")
-			end
-		end
-
-		# checks to see if there are too many lonely zeros in any column
-		self.lonely_zeros_per_column.each do |array|
-			if array[1] > self.max_col_assignment
-				failure_code.unshift("no, too many lonely zeros in columns")
-			end
-		end
-
-		failure_code.unshift("no, there are columns without zeros") if self.transpose.collect {|col| col.include?(0)}.include?(false)
-		failure_code.unshift("no, there are rows without zeros") if self.collect {|row| row.include?(0)}.include?(false)
-
-		if !failure_code.empty?
-			return failure_code.first
-		else
-			return "true"
-		end
-
+		# if the program hasn't stopped by now
+		return "true"
 	end
 
 	# ARRAY FRIENDLY

@@ -2,28 +2,30 @@ require 'matrix'
 require 'pry'
 require 'benchmark'
 
+# ARRAY FRIENDLY + TESTED
 def make_matrix_solveable(working_matrix)
+	working_matrix = working_matrix.zero_rows_and_columns
 	dup = working_matrix.dup
 	working_matrix = working_matrix.transpose if dup.row_count > dup.column_count
 
 	while working_matrix.solveable? != "true"
-		if working_matrix.solveable?.include?("no, there are rows without zeros")
+		while working_matrix.solveable? == "no, there are rows without zeros"
 			working_matrix = working_matrix.zero_each_row
 		end
 
-		while working_matrix.solveable?.include?("no, there are columns without zeros")
+		while working_matrix.solveable? == "no, there are columns without zeros"
 			working_matrix = working_matrix.zero_each_column
 		end
 
-		while working_matrix.solveable?.include?("no, too many lonely zeros in columns")
+		while working_matrix.solveable? == "no, too many lonely zeros in columns"
 			working_matrix.fix_too_many_lonely_zeros_in_columns
 		end
 
-		while working_matrix.solveable?.include?("no, too many lonely zeros in rows")
+		while working_matrix.solveable? == "no, too many lonely zeros in rows"
 			working_matrix.fix_too_many_lonely_zeros_in_rows
 		end
 
-		while working_matrix.solveable?.include?("no, min permitted row assignments > max column assignments possible")
+		while working_matrix.solveable? == "no, min permitted row assignments > max column assignments possible"
 			working_matrix.make_more_column_assignments_possible
 		end
 	end
@@ -275,39 +277,33 @@ class Array
 		return Matrix.columns(self.transpose)
 	end
 
-	# ARRAY FRIENDLY + TESTED
 	def solveable?
-		failure_code = []
+		if self.collect {|row| row.include?(0)}.include?(false)
+			return "no, there are rows without zeros"
+		elsif self.transpose.collect {|col| col.include?(0)}.include?(false)
+			return "no, there are columns without zeros"
+		end
 
-		test_cases = self.every_combination_of_its_members
-		test_cases.each do |submatrix|
-			min_row_assignments_permitted = self.min_row_assignment * submatrix.length
-			if min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
-				failure_code.unshift("no, min permitted row assignments > max column assignments possible")
+		self.lonely_zeros_per_column.each do |array|
+			if array[1] > self.max_col_assignment
+				return ("no, too many lonely zeros in columns")
 			end
 		end
 
 		self.lonely_zeros_per_row.each do |array|
 			if array[1] > self.max_row_assignment
-				failure_code.unshift("no, too many lonely zeros in rows")
+				return "no, too many lonely zeros in rows"
 			end
 		end
 
-		self.lonely_zeros_per_column.each do |array|
-			if array[1] > self.max_col_assignment
-				failure_code.unshift("no, too many lonely zeros in columns")
+		test_cases = self.every_combination_of_its_members
+		test_cases.each do |submatrix|
+			min_row_assignments_permitted = self.min_row_assignment * submatrix.length
+			if min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
+				return ("no, min permitted row assignments > max column assignments possible")
 			end
 		end
-
-		failure_code.unshift("no, there are columns without zeros") if self.transpose.collect {|col| col.include?(0)}.include?(false)
-		failure_code.unshift("no, there are rows without zeros") if self.collect {|row| row.include?(0)}.include?(false)
-
-		if !failure_code.empty?
-			return failure_code
-		else
-			return "true"
-		end
-
+		return "true"
 	end
 
 	# ARRAY FRIENDLY + TESTED
@@ -391,17 +387,23 @@ class Array
 		self.each do |row|
 			print "#{row}\n"
 		end
+		print "\n"
 	end
 
 end
 
 
 [[5,5],[5,10],[5,15],[5,25],[5,40],[10,5],[10,10],[10,15],[10,25],[10,40],[15,5],[25,5],[40,5]]
-[[5,5],[7,7],[10,10],[12,12],[15,15],[16,16],[17,17],[18,18],[19,19],[20,20]].each do |v|
+[[5,5],[7,7],[10,10],[12,12],[15,15],[16,16],[17,17],[18,18],[19,19],[20,20]]
+
+[[5,5],[5,10],[5,15],[5,25],[5,40],[10,5],[10,10],[10,15],[10,25],[10,40],[15,5],[25,5],[40,5],
+[40,10],[7,7],[10,10],[12,12],[15,15],[16,16],[17,17],[18,18],[19,19],[20,20]].each do |v|
 	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
-	print "original array: #{v[0]}x#{v[1]}\n"
-	print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
-	# print "solveable array:"
+	print "%f\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
+	# print "original array: #{v[0]}x#{v[1]}\n"
 	# array.print_readable
-	print "--------------------------------------------------------\n"
+	# print "solveable array:"
+	# make_matrix_solveable(array).print_readable
+	# print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
+	# # print "--------------------------------------------------------\n"
 end
