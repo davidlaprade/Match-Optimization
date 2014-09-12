@@ -2,7 +2,35 @@ require 'matrix'
 require 'pry'
 require 'benchmark'
 
+def make_matrix_solveable(working_matrix)
+	dup = working_matrix.dup
+	working_matrix = working_matrix.transpose if dup.row_count > dup.column_count
 
+	while working_matrix.solveable? != "true"
+		if working_matrix.solveable?.include?("no, there are rows without zeros")
+			working_matrix = working_matrix.zero_each_row
+		end
+
+		while working_matrix.solveable?.include?("no, there are columns without zeros")
+			working_matrix = working_matrix.zero_each_column
+		end
+
+		while working_matrix.solveable?.include?("no, too many lonely zeros in columns")
+			working_matrix.fix_too_many_lonely_zeros_in_columns
+		end
+
+		while working_matrix.solveable?.include?("no, too many lonely zeros in rows")
+			working_matrix.fix_too_many_lonely_zeros_in_rows
+		end
+
+		while working_matrix.solveable?.include?("no, min permitted row assignments > max column assignments possible")
+			working_matrix.make_more_column_assignments_possible
+		end
+	end
+
+	working_matrix = working_matrix.transpose if dup.row_count > dup.column_count
+	return working_matrix
+end
 
 class Array
 	# ARRAY FRIENDLY, BUT COULD REFACTOR TO SIMPLIF + TESTED
@@ -186,60 +214,6 @@ class Array
 		return zeros
 	end
 
-	# ARRAY FRIENDLY
-	# UNTESTED
-	# passed an array object (Hungarian.working_matrix); minimally changes the array to return an array which supports complete assignment
-	def make_matrix_solveable(working_matrix)
-		# the algorithm runs 2 orders of magnitute faster when there are fewer rows than columns
-		# so, just transpose the array to create an array with more columns than rows
-		dup = working_matrix.dup
-		working_matrix = working_matrix.transpose if dup.row_count > dup.column_count
-
-		while working_matrix.solveable? != "true"
-			# you want to include the following two methods in case the methods below them change the Matrix in such a way
-			# as to remove a lonely zero from a row/column
-			if working_matrix.solveable?.include?("no, there are rows without zeros")
-				working_matrix = working_matrix.zero_each_row
-			end
-
-			while working_matrix.solveable?.include?("no, there are columns without zeros")
-				working_matrix = working_matrix.zero_each_column
-			end
-
-			while working_matrix.solveable?.include?("no, too many lonely zeros in columns")
-				# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
-				# find the lowest member in that row besides the zero, add the value of that member to each zero, 
-				# subtract it from every other member (including itworking_matrix)
-				working_matrix.fix_too_many_lonely_zeros_in_columns
-				# Running the fix method might result in a matrix with the same problem, so run solveable? method again
-				# Repeat until the matrix no longer has too many lonely zeros in columns
-				# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
-			end
-
-			while working_matrix.solveable?.include?("no, too many lonely zeros in rows")
-				# to fix: isolate the lonely zeros causing the problem, take each column they occur in
-				# find the lowest member in that column besides the zero, add the value of that lowest member to each zero,
-				# subtract the value of that lowest member from every other member (including itworking_matrix)
-				working_matrix.fix_too_many_lonely_zeros_in_rows
-				# Running the fix method might result in a matrix with the same problem, so run solveable? method again
-				# Repeat until the matrix no longer has too many lonely zeros in rows
-				# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
-			end
-			while working_matrix.solveable?.include?("no, min permitted row assignments > max column assignments possible")
-				# to fix: if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix
-				# find the lowest value-sans-zero in the submatrix, then subtract that value from every member-sans-zero of the row in which it occurs
-				# do this only as many times as you need to make min permitted row assignments <= max column assignments possible
-				
-				working_matrix.make_more_column_assignments_possible
-			end
-		end
-
-		# tanspose the matrix back into its original form if it was flipped
-		working_matrix = working_matrix.transpose if dup.row_count > dup.column_count
-
-		return working_matrix
-	end
-
 	# ARRAY FRIENDL + TESTED
 	def make_more_column_assignments_possible
 		problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
@@ -412,16 +386,22 @@ class Array
 		return new_array
 	end
 
+	def print_readable
+		print "\n"
+		self.each do |row|
+			print "#{row}\n"
+		end
+	end
+
 end
 
 
-# [[40,10], [10,40]].each do |v|
-# 	# create 6x6 matrix filled with random elements
-# 	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
-# 	print "original array: #{v[0]}x#{v[1]}\n"
-# 	# array.print_in_readable_format
-# 	print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
-# 	print "solveable array:"
-# 	array.print_in_readable_format
-# 	print "--------------------------------------------------------\n"
-# end
+[[5,5],[5,10],[5,15],[5,25],[5,40],[10,5],[10,10],[10,15],[10,25],[10,40],[15,5],[25,5],[40,5]]
+[[5,5],[7,7],[10,10],[12,12],[15,15],[16,16],[17,17],[18,18],[19,19],[20,20]].each do |v|
+	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
+	print "original array: #{v[0]}x#{v[1]}\n"
+	print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
+	# print "solveable array:"
+	# array.print_readable
+	print "--------------------------------------------------------\n"
+end
