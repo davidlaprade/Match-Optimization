@@ -28,37 +28,66 @@ require 'testing'
 # METHODS THAT DO NOT DEPEND ON OTHER METHODS I HAVE WRITTEN SHOULD BE TESTED FIRST, SO THAT IF THERE IS A PROBLEM WITH THEM, THE PROBLEM
 # IS DISPLAYED FIRST WHEN I RUN RSPEC
 
-describe Array, ".min_row_assignment" do
+describe Array, "permissible assignment values, min_row_assignment, max_col_assignment, etc" do
 
 	# I am going to set up my algorithm this way: so that every object on the x axis gets mapped to at least one object on the y
-	# axis, and vice versa; some people might want to optimize matches in which certain individuals get left out; perhaps sometimes the
-	# most optimal match is one in which an individual doesn't get matched; if so, then my algorithm won't catch it; that seems like a 
-	# very hard algorithm to write; so for now I'm not even going to attempt to do so
+	# axis, and vice versa; perhaps sometimes the most optimal match is one in which an individual doesn't get matched; if so, 
+	# then my algorithm won't catch it; I have to start somewhere
 
-	What should be done with a case like this:
+	# Formerly, I had just set min_row and min_col_assignment to 1 automatically. But it's not clear why I should have. If what
+	# these values are supposed to be are the minimum/maximum number of assignments in an optimal match for the relevant array, 
+	# then the minimums will seldom if ever be 1. In a square array, the min row/col assignments should be equal to the max row/col
+	# assignments
 
-	[2,4,4,3,5,21,4,5]
-		max col = 1
-		max row = 8
-		min col = 1
-		min row = 8
-
-
-	def max_col_assignment 
-		return (self.row_count/self.column_count.to_f).ceil
+	it "yeilds the right values when there is only one row" do
+		array = [[2,4,4,3,5,21,4,5]]
+		expect(array.min_row_assignment).to eq(8)
+		expect(array.max_row_assignment).to eq(8)
+		expect(array.min_col_assignment).to eq(1)
+		expect(array.max_col_assignment).to eq(1)
 	end
 
-	def max_row_assignment
-		return (self.column_count/self.row_count.to_f).ceil
+	it "yeilds the right values when there is only one column" do
+		array = [[2],[4],[4],[3],[5],[21],[4],[5]]
+		expect(array.min_row_assignment).to eq(1)
+		expect(array.max_row_assignment).to eq(1)
+		expect(array.min_col_assignment).to eq(8)
+		expect(array.max_col_assignment).to eq(8)
 	end
 
-	def min_row_assignment
-		return (self.column_count/self.row_count.to_f).floor
+	it "yeilds the right values when the array is square" do
+		array = [[4, 7, 9, 8, 1, 4, 1, 7, 8], [9, 5, 2, 3, 4, 5, 5, 2, 2], [9, 6, 6, 1, 5, 4, 4, 2, 4], [5, 6, 9, 2, 4, 7, 5, 8, 6], 
+			[3, 1, 7, 5, 3, 3, 9, 3, 9], [6, 5, 3, 6, 3, 1, 6, 4, 5], [7, 7, 2, 4, 1, 7, 5, 8, 8], [2, 9, 3, 8, 3, 6, 4, 3, 7], 
+			[2, 2, 6, 8, 4, 2, 6, 6, 3]]
+		expect(array.min_row_assignment).to eq(1)
+		expect(array.max_row_assignment).to eq(1)
+		expect(array.min_col_assignment).to eq(1)
+		expect(array.max_col_assignment).to eq(1)
 	end
 
-	def min_col_assignment
-		return (self.row_count/self.column_count.to_f).floor
+
+	it "yeilds the right values when there are more rows than columns" do
+		array = [[4, 7, 9, 8, 1, 4, 1, 7, 8], [9, 5, 2, 3, 4, 5, 5, 2, 2], [9, 6, 6, 1, 5, 4, 4, 2, 4], [5, 6, 9, 2, 4, 7, 5, 8, 6], 
+			[3, 1, 7, 5, 3, 3, 9, 3, 9], [6, 5, 3, 6, 3, 1, 6, 4, 5], [7, 7, 2, 4, 1, 7, 5, 8, 8], [2, 9, 3, 8, 3, 6, 4, 3, 7], 
+			[2, 2, 6, 8, 4, 2, 6, 6, 3],[2,4,5,7,2,4,6,7,8]]
+		expect(array.min_row_assignment).to eq(1)
+		expect(array.max_row_assignment).to eq(1)
+		expect(array.min_col_assignment).to eq(1)
+		expect(array.max_col_assignment).to eq(2)
 	end
+
+	it "yeilds the right values when there are more columns than rows" do
+		array = [[7, 3, 3, 1, 4, 6, 1, 7, 2, 7, 2], [6, 4, 7, 8, 5, 5, 7, 2, 9, 3, 2], [1, 9, 2, 1, 7, 5, 5, 7, 6, 9, 9], 
+			[3, 2, 1, 2, 2, 3, 5, 6, 3, 9, 5], [9, 2, 8, 2, 1, 7, 8, 8, 2, 3, 3], [8, 4, 3, 6, 1, 8, 7, 2, 9, 5, 9], 
+			[2, 7, 2, 7, 1, 5, 7, 4, 9, 8, 8], [4, 3, 6, 1, 9, 1, 6, 3, 3, 9, 4], [3, 4, 2, 6, 9, 6, 5, 2, 2, 4, 4]]
+		expect(array.min_row_assignment).to eq(1)
+		expect(array.max_row_assignment).to eq(2)
+		expect(array.min_col_assignment).to eq(1)
+		expect(array.max_col_assignment).to eq(1)
+	end		
+
+end
+
 
 describe Array, "max_column_assmts_possible(max_col_assignment)" do
 	it "returns 2 when called on [[0,4,0],[0,9,0],[0,2,0]] and passed 1" do

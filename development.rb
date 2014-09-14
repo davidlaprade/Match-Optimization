@@ -439,12 +439,18 @@ class Array
 		return number_of_max_assignments
 	end
 
-	# ARRAY FRIENDLY
-	# UNTESTED
-	# CONSTRAINTS----------------------------------------
-	# consider allowing the user to set these values eventually, or just making them attribtes of the Hungarian object
-	# for now, though, it is easier to be able to call these as if they were attributes of the working_matrix attribute
+	# CONSTRAINTS--------------------------------------------------------------------------------------------------
+	# leave these as Array methods, don't set them to the hungarian object; you need to be able to access these values for the
+	# array and each of its submatrices
+	
+	# every object on the x axis gets mapped to at least one object on the y
+	# axis, and vice versa; perhaps sometimes the most optimal match is one in which an individual doesn't get matched; if so, 
+	# then my algorithm won't catch it; I have to start somewhere
 
+	# Formerly, I had just set min_row and min_col_assignment to 1 automatically. But it's not clear why I should have. If what
+	# these values are supposed to be are the minimum/maximum number of assignments in an optimal match for the relevant array, 
+	# then the minimums will seldom if ever be 1. In a square array, the min row/col assignments should be equal to the max row/col
+	# assignments
 	def max_col_assignment 
 		return (self.row_count/self.column_count.to_f).ceil
 	end
@@ -454,13 +460,17 @@ class Array
 	end
 
 	def min_row_assignment
-		return (self.column_count/self.row_count.to_f).floor
+		assgn = (self.column_count/self.row_count.to_f).floor
+		return assgn unless assgn < 1
+		return 1
 	end
 
 	def min_col_assignment
-		return (self.row_count/self.column_count.to_f).floor
+		assgn = (self.row_count/self.column_count.to_f).floor
+		return assgn unless assgn < 1
+		return 1
 	end
-	# -----------------------------------------------------
+	# -----------------------------------------------------------------------------------------------------------------
 
 
 	# UNTESTED
