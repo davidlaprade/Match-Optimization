@@ -364,19 +364,13 @@ class Array
 
 	# ARRAY FRIENDLY
 	# UNTESTED
-	# called on Array object; returns an array of coordinates [n,m] of every lonely zero
-	# a lonely zero is one which occurs as the sole zero in EITHER its row or its column
-	# number of lonely zeros
+	# called on Array object; returns an array of coordinates [n,m] of every lonely zero; a "lonely" zero is one which occurs as the 
+	# sole zero in EITHER its row or its column
 	def lonely_zeros
-		zeros = []
-		self.each_with_index do |row, row_index|
-			row.each_with_index do |cell, col_index|
-				if cell == 0 && (self[row_index].count(0) == 1 || self.transpose[col_index].count(0) == 1)
-					zeros << [row_index, col_index]
-				end
-			end
-		end
-		return zeros
+		return self.each.with_index.with_object([]) {|(row, row_id), obj| 
+			row.each.with_index {|value, col_id| obj<<[row_id,col_id] if value==0 && (self[row_id].count(0)==1 || self.transpose[col_id].count(0)==1))
+			}
+		}
 	end
 
 	# ARRAY FRIENDLY
@@ -384,7 +378,9 @@ class Array
 	# called on Array object; returns an array of arrays [n,m] where n is the row index and m is the number of lonely zeros in the row
 	def lonely_zeros_per_row
 		zeros = []
-		self.map.with_index {|row,i| zeros<<[i, row.find_all.with_index {|value,col_index| value==0 && self.transpose[col_index].count(0)==1}.count]}
+		self.map.with_index {|row,i| 
+			zeros<<[i, row.find_all.with_index {|value,col_index| value==0 && self.transpose[col_index].count(0)==1}.count]
+		}
 		return zeros
 	end
 
