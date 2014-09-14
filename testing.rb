@@ -2,28 +2,52 @@ require 'matrix'
 require 'pry'
 require 'benchmark'
 
-
+# passed mask Array object; assigns to lonely zeros and extended extra-lonely zeros in the mask, then returns the mask
 def assign_lonely_zeros(mask)
+	# make sure that the method is passed an array object
 	raise "Wrong kind of argument, requires an array" if mask.class != Array
+	# make sure the argument has Matrix-like dimensions
 	Matrix.columns(mask.transpose)
 
+	# Assign to all lonely zeros; you can get the coordinates with array.lonely_zeros, replace them with "!"s
 	mask.lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
 
+	# use this style of loop ( with a "break unless...") because you want the first two commands to run at least once
 	loop do
+		# Making assignments to lonely zeros will often prevent you from making assignments to other zeros. When there are enough lonely zeros
+		# in a row/column to reach the maximum number of assignments for that row/column, then other zeros which occur in that row/column cannot
+		# be assigned. So, since these zeros can't be assigned, replace them with "X"s in the mask.(Remember, a zero is "lonely" iff it is the only zero in its
+		# row OR column; so a zero that's lonely, say, because of its column might well have other zeros in its row.)
 
+		# first check to see if there are zeros in ROWS with the max number of assignments; add Xs accordingly
 		mask.map! {|row| row.count("!") == mask.max_row_assignment ?
 			row.map {|value| value == 0 ? "X":value} : row
 		}
 
+		# now do the same thing for COLUMNS
 		mask.replace(
 			mask.transpose.map {|col| col.count("!") == mask.max_col_assignment ?
 				col.map {|value| value == 0 ? "X":value} : col
 			}.transpose
 		)
 
+		# Getting rid of the zeros just described might reveal new "extended" lonely zeros, or lonely zeros "by extension"--i.e. zeros which end up being lonely
+		# when the previous two classes of zeros are removed. Such zeros will have to be assigned, so repeat this process.
 		break unless !mask.extra_lonely_zeros.empty?
 
+		# Actually, you don't want to assign to zeros that are merely lonely by extension, they should be "extra" lonely by extension--i.e. 
+		# they should be the sole zero in their row AND column. Why? Consider [[0,0,0],[4,0,0],[5,5,5]]. Assigning lonely zeros gives: 
+		# [[!,0,0],[4,0,0],[5,5,5]]. Next, eliminating unassignables we get: [[!,x,x],[4,0,0],[5,5,5]]. But now notice: both zeros in row 1 are 
+		# lonely by extension, since both occur in a column in which they are the sole zero. But it's not the case that both zeros should be 
+		# assigned! That would leave row 1 with too many assignments. So, which zero in row 1 should be selected? That's not obvious. 
+		# Moreover, the conditions on which you would choose which to assign are the complex conditions that shape assignment generally, 
+		# so there's no point to to code that into the algorithm here. It will be coded elsewhere, and thus will be taken care of then.
+		# Just assign to zeros that are extra lonely by extension. There's no question that these need to be assigned.
 		mask.extra_lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
+
+		# CONCERN: extra lonely is not necesarily the only property that you want to assign to; you want to assign to any zero that is in a
+		# row/col that needs it to be assigned in order to reach the minimum. This raises a subsidiary concern: should the min_row/col_assignment
+		# be set to 1 or set to .floor for the division used for the max? It seems the latter.
 
 	end
 	return mask
@@ -271,11 +295,11 @@ class Array
 	end
 
 	def min_row_assignment
-		return 1
+		return (self.column_count/self.row_count.to_f).floor
 	end
 
 	def min_col_assignment
-		return 1
+		return (self.row_count/self.column_count.to_f).floor
 	end
 	# -----------------------------------------------------
 

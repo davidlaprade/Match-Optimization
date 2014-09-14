@@ -28,6 +28,38 @@ require 'testing'
 # METHODS THAT DO NOT DEPEND ON OTHER METHODS I HAVE WRITTEN SHOULD BE TESTED FIRST, SO THAT IF THERE IS A PROBLEM WITH THEM, THE PROBLEM
 # IS DISPLAYED FIRST WHEN I RUN RSPEC
 
+describe Array, ".min_row_assignment" do
+
+	# I am going to set up my algorithm this way: so that every object on the x axis gets mapped to at least one object on the y
+	# axis, and vice versa; some people might want to optimize matches in which certain individuals get left out; perhaps sometimes the
+	# most optimal match is one in which an individual doesn't get matched; if so, then my algorithm won't catch it; that seems like a 
+	# very hard algorithm to write; so for now I'm not even going to attempt to do so
+
+	What should be done with a case like this:
+
+	[2,4,4,3,5,21,4,5]
+		max col = 1
+		max row = 8
+		min col = 1
+		min row = 8
+
+
+	def max_col_assignment 
+		return (self.row_count/self.column_count.to_f).ceil
+	end
+
+	def max_row_assignment
+		return (self.column_count/self.row_count.to_f).ceil
+	end
+
+	def min_row_assignment
+		return (self.column_count/self.row_count.to_f).floor
+	end
+
+	def min_col_assignment
+		return (self.row_count/self.column_count.to_f).floor
+	end
+
 describe Array, "max_column_assmts_possible(max_col_assignment)" do
 	it "returns 2 when called on [[0,4,0],[0,9,0],[0,2,0]] and passed 1" do
 		array = [[0,4,0],[0,9,0],[0,2,0]]
@@ -177,11 +209,6 @@ end
 describe Object, "assign_lonely_zeros(mask)" do
 	# pass a mask Array object; assigns to lonely zeros and extended lonely zeros in the mask, then returns the mask
 
-	it "marks extended extra lonely zeros when there are multiple" do
-		array = [[0,0,0,2,9],[4,0,8,5,0],[2,3,0,3,0],[2,2,2,2,0],[5,3,2,8,4]]
-		assign_lonely_zeros(array)
-		expect(array).to eq([["!","X","X",2,9],[4,"!",8,5,"X"],[2,3,"!",3,"X"],[2,2,2,2,"!"],[5,3,2,8,4]])
-	end
 
 	it "changes the object it is passed" do
 		array = [[0,1,3],[4,7,2],[12,11,1]]
@@ -200,9 +227,9 @@ describe Object, "assign_lonely_zeros(mask)" do
 		expect {assign_lonely_zeros(array)}.to raise_error(RuntimeError, 'Wrong kind of argument, requires an array')
 	end
 
-	it "raises error when passed a non-2D array, i.e. a non-matrix array" do
+	it "raises error when passed a non-2D array, i.e. an array without non-matrix dimensions" do
 		array = [[1,2],1]
-		expect {assign_lonely_zeros(array)}.to raise_error(TypeError, 'no implicit conversion of Fixnum into Array')
+		expect {assign_lonely_zeros(array)}.to raise_error()
 	end
 
 	it "assigns lonely zero when there is only one" do
@@ -269,15 +296,17 @@ describe Object, "assign_lonely_zeros(mask)" do
 		expect(array).to eq([["!","X","X"],[4,"!",8],[12,"X","!"]])
 	end
 
-	it "does not add assignments over the max allowable for columns" do
+	it "marks extended extra lonely zeros when there are multiple" do
+		array = [[0,0,0,2,9],[4,0,8,5,0],[2,3,0,3,0],[2,2,2,2,0],[5,3,2,8,4]]
+		assign_lonely_zeros(array)
+		expect(array).to eq([["!","X","X",2,9],[4,"!",8,5,"X"],[2,3,"!",3,"X"],[2,2,2,2,"!"],[5,3,2,8,4]])
 	end
 
-	it "does not add assignments over the max allowable for rows" do
-	end
+	# it "does not add assignments over the max allowable for columns" do
+	# end
 
-	it "does not add the wrong assigments when it has a choice" do
-	end
-		# it might be that the key property to assign to on the second round is: lonely in BOTH rows and columns
+	# it "does not add assignments over the max allowable for rows" do
+	# end
 
 
 end

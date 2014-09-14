@@ -454,11 +454,11 @@ class Array
 	end
 
 	def min_row_assignment
-		return 1
+		return (self.column_count/self.row_count.to_f).floor
 	end
 
 	def min_col_assignment
-		return 1
+		return (self.row_count/self.column_count.to_f).floor
 	end
 	# -----------------------------------------------------
 
