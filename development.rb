@@ -60,12 +60,35 @@ class Hungarian
 				Here is how you get the coordinates of each assignment represented by a "!"
 				mask.map.with_index {|row,row_index| row.map.with_index {|v,col_index| v=="!" ? [row_index,col_index] : v}}.flatten(1).find_all {|x| x.class==Array}
 
+				Better, use this:
+				mask.each.with_index.with_object([]) {|(row, row_id), obj| 
+					row.each.with_index {|val, col_id| 
+						obj<<[row_id, col_id] if val == "!"
+					}
+				}
+
 
 			Step 1
 				Code the following:
 					Assign to all lonely zeros; you can get the coordinates with array.lonely_zeros, replace them with "!"s
+
+						mask.lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!"}
+
+
 					Replace each zero that occurs in a row or column with the max_allowable_assignments with a "X"
 					Search for lonely zeros again; repeat until this process changes nothing
+
+						# first check to see if there are zeros in rows with the max number of assignments
+						mask.map! {|row| row.count("!")==mask.max_row_assignment ?
+							row.map {|value| value==0 ? "X":value} : row
+						}
+
+						# now do the same thing for columns
+						mask = mask.transpose.map {|col| col.count("!")==mask.max_col_assignment ?
+							col.map {|value| value==0 ? "X":value} : col
+						}.transpose
+
+
 
 
 
