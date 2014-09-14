@@ -25,6 +25,9 @@ require 'testing'
 # ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+# METHODS THAT DO NOT DEPEND ON OTHER METHODS I HAVE WRITTEN SHOULD BE TESTED FIRST, SO THAT IF THERE IS A PROBLEM WITH THEM, THE PROBLEM
+# IS DISPLAYED FIRST WHEN I RUN RSPEC
+
 describe Array, "max_column_assmts_possible(max_col_assignment)" do
 	it "returns 2 when called on [[0,4,0],[0,9,0],[0,2,0]] and passed 1" do
 		array = [[0,4,0],[0,9,0],[0,2,0]]
@@ -41,6 +44,38 @@ describe Array, "max_column_assmts_possible(max_col_assignment)" do
 		anything = rand * 10
 		expect(array.max_column_assmts_possible(anything)).to eq(0)
 	end
+end
+
+describe Array, ".lonely_zeros" do
+	# called on Array object; returns an array of coordinates [n,m] of every lonely zero; a "lonely" zero is one which occurs as the 
+	# sole zero in EITHER its row or its column
+
+	it "finds the lonely zero when there is only one" do
+		array = [[0,1,3],[4,7,2],[12,11,1]]
+		expect(array.lonely_zeros).to eq([[0,0]])
+	end
+
+	it "finds lonely zeros when there are multiple" do
+		array = [[0,1,3],[4,0,2],[12,11,1]]
+		expect(array.lonely_zeros).to eq([[0,0],[1,1]])
+	end
+
+	it "finds lonely zeros in columns when they occur in rows with other zeros" do
+		array = [[0,0,3],[4,0,0],[12,0,0]]
+		expect(array.lonely_zeros).to eq([[0,0]])
+	end
+
+	it "finds lonely zeros in rows when they occur in columns with other zeros" do
+		array = [[0,7,3],[0,0,12],[0,0,6]]
+		expect(array.lonely_zeros).to eq([[0,0]])
+	end
+
+	it "finds lonely zeros in a medium-sized array of randomly generated values between 0 and 9" do
+		array = [[3,7,3,6,3,8,2,1,6],[3,5,1,9,4,8,7,8,0],[9,9,6,6,2,4,0,1,2],[9,5,6,1,3,8,7,1,1],[7,7,3,8,7,7,4,2,9],
+			[0,9,4,5,5,7,5,8,3],[0,0,2,8,3,7,9,3,4],[8,2,1,5,9,4,3,4,8],[8,6,2,3,3,6,9,0,7]]
+		expect(array.lonely_zeros).to eq([[1,8],[2,6],[5,0],[6,1],[8,7]])
+	end
+
 end
 
 

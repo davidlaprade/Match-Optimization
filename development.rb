@@ -362,13 +362,13 @@ class Array
 		self.zero_fewest_problematic_columns(problematic_columns)
 	end
 
-	# ARRAY FRIENDLY
-	# UNTESTED
+	# ARRAY FRIENDLY + TESTED
 	# called on Array object; returns an array of coordinates [n,m] of every lonely zero; a "lonely" zero is one which occurs as the 
 	# sole zero in EITHER its row or its column
 	def lonely_zeros
+		columns = self.transpose
 		return self.each.with_index.with_object([]) {|(row, row_id), obj| 
-			row.each.with_index {|value, col_id| obj<<[row_id,col_id] if value==0 && (self[row_id].count(0)==1 || self.transpose[col_id].count(0)==1))
+			row.each.with_index {|value, col_id| obj<<[row_id,col_id] if value==0 && (self[row_id].count(0)==1 || columns[col_id].count(0)==1)
 			}
 		}
 	end
