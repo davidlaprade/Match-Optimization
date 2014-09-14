@@ -70,23 +70,35 @@ class Hungarian
 
 			Step 1
 				Code the following:
-					Assign to all lonely zeros; you can get the coordinates with array.lonely_zeros, replace them with "!"s
 
-						mask.lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!"}
+				# call on mask Array object; assigns to lonely zeros and extended lonely zeros in the mask, then returns the mask
+				def assign_lonely_zeros
 
+					while !self.lonely_zeros.empty?
+					# Assign to all lonely zeros; you can get the coordinates with array.lonely_zeros, replace them with "!"s
 
-					Replace each zero that occurs in a row or column with the max_allowable_assignments with a "X"
-					Search for lonely zeros again; repeat until this process changes nothing
+						self.lonely_zeros.each {|coord| self[coord[0]][coord[1]] = "!"}
 
-						# first check to see if there are zeros in rows with the max number of assignments
-						mask.map! {|row| row.count("!")==mask.max_row_assignment ?
+					# making assignments to lonely zeros will often prevent you from making assignments to other zeros. When there are enough lonely zeros
+					# in a row/column to reach the maximum number of assignments for that row/column, then other zeros which occur in that row/column cannot
+					# be assigned. So, since these zeros can't be assigned, replace them with "X"s in the mask.(Remember, a zero is "lonely" iff it is the only zero in its
+					# row OR column; so a zero that's lonely, say, because of its column might well have other zeros in its row.)
+
+						# first check to see if there are zeros in ROWS with the max number of assignments
+						self.map! {|row| row.count("!")==self.max_row_assignment ?
 							row.map {|value| value==0 ? "X":value} : row
 						}
 
-						# now do the same thing for columns
-						mask = mask.transpose.map {|col| col.count("!")==mask.max_col_assignment ?
+						# now do the same thing for COLUMNS
+						self = self.transpose.map {|col| col.count("!")==self.max_col_assignment ?
 							col.map {|value| value==0 ? "X":value} : col
 						}.transpose
+
+					# Getting rid of the zeros just described might reveal new "extended" lonely zeros--i.e. zeros which end up being the only zero in their column OR row
+					# when the previous two classes of zeros are removed. Such zeros will have to be assigned, so repeat this process.
+					end
+					return self
+				end
 
 
 
