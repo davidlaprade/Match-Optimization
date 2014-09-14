@@ -222,6 +222,13 @@ class Array
 		return self.transpose.length
 	end
 
+	# called on array object; returns array of coordinates [p,q] such that each self[p][q] is an extra-lonely zero
+	# an "extra lonely" zero is one which occurs as the only zero in both its row AND column
+	def extra_lonely_zeros
+		columns = self.transpose
+		return self.lonely_zeros.select {|coord| self[coord[0]].count(0)==1 && columns[coord[1]].count(0)==1}
+	end
+
 	# called on submatrix Array; finds columns that do not contain zeros; outputs an ordered array of ALL arrays [p,q] where 
 	# p is the index of a row in the submatrix, and q is a value in that row such that no zeros occur in that value's column
 	# in the submatrix; the arrays are ordered by increasing q value, then by increasing row index

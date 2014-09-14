@@ -78,6 +78,33 @@ describe Array, ".lonely_zeros" do
 
 end
 
+describe Array, ".extra_lonely_zeros" do
+	# called on array object; returns array of coordinates [p,q] such that each self[p][q] is an extra-lonely zero
+	# an "extra lonely" zero is one which occurs as the only zero in both its row AND column
+
+	it "finds extra lonely zero when there is only one" do
+		array = [[10,2,5],[9,0,7],[8,2,5]]
+		expect(array.extra_lonely_zeros).to eq([[1,1]])
+	end
+
+	it "finds extra lonely zeros when there are multiple" do
+		array = [[0,2,5],[9,4,7],[8,2,0]]
+		expect(array.extra_lonely_zeros).to eq([[0,0],[2,2]])
+	end
+
+	it "finds extra lonely zeros when there are multiple" do
+		array = [[0,2,5],[9,0,7],[8,2,10]]
+		expect(array.extra_lonely_zeros).to eq([[0,0],[1,1]])
+	end
+
+	it "distinguishes between non-lonely, lonely, and extra lonely zeros" do
+		array = [[0,2,0],[9,0,7],[8,2,0]]
+		expect(array.lonely_zeros).to eq([[0,0],[1,1],[2,2]])
+		expect(array.extra_lonely_zeros).to eq([[1,1]])
+	end
+
+end
+
 
 describe Array, "every_combination_of_its_members" do
 	it "returns [[1,2]] when called on [1,2]" do
@@ -150,6 +177,12 @@ end
 describe Object, "assign_lonely_zeros(mask)" do
 	# pass a mask Array object; assigns to lonely zeros and extended lonely zeros in the mask, then returns the mask
 
+	it "marks extended extra lonely zeros when there are multiple" do
+		array = [[0,0,0,2,9],[4,0,8,5,0],[2,3,0,3,0],[2,2,2,2,0],[5,3,2,8,4]]
+		assign_lonely_zeros(array)
+		expect(array).to eq([["!","X","X",2,9],[4,"!",8,5,"X"],[2,3,"!",3,"X"],[2,2,2,2,"!"],[5,3,2,8,4]])
+	end
+
 	it "changes the object it is passed" do
 		array = [[0,1,3],[4,7,2],[12,11,1]]
 		assign_lonely_zeros(array)
@@ -198,12 +231,6 @@ describe Object, "assign_lonely_zeros(mask)" do
 		expect(assign_lonely_zeros(array)).to eq([["!",9,3],[4,0,0],[12,0,0]])
 	end
 
-	it "does not add assignments over the max allowable for columns" do
-	end
-
-	it "does not add assignments over the max allowable for rows" do
-	end
-
 	it "assigns lonely zeros in rows when they occur in columns with other zeros, marks other zeros with Xs" do
 		array = [[0,7,3],[0,0,12],[0,0,6]]
 		assign_lonely_zeros(array)
@@ -236,11 +263,21 @@ describe Object, "assign_lonely_zeros(mask)" do
 		expect(assign_lonely_zeros(array)).to eq([["!","X","X"],[4,0,0],[12,0,0]])
 	end
 
-	it "marks extended lonely zeros when they exist and there are multiple" do
+	it "marks extended extra lonely zeros when there is one" do
 		array = [[0,0,0],[4,0,8],[12,0,0]]
 		assign_lonely_zeros(array)
 		expect(array).to eq([["!","X","X"],[4,"!",8],[12,"X","!"]])
 	end
+
+	it "does not add assignments over the max allowable for columns" do
+	end
+
+	it "does not add assignments over the max allowable for rows" do
+	end
+
+	it "does not add the wrong assigments when it has a choice" do
+	end
+		# it might be that the key property to assign to on the second round is: lonely in BOTH rows and columns
 
 
 end

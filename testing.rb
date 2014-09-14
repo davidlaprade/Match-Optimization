@@ -7,19 +7,29 @@ def assign_lonely_zeros(mask)
 	raise "Wrong kind of argument, requires an array" if mask.class != Array
 	Matrix.columns(mask.transpose)
 
-	while !mask.lonely_zeros.empty?
-		mask.lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!"}
+	mask.lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
+
+	loop do
+
 		mask.map! {|row| row.count("!") == mask.max_row_assignment ?
 			row.map {|value| value == 0 ? "X":value} : row
 		}
 
-		fix_col = mask.transpose.map {|col| col.count("!") == mask.max_col_assignment ?
+		mask.replace(
+			mask.transpose.map {|col| col.count("!") == mask.max_col_assignment ?
 				col.map {|value| value == 0 ? "X":value} : col
 			}.transpose
-		mask.map!.with_index {|row, row_id| fix_col[row_id]}
+		)
+
+		break unless !mask.extra_lonely_zeros.empty?
+
+		mask.extra_lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
+
 	end
 	return mask
 end
+
+
 
 # ARRAY FRIENDLY + TESTED
 def make_matrix_solveable(working_matrix)
@@ -94,6 +104,13 @@ class Array
 	# called on array; outputs the number of columns in the array
 	def column_count
 		return self.transpose.length
+	end
+
+	# called on array object; returns array of coordinates [p,q] such that each self[p][q] is an extra-lonely zero
+	# an "extra lonely" zero is one which occurs as the only zero in both its row AND column
+	def extra_lonely_zeros
+		columns = self.transpose
+		return self.lonely_zeros.select {|coord| self[coord[0]].count(0)==1 && columns[coord[1]].count(0)==1}
 	end
 
 	# ARRAY FRIENDLY + TESTED
