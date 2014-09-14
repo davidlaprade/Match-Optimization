@@ -71,34 +71,7 @@ class Hungarian
 			Step 1
 				Code the following:
 
-				# call on mask Array object; assigns to lonely zeros and extended lonely zeros in the mask, then returns the mask
-				def assign_lonely_zeros
 
-					while !self.lonely_zeros.empty?
-					# Assign to all lonely zeros; you can get the coordinates with array.lonely_zeros, replace them with "!"s
-
-						self.lonely_zeros.each {|coord| self[coord[0]][coord[1]] = "!"}
-
-					# making assignments to lonely zeros will often prevent you from making assignments to other zeros. When there are enough lonely zeros
-					# in a row/column to reach the maximum number of assignments for that row/column, then other zeros which occur in that row/column cannot
-					# be assigned. So, since these zeros can't be assigned, replace them with "X"s in the mask.(Remember, a zero is "lonely" iff it is the only zero in its
-					# row OR column; so a zero that's lonely, say, because of its column might well have other zeros in its row.)
-
-						# first check to see if there are zeros in ROWS with the max number of assignments
-						self.map! {|row| row.count("!")==self.max_row_assignment ?
-							row.map {|value| value==0 ? "X":value} : row
-						}
-
-						# now do the same thing for COLUMNS
-						self = self.transpose.map {|col| col.count("!")==self.max_col_assignment ?
-							col.map {|value| value==0 ? "X":value} : col
-						}.transpose
-
-					# Getting rid of the zeros just described might reveal new "extended" lonely zeros--i.e. zeros which end up being the only zero in their column OR row
-					# when the previous two classes of zeros are removed. Such zeros will have to be assigned, so repeat this process.
-					end
-					return self
-				end
 
 
 
@@ -208,19 +181,39 @@ class Array
 		return self
 	end
 
-	# counts number of cells with the given value in an array
-	def array_count_with_value(value)
-		count = 0
-			self.each do |cell|
-				count = (count + 1) unless (cell != value)
-			end
-		return count
-	end
-
 	# called on array; outputs an ordered array of arrays, each of which containing a column from the array it is called on
 	# column and row indexes were preserved: array_columns[0][2] returns the cell in the 1st column in the 3rd row 
 	def array_columns
 		return self.transpose
+	end
+
+	# call on mask Array object; assigns to lonely zeros and extended lonely zeros in the mask, then returns the mask
+	def assign_lonely_zeros
+
+		while !self.lonely_zeros.empty?
+		# Assign to all lonely zeros; you can get the coordinates with array.lonely_zeros, replace them with "!"s
+
+			self.lonely_zeros.each {|coord| self[coord[0]][coord[1]] = "!"}
+
+		# making assignments to lonely zeros will often prevent you from making assignments to other zeros. When there are enough lonely zeros
+		# in a row/column to reach the maximum number of assignments for that row/column, then other zeros which occur in that row/column cannot
+		# be assigned. So, since these zeros can't be assigned, replace them with "X"s in the mask.(Remember, a zero is "lonely" iff it is the only zero in its
+		# row OR column; so a zero that's lonely, say, because of its column might well have other zeros in its row.)
+
+			# first check to see if there are zeros in ROWS with the max number of assignments
+			self.map! {|row| row.count("!")==self.max_row_assignment ?
+				row.map {|value| value==0 ? "X":value} : row
+			}
+
+			# now do the same thing for COLUMNS
+			self = self.transpose.map {|col| col.count("!")==self.max_col_assignment ?
+				col.map {|value| value==0 ? "X":value} : col
+			}.transpose
+
+		# Getting rid of the zeros just described might reveal new "extended" lonely zeros--i.e. zeros which end up being the only zero in their column OR row
+		# when the previous two classes of zeros are removed. Such zeros will have to be assigned, so repeat this process.
+		end
+		return self
 	end
 
 	# UNTESTED
@@ -430,10 +423,10 @@ class Array
 	def max_column_assmts_possible(max_col_assignment)
 		number_of_max_assignments = 0
 		self.array_columns.each do |column|
-			if column.array_count_with_value(0) > max_col_assignment
+			if column.count(0) > max_col_assignment
 				number_of_max_assignments = number_of_max_assignments + max_col_assignment
 			else 
-				number_of_max_assignments = number_of_max_assignments + column.array_count_with_value(0)
+				number_of_max_assignments = number_of_max_assignments + column.count(0)
 			end
 		end
 		return number_of_max_assignments

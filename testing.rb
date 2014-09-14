@@ -2,6 +2,25 @@ require 'matrix'
 require 'pry'
 require 'benchmark'
 
+
+def assign_lonely_zeros(mask)
+	raise "Wrong kind of argument, requires an array" if mask.class != Array
+	Matrix.columns(mask.transpose)
+
+	while !mask.lonely_zeros.empty?
+		mask.lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!"}
+		mask.map! {|row| row.count("!") == mask.max_row_assignment ?
+			row.map {|value| value == 0 ? "X":value} : row
+		}
+
+		fix_col = mask.transpose.map {|col| col.count("!") == mask.max_col_assignment ?
+				col.map {|value| value == 0 ? "X":value} : col
+			}.transpose
+		mask.map!.with_index {|row, row_id| fix_col[row_id]}
+	end
+	return mask
+end
+
 # ARRAY FRIENDLY + TESTED
 def make_matrix_solveable(working_matrix)
 	working_matrix = working_matrix.zero_rows_and_columns
@@ -65,15 +84,6 @@ class Array
 		return self
 	end
 
-	# counts number of cells with the given value in an array
-	def array_count_with_value(value)
-		count = 0
-			self.each do |cell|
-				count = (count + 1) unless (cell != value)
-			end
-		return count
-	end
-
 	# called on array; outputs an ordered array of arrays, each of which containing a column from the array it is called on
 	# column and row indexes were preserved: array_columns[0][2] returns the cell in the 1st column in the 3rd row 
 	def array_columns
@@ -86,18 +96,11 @@ class Array
 		return self.transpose.length
 	end
 
-	# called on submatrix Array; finds columns that do not contain zeros; outputs an ordered array of ALL arrays [p,q] where 
-	# p is the index of a row in the submatrix, and q is a value in that row such that no zeros occur in that value's column
-	# in the submatrix; the arrays are ordered by increasing q value, then by increasing row index
+	# ARRAY FRIENDLY + TESTED
 	def get_ids_and_row_mins
 		col_wo_zeros = []
 		self.array_columns.find_all {|column| !column.include?(0)}.each {|col| col.each_with_index {|v,i| col_wo_zeros << [i, v]} }
 		return col_wo_zeros.uniq.sort_by {|x| [x[1],x[0]]}
-
-		# PREVIOUS VERSION--TESTED
-		# called on submatrix Array; outputs an ordered array of ALL arrays [p,q] where p is the index of a row in the submatrix
-		# and q is a value in that row; the arrays are ordered by increasing q value, then by increasing row index
-		# return self.collect.with_index {|x,i| x.collect{|y| !y.zero? ? [i,y] : y}-[0] }.flatten(1).uniq.sort_by {|x| [x[1],x[0]]}
 	end
 
 	# ARRAY FRIENDLY + TESTED
@@ -227,10 +230,10 @@ class Array
 	def max_column_assmts_possible(max_col_assignment)
 		number_of_max_assignments = 0
 		self.array_columns.each do |column|
-			if column.array_count_with_value(0) > max_col_assignment
+			if column.count(0) > max_col_assignment
 				number_of_max_assignments = number_of_max_assignments + max_col_assignment
 			else 
-				number_of_max_assignments = number_of_max_assignments + column.array_count_with_value(0)
+				number_of_max_assignments = number_of_max_assignments + column.count(0)
 			end
 		end
 		return number_of_max_assignments

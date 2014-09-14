@@ -79,26 +79,6 @@ describe Array, ".lonely_zeros" do
 end
 
 
-describe Array, "array_count_with_value(value)" do
-	it "returns 0 when called on [1,2,3,4,5] and passed 6" do
-		array = [1,2,3,4,5]
-		expect(array.array_count_with_value(6)).to eq(0)
-	end
-
-	it "returns 0 when called on [] and passed anything" do
-		array = []
-		anything = rand * 10
-		expect(array.array_count_with_value(anything)).to eq(0)
-	end
-
-	it "returns 9 when called on [1,1,1,1,1,1,1,1,1,2] and passed 1" do
-		array = [1,1,1,1,1,1,1,1,1,2]
-		expect(array.array_count_with_value(1)).to eq(9)
-	end
-
-end
-
-
 describe Array, "every_combination_of_its_members" do
 	it "returns [[1,2]] when called on [1,2]" do
 		array = [1,2]
@@ -164,6 +144,104 @@ describe Array, ".subtract_value_from_row_in_array" do
 		array = [[9,6,3],[8,6,2],[7,4,1]]
 		expect {array.subtract_value_from_row_in_array(1,3)}.to raise_error(RuntimeError, 'Would result in negative value')
 	end
+
+end
+
+describe Object, "assign_lonely_zeros(mask)" do
+	# pass a mask Array object; assigns to lonely zeros and extended lonely zeros in the mask, then returns the mask
+
+	it "changes the object it is passed" do
+		array = [[0,1,3],[4,7,2],[12,11,1]]
+		assign_lonely_zeros(array)
+		expect(array).to_not eq([[0,1,3],[4,7,2],[12,11,1]])
+	end
+
+	it "changes object it is passed, marks Xs in columns" do
+		array = [[0,0,0],[4,0,8],[12,0,0]]
+		assign_lonely_zeros(array)
+		expect(array.include?([12,"X","!"])).to eq(true)
+	end
+
+	it "raises error when passed a non-array" do
+		array = 9
+		expect {assign_lonely_zeros(array)}.to raise_error(RuntimeError, 'Wrong kind of argument, requires an array')
+	end
+
+	it "raises error when passed a non-2D array, i.e. a non-matrix array" do
+		array = [[1,2],1]
+		expect {assign_lonely_zeros(array)}.to raise_error(TypeError, 'no implicit conversion of Fixnum into Array')
+	end
+
+	it "assigns lonely zero when there is only one" do
+		array = [[0,1,3],[4,7,2],[12,11,1]]
+		expect(assign_lonely_zeros(array)).to eq([["!",1,3],[4,7,2],[12,11,1]])
+	end
+
+	it "assigns lonely zero when there is only one" do
+		array = [[0,1,0],[4,0,2],[0,11,0]]
+		expect(assign_lonely_zeros(array)).to eq([[0,1,0],[4,"!",2],[0,11,0]])
+	end
+
+	it "changes nothing when there are no lonely zeros" do
+		array = [[0,1,0],[4,8,2],[0,11,0]]
+		assign_lonely_zeros(array)
+		expect(array).to eq([[0,1,0],[4,8,2],[0,11,0]])
+	end
+
+	it "assigns lonely zeros when there are multiple" do
+		array = [[0,1,3],[4,0,2],[12,11,1]]
+		expect(assign_lonely_zeros(array)).to eq([["!",1,3],[4,"!",2],[12,11,1]])
+	end
+
+	it "assigns lonely zeros in columns when they occur in rows with other zeros" do
+		array = [[0,9,3],[4,0,0],[12,0,0]]
+		expect(assign_lonely_zeros(array)).to eq([["!",9,3],[4,0,0],[12,0,0]])
+	end
+
+	it "does not add assignments over the max allowable for columns" do
+	end
+
+	it "does not add assignments over the max allowable for rows" do
+	end
+
+	it "assigns lonely zeros in rows when they occur in columns with other zeros, marks other zeros with Xs" do
+		array = [[0,7,3],[0,0,12],[0,0,6]]
+		assign_lonely_zeros(array)
+		expect(array).to eq([["!",7,3],["X",0,12],["X",0,6]])
+	end
+
+	it "assigns lonely zeros in a medium-sized array of randomly generated values between 0 and 9" do
+		array = [[3,7,3,6,3,8,2,1,6],[3,5,1,9,4,8,7,8,0],[9,9,6,6,2,4,0,1,2],[9,5,6,1,3,8,7,1,1],[7,7,3,8,7,7,4,2,9],
+			[0,9,4,5,5,7,5,8,3],[9,0,2,8,3,7,9,3,4],[8,2,1,5,9,4,3,4,8],[8,6,2,3,3,6,9,0,7]]
+		assign_lonely_zeros(array)
+		expect(array).to eq([[3,7,3,6,3,8,2,1,6],[3,5,1,9,4,8,7,8,"!"],[9,9,6,6,2,4,"!",1,2],[9,5,6,1,3,8,7,1,1],[7,7,3,8,7,7,4,2,9],
+			["!",9,4,5,5,7,5,8,3],[9,"!",2,8,3,7,9,3,4],[8,2,1,5,9,4,3,4,8],[8,6,2,3,3,6,9,"!",7]])
+	end
+
+	it "marks unassignable zeros with X when there is only one" do
+		array = [[0,0,3],[4,0,0],[12,0,0]]
+		expect(assign_lonely_zeros(array)).to eq([["!","X",3],[4,0,0],[12,0,0]])
+	end
+
+	it "marks unassignable zeros with X when there is only one in a medium-sized array" do
+		array = [[3,7,3,6,3,8,2,1,6],[3,5,1,9,4,8,7,8,0],[9,9,6,6,2,4,0,1,2],[9,5,6,1,3,8,7,1,1],[7,7,3,8,7,7,4,2,9],
+			[0,9,4,5,5,7,5,8,3],[0,0,2,8,3,7,9,3,4],[8,2,1,5,9,4,3,4,8],[8,6,2,3,3,6,9,0,7]]
+		assign_lonely_zeros(array)
+		expect(array).to eq([[3,7,3,6,3,8,2,1,6],[3,5,1,9,4,8,7,8,"!"],[9,9,6,6,2,4,"!",1,2],[9,5,6,1,3,8,7,1,1],[7,7,3,8,7,7,4,2,9],
+			["!",9,4,5,5,7,5,8,3],["X","!",2,8,3,7,9,3,4],[8,2,1,5,9,4,3,4,8],[8,6,2,3,3,6,9,"!",7]])
+	end
+
+	it "marks unassignable zeros with X when there are multiple" do
+		array = [[0,0,0],[4,0,0],[12,0,0]]
+		expect(assign_lonely_zeros(array)).to eq([["!","X","X"],[4,0,0],[12,0,0]])
+	end
+
+	it "marks extended lonely zeros when they exist and there are multiple" do
+		array = [[0,0,0],[4,0,8],[12,0,0]]
+		assign_lonely_zeros(array)
+		expect(array).to eq([["!","X","X"],[4,"!",8],[12,"X","!"]])
+	end
+
 
 end
 
