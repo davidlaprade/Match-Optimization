@@ -27,6 +27,72 @@ require 'testing'
 
 # METHODS THAT DO NOT DEPEND ON OTHER METHODS I HAVE WRITTEN SHOULD BE TESTED FIRST, SO THAT IF THERE IS A PROBLEM WITH THEM, THE PROBLEM
 # IS DISPLAYED FIRST WHEN I RUN RSPEC
+describe Array, ".zero_each_row" do
+	# called on Array object; subtracts the lowest value in each row from each member of that row, repeats process until each
+	# row contains at least enough zeros to support a minimum_row_assignment; then it returns the corrected array
+
+
+
+	it "changes the attributes of the array it's called on" do
+		array = [[2,7,5]]
+		array.zero_each_row
+		expect(array).to eq([[0,0,0]])
+	end
+
+	it "works when each row needs one zero, will get it by just getting rid of first min" do
+		array = [[2,7,5],[9,1,2],[4,4,3]]
+		expect(array.zero_each_row).to eq([[0,5,3],[8,0,1],[1,1,0]])
+	end
+
+	it "works when each row needs two zeros, will happen just by getting rid of first min" do
+		array = [[2,7,5,2],[9,1,1,7]]
+		array.zero_each_row
+		expect(array).to eq([[0,5,3,0],[8,0,0,6]])
+	end
+
+	it "works when each row needs one zero, will happen just by getting rid of first min, one row ends up with two zeros" do
+		array = [[2,7,5],[9,1,1],[4,4,3]]
+		expect(array.zero_each_row).to eq([[0,5,3],[8,0,0],[1,1,0]])
+	end
+
+
+	it "works when each row needs two zeros, will only happen by getting rid of second min" do
+		array = [[1,7,5,2],[9,1,2,7]]
+		array.zero_each_row
+		expect(array).to eq([[0,5,3,0],[7,0,0,5]])
+	end
+
+	it "works when each row needs two zeros, one row needs to be normalized twice, other row once" do
+		array = [[1,7,5,2],[9,1,1,7]]
+		array.zero_each_row
+		expect(array).to eq([[0,5,3,0],[8,0,0,6]])
+	end
+
+	it "works when each row needs three zeros, one needs to be normalized three times, another two, last one" do
+		array = [[1,2,3,3,3,9,8,8,6],[5,4,6,8,8,2,9,2,7],[5,5,9,10,12,6,7,9,5]]
+		array.zero_each_row
+		expect(array).to eq([[0,0,0,0,0,6,5,5,3],[1,0,2,4,4,0,5,0,3],[0,0,4,5,7,1,2,4,0]])
+	end
+
+	it "works when one row doesn't have to be changed, one does" do
+		array = [[0,4,5,0],[2,3,3,2]]
+		array.zero_each_row
+		expect(array).to eq([[0,4,5,0],[0,1,1,0]])
+	end
+
+	it "it changes nothing when no zeros need to be added" do
+		array = [[0,7,5],[0,1,2],[0,4,3]]
+		array.zero_each_row
+		expect(array).to eq([[0,7,5],[0,1,2],[0,4,3]])
+	end
+
+	it "it changes nothing when no zeros need to be added" do
+		array = [[0,0,0]]
+		array.zero_each_row
+		expect(array).to eq([[0,0,0]])
+	end
+
+end
 
 describe Array, "permissible assignment values, min_row_assignment, max_col_assignment, etc" do
 
@@ -1011,7 +1077,6 @@ end
 describe Array, ".solveable?" do
 	# called on Array object; returns failure code if the matrix-array has no solution in its current state, 
 	# returns true if the matrix-array passes the tests
-
 
 	it "returns true when run on [[0,0,0],[4,0,6],[0,0,0]]" do
 		matrix = [[0,0,0],[4,0,6],[0,0,0]]

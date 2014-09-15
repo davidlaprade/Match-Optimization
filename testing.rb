@@ -9,21 +9,21 @@ def assign_lonely_zeros(mask)
 	# make sure the argument has Matrix-like dimensions
 	Matrix.columns(mask.transpose)
 
+	# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	# THIS NEEDS TO BE REFACTORED ONCE THE SOLVEABLE? AND MAKE_MATRIX_SOLVEABLE METHODS HAVE BEEN FIXED
+	# WHAT NEEDS TO BE DONE: fix the loop, now that this is for needy zeros, the first command can just go in the loop and the loop
+	# can become an ordinary while loop again, where the condition is just mask.needy_zeros.empty?
 	# Assign to all needy zeros; a zero is needy iff it occurs in a needy row/column; a row/column is "needy" iff every zero in it 
 	# must be assigned in order for it to reach its minimum allowable value. The class of needy zeros includes the class of lonely
-	# zeros and thus also the class of extra-lonely zeros. And the checking algorithm has already ensured that there are enough zeros
-	# in columns and rows to reach the minimum assignments
-	# 
-
-	# you can get the coordinates with array.lonely_zeros, replace them with "!"s
-	mask.lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
+	# zeros and thus also the class of extra-lonely zeros. And the make_matrix_solveable method has already ensured that there are 
+	# at least enough zeros in columns and rows to reach the minimum assignments
+	mask.needy_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
 
 	# use this style of loop ( with a "break if...") because you want the first two commands to run at least once
 	loop do
-		# Making assignments to lonely zeros will often prevent you from making assignments to other zeros. When there are enough lonely zeros
+		# Making assignments to needy zeros will often prevent you from making assignments to other zeros. When there are enough needy zeros
 		# in a row/column to reach the maximum number of assignments for that row/column, then other zeros which occur in that row/column cannot
-		# be assigned. So, since these zeros can't be assigned, replace them with "X"s in the mask.(Remember, a zero is "lonely" iff it is the only zero in its
-		# row OR column; so a zero that's lonely, say, because of its column might well have other zeros in its row.)
+		# be assigned. So, since these zeros can't be assigned, replace them with "X"s in the mask.
 
 		# first check to see if there are zeros in ROWS with the max number of assignments; add Xs accordingly
 		mask.map! {|row| row.count("!") == mask.max_row_assignment ?
@@ -37,9 +37,10 @@ def assign_lonely_zeros(mask)
 			}.transpose
 		)
 
-		# Getting rid of the zeros just described might reveal new "extended" lonely zeros, or lonely zeros "by extension"--i.e. zeros which end up being lonely
+		# Getting rid of the zeros just described might reveal new "extended" needy zeros, AKA needy zeros "by extension"--i.e. zeros which end up being needy
 		# when the previous two classes of zeros are removed. Such zeros will have to be assigned, so repeat this process.
-		break if mask.extra_lonely_zeros.empty?
+		needy = mask.needy_zeros
+		break if needy.empty?
 
 		# Actually, you don't want to assign to zeros that are merely lonely by extension, they should be "extra" lonely by extension--i.e. 
 		# they should be the sole zero in their row AND column. Why? Consider [[0,0,0],[4,0,0],[5,5,5]]. Assigning lonely zeros gives: 
@@ -55,8 +56,6 @@ def assign_lonely_zeros(mask)
 		# row/col that needs it to be assigned in order to reach the minimum allowable assignment. Zeros that are extra lonely by extension
 		# are just one species of the latter--that is, they are if the check/correct method has succeeded up to this point! 
 		
-		needy = mask.needy_zeros
-		break if needy.empty?
 
 		# assign to each zero that is in a needy column/row; where a row/column is "needy" iff every assignable zero in it must be assigned
 		# in order for it to reach its minimum allowable value
@@ -427,10 +426,13 @@ class Array
 	end
 
 	# ARRAY FRIENDLY
-	# UNTESTED
-	# called on Array object; subtracts the lowest value in each row from each member of that row, returns correct array
 	def zero_each_row
-		return self.each.map {|r| r.map {|v| v - r.min}}
+		while !self.select {|row| row.count(0) < self.min_row_assignment}.empty?
+			self.map! {|row| 
+				row.count(0) < self.min_row_assignment ? row.map {|v| v > 0 ? (v - (row-[0]).min) : v} : row
+			}
+		end
+		return self
 	end
 
 	# ARRAY FRIENDLY
@@ -490,7 +492,10 @@ class Array
 
 end
 
-
+# array = [[6,0,0,0,0,0],[0,5,6,7,9,3],[4,0,0,0,0,0]]
+# array.print_readable
+# solution = make_matrix_solveable(array)
+# solution.print_readable
 
 # [[5,5],[5,10],[5,15],[5,25],[5,40],[10,5],[10,10],[10,15],[10,25],[10,40],[15,5],[25,5],[40,5]]
 # [[5,5],[7,7],[10,10],[12,12],[15,15],[16,16],[17,17],[18,18],[19,19],[20,20]]

@@ -187,6 +187,12 @@ def make_matrix_solveable(working_matrix)
 			working_matrix = working_matrix.zero_each_column
 		end
 
+		while working_matrix.solveable? == "no, not enough zeros in rows"
+		end
+
+		while working_matrix.solveable? == "no, not enough zeros in columns"
+		end
+
 		while working_matrix.solveable? == "no, too many lonely zeros in columns"
 			# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
 			# find the lowest member in that row besides the zero, add the value of that member to each zero, 
@@ -665,11 +671,15 @@ class Array
 		return self
 	end
 
-	# ARRAY FRIENDLY
-	# UNTESTED
-	# called on Array object; subtracts the lowest value in each row from each member of that row, returns corrected array
+	# ARRAY FRIENDLY + TESTED
+	# called on Array object; subtracts the lowest value in each row from each member of that row, repeats process until each
+	# row contains at least enough zeros to support a minimum_row_assignment; then it returns the corrected array
 	def zero_each_row
-		self = self.each.map {|r| r.map {|v| v - r.min}}
+		while !self.select {|row| row.count(0) < self.min_row_assignment}.empty?
+			self.map! {|row| 
+				row.count(0) < self.min_row_assignment ? row.map {|v| v > 0 ? (v - (row-[0]).min) : v} : row
+			}
+		end
 		return self
 	end
 
