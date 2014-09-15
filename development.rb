@@ -598,6 +598,8 @@ class Array
 			return "no, not enough zeros in columns"
 		end
 
+		# REALLY THIS SHOULD BE TOO MANY NEEDY ZEROS IN COLUMNS; THAT'S THE MORE GENERAL PROBLEM, LONELY ZEROS AND EVEN
+		# EXTRA LONELY ZEROS ARE JUST SPECIFIC INSTANCES OF THIS WIDER ISSUE
 		# checks to see if there are too many lonely zeros in any column
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment

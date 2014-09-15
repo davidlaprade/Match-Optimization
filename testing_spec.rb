@@ -465,10 +465,10 @@ describe Object, "assign_lonely_zeros(mask)" do
 		expect(assign_lonely_zeros(array)).to eq([["!",9,3],[4,0,0],[12,0,0]])
 	end
 
-	it "assigns lonely zeros in rows when they occur in columns with other zeros, marks other zeros with Xs" do
-		array = [[0,7,3],[0,0,12],[0,0,6]]
+	it "assigns lonely zeros in rows when they occur in with other zeros, marks other zeros with Xs" do
+		array = [[0,7,3],[0,0,0],[0,0,6]]
 		assign_lonely_zeros(array)
-		expect(array).to eq([["!",7,3],["X",0,12],["X",0,6]])
+		expect(array).to eq([["!",7,3],["X","X","!"],["X","!",6]])
 	end
 
 	it "assigns lonely zeros in a medium-sized array of randomly generated values between 0 and 9" do

@@ -10,13 +10,18 @@ def assign_lonely_zeros(mask)
 	Matrix.columns(mask.transpose)
 
 	# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	# THIS NEEDS TO BE REFACTORED ONCE THE SOLVEABLE? AND MAKE_MATRIX_SOLVEABLE METHODS HAVE BEEN FIXED
-	# WHAT NEEDS TO BE DONE: fix the loop, now that this is for needy zeros, the first command can just go in the loop and the loop
-	# can become an ordinary while loop again, where the condition is just mask.needy_zeros.empty?
 	# Assign to all needy zeros; a zero is needy iff it occurs in a needy row/column; a row/column is "needy" iff every zero in it 
 	# must be assigned in order for it to reach its minimum allowable value. The class of needy zeros includes the class of lonely
 	# zeros and thus also the class of extra-lonely zeros. And the make_matrix_solveable method has already ensured that there are 
-	# at least enough zeros in columns and rows to reach the minimum assignments
+	# at least enough zeros in columns and rows to reach the minimum assignments; moreover the solveable method gaurantees that there
+	# aren't too many needy zeros in either rows or columns; consider an example: suppose there is an array that is 3 rows x 9 col,
+	# given the array's dimensions, the min_row_assignment is 3; hence, for a zero to be needy for its row there can be no more than 
+	# 3 zeros in that row; thus suppose that two rows are needy, and all of their zeros occupy the same columns; at most, then, they
+	# occupy 3 columns, meaning that there are 6 columns that must have zeros in them in the third row; but then, the zeros in these
+	# 6 columns would have to be lonely, else the zeros in the first two rows wouldn't be needy; but the solveable method won't allow
+	# for so many lonely zeros in a single row, so this won't be allowed; and so on: the point is that needy zeros only give you a 
+	# problem if they overlap in multiple rows/columns, and they only overlap in multiple rows/columns if there are other problems
+	# elsewhere in the array (e.g. columns/rows without zeros, or too many lonely zeros)
 	mask.needy_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
 
 	# use this style of loop ( with a "break if...") because you want the first two commands to run at least once
