@@ -107,6 +107,50 @@ describe Array, "max_column_assmts_possible(max_col_assignment)" do
 	end
 end
 
+describe Array, ".needy_zeros" do
+
+	# call on mask Array object; outputs coordinates of any zeros that are in "needy" rows/columns, where a row/column is needy iff every 
+	# assignable zero in it must be assigned in order for it to reach its minimum allowable value
+
+	it "finds the needy zero when there is only one" do
+		array = [[0,1,3],[4,7,2],[12,11,1]]
+		expect(array.needy_zeros).to eq([[0,0]])
+	end
+
+	it "finds needy zeros when there are multiple" do
+		array = [[0,1,3],[4,0,2],[12,11,1]]
+		expect(array.lonely_zeros).to eq([[0,0],[1,1]])
+	end
+
+	it "identifies lonely zeros as needy zeros" do
+		array = [[0,1,0],[4,0,2],[12,11,0]]
+		expect(array.needy_zeros).to eq([[0,0],[1,1],[2,2]])
+	end
+
+	it "can identify non-lonely zeros as needy zeros" do
+		array = [[0,6,7,8,9,4,3,0],[0,2,4,7,2,3,4,0],[0,9,3,5,7,3,6,0],[0,3,4,5,6,2,4,0]]
+		expect(array.needy_zeros).to eq([[0,0],[0,7],[1,0],[1,7],[2,0],[2,7],[3,0],[3,7]])
+	end
+
+	it "can distinguish non-lonely needy zeros from non-lonely non-needy zeros, more rows than columns" do
+		array = [[0,8,0,2,3],[0,0,7,0,0]]
+		expect(array.needy_zeros).to eq([[0,0],[0,2],[1,1],[1,3],[1,4]])
+	end
+
+	it "can distinguish non-lonely needy zeros from non-lonely non-needy zeros, more rows than columns" do
+		array = [[0,0,4,4,4,6,5,2,5,1],[0,2,4,1,3,2,3,2,7,6],[7,3,0,1,2,7,1,3,4,0],[0,2,0,5,4,7,1,9,1,0],[1,0,1,2,6,6,6,4,2,0]]
+		expect(array.needy_zeros).to eq([[0,0],[0,1],[1,0],[2,2],[2,9],[4,1],[4,9]])
+	end
+
+	it "can distinguish non-lonely needy zeros from non-lonely non-needy zeros, more columns than rows" do
+		array = [[8,2,4,0],[0,5,6,0],[8,0,6,0],[3,0,2,0],[1,4,0,0],[1,8,0,0],[0,3,5,0],[2,9,7,0]]
+		expect(array.needy_zeros).to eq([[0,3],[1,0],[2,1],[3,1],[4,2],[5,2],[6,0],[7,3]])
+	end
+
+
+
+end
+
 describe Array, ".lonely_zeros" do
 	# called on Array object; returns an array of coordinates [n,m] of every lonely zero; a "lonely" zero is one which occurs as the 
 	# sole zero in EITHER its row or its column
@@ -139,7 +183,7 @@ describe Array, ".lonely_zeros" do
 
 	it "only lists zeros lonely for both their column AND row once" do
 		array = [[1,2,3],[4,0,7],[9,8,6]]
-		expect(arra.lonely_zeros).to eq([1,1])
+		expect(array.lonely_zeros).to eq([[1,1]])
 	end
 
 end

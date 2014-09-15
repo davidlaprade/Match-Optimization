@@ -61,15 +61,25 @@ class Hungarian
 				mask.map.with_index {|row,row_index| row.map.with_index {|v,col_index| v=="!" ? [row_index,col_index] : v}}.flatten(1).find_all {|x| x.class==Array}
 
 				Better, use this:
-				mask.each.with_index.with_object([]) {|(row, row_id), obj| 
-					row.each.with_index {|val, col_id| 
-						obj<<[row_id, col_id] if val == "!"
+
+				# call on Array object, returns an array of coordinates [row_id,col_id]: one for each value in the object that equals the
+				# value passed in as an argument 
+				def find_with_value(value)
+					return self.each.with_index.with_object([]) {|(row, row_id), obj| 
+						row.each.with_index {|val, col_id| 
+							obj<<[row_id, col_id] if val == value
+						}
 					}
-				}
+				end
 
 
 			Step 1: assign to lonely zeros, then any other required assignments that result from them
-			Step 2: check to see if you've got a solution
+			Step 2: check to see if youve got a solution
+			Step 3: 
+				collect array of coordinates of each remaining zero
+				create a new class Zero object with attribute ".coordinate" the coordinates
+				put all the Zero objects created in this way in an array
+				now add the other relevant Zero attributes that you used in your algorithm before
 
 
 

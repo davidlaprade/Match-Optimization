@@ -49,32 +49,32 @@ def assign_lonely_zeros(mask)
 		# row/col that needs it to be assigned in order to reach the minimum allowable assignment. Zeros that are extra lonely by extension
 		# are just one species of the latter--that is, they are if the check/correct method has succeeded up to this point! 
 		
-		req_assgn = mask.required_assignments
-		break if req_assgn.empty?
+		needy = mask.needy_zeros
+		break if needy.empty?
 
 		# assign to each zero that is in a needy column/row; where a row/column is "needy" iff every assignable zero in it must be assigned
 		# in order for it to reach its minimum allowable value
-		req_assgn.each {|coord| mask[coord[0]][coord[1]] = "!" }
+		needy.each {|coord| mask[coord[0]][coord[1]] = "!" }
 
 	end
 	return mask
 end
 
 		# UNTESTED!! Belongs in Class ARRAY
-		# call on Array object; outputs coordinates of any zeros that must be assigned in order for the array in its current state
-		# to get a complete assignment
-		def required_assignments
-			# first find zeros in needy rows; a row/column is "needy" iff every assignable zero in it must be assigned
-			# in order for it to reach its minimum allowable value
-			row_assignments = mask.each.with_index.with_object([]) {|(row,row_id), obj| 
+		# call on mask Array object; outputs coordinates of any zeros that are in "needy" rows/columns, where a row/column is needy iff every 
+		# assignable zero in it must be assigned in order for it to reach its minimum allowable value
+		def needy_zeros
+			# first find zeros in needy rows
+			row_coordinates = mask.each.with_index.with_object([]) {|(row,row_id), obj| 
 				row.each_index {|col_id| 
 					obj << [row_id, col_id] if row[col_id]==0 && (row.count("!")+row.count(0) <= mask.min_row_assignment)
 
 				}
 			}
 
-			# now do the same for needy columns; run .uniq in case the coordinates for a zero are put in twice--once here and once above
-			return mask.transpose.each.with_index.with_object(row_assignments) {|(column, column_id), obj|
+			# now do the same for needy columns
+			# run .uniq in case the coordinates for a zero were put in twice: once here and once above
+			return mask.transpose.each.with_index.with_object(row_coordinates) {|(column, column_id), obj|
 				column.each_index {|row_id|
 					obj << [row_id, column_id] if column[row_id]==0 && (column.count("!")+column.count(0) <= mask.min_col_assignment)
 				}
@@ -341,6 +341,28 @@ class Array
 	end
 	# -----------------------------------------------------
 
+	# UNTESTED!! Belongs in Class ARRAY
+	# call on mask Array object; outputs coordinates of any zeros that are in "needy" rows/columns, where a row/column is needy iff every 
+	# assignable zero in it must be assigned in order for it to reach its minimum allowable value
+	def needy_zeros
+		# first find zeros in needy rows
+		row_coordinates = self.each.with_index.with_object([]) {|(row,row_id), obj| 
+			row.each_index {|col_id| 
+				obj << [row_id, col_id] if row[col_id]==0 && (row.count("!")+row.count(0) <= self.min_row_assignment)
+
+			}
+		}
+
+		# now do the same for needy columns
+		# run .uniq in case the coordinates for a zero were put in twice: once here and once above
+		# sort then sorts the coordinates by increasing x value, then by increasing y value
+		return self.transpose.each.with_index.with_object(row_coordinates) {|(column, column_id), obj|
+			column.each_index {|row_id|
+				obj << [row_id, column_id] if column[row_id]==0 && (column.count("!")+column.count(0) <= self.min_col_assignment)
+			}
+		}.uniq.sort_by {|x| [x[0],x[1]]}
+	end
+
 
 	# UNTESTED
 	# called on Array object; returns number of rows in array
@@ -469,28 +491,28 @@ class Array
 end
 
 
-[[5,5],[5,10],[5,15],[5,25],[5,40],[10,5],[10,10],[10,15],[10,25],[10,40],[15,5],[25,5],[40,5]]
-[[5,5],[7,7],[10,10],[12,12],[15,15],[16,16],[17,17],[18,18],[19,19],[20,20]]
+# [[5,5],[5,10],[5,15],[5,25],[5,40],[10,5],[10,10],[10,15],[10,25],[10,40],[15,5],[25,5],[40,5]]
+# [[5,5],[7,7],[10,10],[12,12],[15,15],[16,16],[17,17],[18,18],[19,19],[20,20]]
 
-[[5,5],[5,10],[5,15],[5,25],[5,40],[10,5],[10,10],[10,15],[10,25],[10,40],[15,5],[25,5],[40,5],
-[40,10],[7,7],[10,10],[12,12],[15,15],[16,16],[17,17],[18,18],[19,19],[20,20]]
+# [[5,5],[5,10],[5,15],[5,25],[5,40],[10,5],[10,10],[10,15],[10,25],[10,40],[15,5],[25,5],[40,5],
+# [40,10],[7,7],[10,10],[12,12],[15,15],[16,16],[17,17],[18,18],[19,19],[20,20]]
 
-[[40,10]].each do |v|
-	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
-	# print "%f\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
-	print "original array: #{v[0]}x#{v[1]}\n"
-	array.print_readable
-	print "solveable array:"
-	solution = make_matrix_solveable(array)
-	solution.print_readable
-	print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
-	print "degree of difference: #{(array.to_m - solution.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+) * 100 / array.flatten(1).inject(:+).to_f}\n"
+# [[40,10]].each do |v|
+# 	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
+# 	# print "%f\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
+# 	print "original array: #{v[0]}x#{v[1]}\n"
+# 	array.print_readable
+# 	print "solveable array:"
+# 	solution = make_matrix_solveable(array)
+# 	solution.print_readable
+# 	print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
+# 	print "degree of difference: #{(array.to_m - solution.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+) * 100 / array.flatten(1).inject(:+).to_f}\n"
 
-	assign_lonely_zeros(solution)
-	print "assigned lonely zeros:\n"
-	solution.print_readable
+# 	assign_lonely_zeros(solution)
+# 	print "assigned lonely zeros:\n"
+# 	solution.print_readable
 
-# calculate degree of difference
+# # calculate degree of difference
 	
-	# print "--------------------------------------------------------\n"
-end
+# 	# print "--------------------------------------------------------\n"
+# end
