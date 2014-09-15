@@ -137,6 +137,11 @@ describe Array, ".lonely_zeros" do
 		expect(array.lonely_zeros).to eq([[1,8],[2,6],[5,0],[6,1],[8,7]])
 	end
 
+	it "only lists zeros lonely for both their column AND row once" do
+		array = [[1,2,3],[4,0,7],[9,8,6]]
+		expect(arra.lonely_zeros).to eq([1,1])
+	end
+
 end
 
 describe Array, ".extra_lonely_zeros" do

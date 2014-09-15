@@ -68,8 +68,8 @@ class Hungarian
 				}
 
 
-			Step 1
-				Code the following:
+			Step 1: assign to lonely zeros, then any other required assignments that result from them
+			Step 2: check to see if you've got a solution
 
 
 
