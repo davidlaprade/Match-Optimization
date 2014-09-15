@@ -473,13 +473,22 @@ class Array
 	# ARRAY FRIENDLY, TESTED
 	# call on Array object; return Array object which has been normalized in rows and in columns
 	def zero_rows_and_columns
-		if self.row_count >= self.column_count
-			self.replace(self.zero_each_row)
-			self.replace(self.zero_each_column)
+		# find out which method will change the original array the least, then employ that method
+		zero_rows_first = self.dup
+		zero_cols_first = self.dup
+
+		zero_rows_first.zero_each_row.zero_each_column
+		diff_rows_first = (self.to_m - zero_rows_first.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
+
+		zero_cols_first.zero_each_column.zero_each_row
+		diff_cols_first = (self.to_m - zero_cols_first.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
+
+		if diff_rows_first <= diff_cols_first
+			self.zero_each_row.zero_each_column
 		else
-			self.replace(self.zero_each_column)
-			self.replace(self.zero_each_row)
+			self.zero_each_column.zero_each_row
 		end
+
 		return self
 	end
 
@@ -496,6 +505,7 @@ end
 
 rows_first_wins = 0
 cols_first_wins = 0
+method_works = 0
 
 10000.times do
 	num_rows = rand(7)+3
@@ -503,6 +513,7 @@ cols_first_wins = 0
 	a = Array.new(num_rows) {Array.new(num_columns) {rand(9)+1}}
 	original = a.dup
 	b = a.dup
+	c = a.dup
 
 	solutionA = a.zero_each_row.zero_each_column
 	diffA = (original.to_m - solutionA.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
@@ -513,8 +524,12 @@ cols_first_wins = 0
 	# print "degree of difference when columns are zeroed first: #{diffB}\n"
 	# print "--------------\n"
 
+	# solutionC = c.zero_rows_and_columns
+	# diffC = (original.to_m - solutionC.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
+
 	rows_first_wins = rows_first_wins + 1 if diffA < diffB
 	cols_first_wins = cols_first_wins +1 if diffB < diffA
+	# method_works = method_works + 1 if diffC <= diffA && diffC <= diffB
 
 end
 
@@ -522,6 +537,7 @@ print "When there are more columns than rows:\n"
 print "zeroing rows first wins #{100*rows_first_wins/10000}% of the time\n"
 print "zeroing columns first wins #{100*cols_first_wins/10000}% of the time\n"
 print "the two tie #{(100*(10000-rows_first_wins-cols_first_wins)/10000)}% of the time\n"
+print "my combined method works #{100*method_works/10000}% of the time\n"
 
 # array = [[6,0,0,0,0,0],[0,5,6,7,9,3],[4,0,0,0,0,0]]
 # array.print_readable

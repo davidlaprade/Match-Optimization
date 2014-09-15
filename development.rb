@@ -742,14 +742,28 @@ class Array
 		# that additional changes won't have to be made once the columns are zeroed; the same holds the other way around
 		# in the case in which there are more columns than rows; thus it accords with the principle of minimal mutilation
 		# to run these steps based on the number of rows vs the number of columns
-		if new_array.row_count >= new_array.column_count
-			new_array = new_array.zero_each_row
-			new_array = new_array.zero_each_column
+
+		# when I tested these methods and compared the results after 10,000 tries, zeroing the smaller dimension first changed fewer
+		# values in the array than zeroing the larger dimension 20% of the time; so it's not obvious that this should be
+		# automatically decided in advance; thankfully, these methods run fast enough that it's not crazy to just try each of them
+		# and then go with the one that changes the least in the given case; so, that's what I've done here
+
+		zero_rows_first = self.dup
+		zero_cols_first = self.dup
+
+		zero_rows_first.zero_each_row.zero_each_column
+		diff_rows_first = (self.to_m - zero_rows_first.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
+
+		zero_cols_first.zero_each_column.zero_each_row
+		diff_cols_first = (self.to_m - zero_cols_first.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
+
+		if diff_rows_first <= diff_cols_first
+			self.zero_each_row.zero_each_column
 		else
-			new_array = new_array.zero_each_column
-			new_array = new_array.zero_each_row
+			self.zero_each_column.zero_each_row
 		end
-		return new_array
+
+		return self
 	end
 
 
