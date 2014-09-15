@@ -176,24 +176,24 @@ def make_matrix_solveable(working_matrix)
 	dup = working_matrix.dup
 	working_matrix = working_matrix.transpose if dup.row_count > dup.column_count
 
+	# this will prevent the algorithm from having to run the .solveable? method uncessarily between tests
+	solveable = working_matrix.solveable?
+
 	while working_matrix.solveable? != "true"
 		# you want to include the following two methods in case the methods below them change the Matrix in such a way
 		# as to remove a lonely zero from a row/column
-		while working_matrix.solveable? == "no, there are rows without zeros"
+
+		while solveable == "no, not enough zeros in rows"
 			working_matrix = working_matrix.zero_each_row
+			solveable = working_matrix.solveable?
 		end
 
-		while working_matrix.solveable? == "no, there are columns without zeros"
+		while solveable == "no, not enough zeros in columns"
 			working_matrix = working_matrix.zero_each_column
+			solveable = working_matrix.solveable?
 		end
 
-		while working_matrix.solveable? == "no, not enough zeros in rows"
-		end
-
-		while working_matrix.solveable? == "no, not enough zeros in columns"
-		end
-
-		while working_matrix.solveable? == "no, too many lonely zeros in columns"
+		while solveable == "no, too many lonely zeros in columns"
 			# to fix: isolate the lonely zeros causing the problem, take each row they occur in, 
 			# find the lowest member in that row besides the zero, add the value of that member to each zero, 
 			# subtract it from every other member (including itworking_matrix)
@@ -201,9 +201,10 @@ def make_matrix_solveable(working_matrix)
 			# Running the fix method might result in a matrix with the same problem, so run solveable? method again
 			# Repeat until the matrix no longer has too many lonely zeros in columns
 			# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
+			solveable = working_matrix.solveable?
 		end
 
-		while working_matrix.solveable? == "no, too many lonely zeros in rows"
+		while solveable == "no, too many lonely zeros in rows"
 			# to fix: isolate the lonely zeros causing the problem, take each column they occur in
 			# find the lowest member in that column besides the zero, add the value of that lowest member to each zero,
 			# subtract the value of that lowest member from every other member (including itworking_matrix)
@@ -211,13 +212,15 @@ def make_matrix_solveable(working_matrix)
 			# Running the fix method might result in a matrix with the same problem, so run solveable? method again
 			# Repeat until the matrix no longer has too many lonely zeros in rows
 			# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
+			solveable = working_matrix.solveable?
 		end
-		while working_matrix.solveable? == "no, min permitted row assignments > max column assignments possible"
+		while solveable == "no, min permitted row assignments > max column assignments possible"
 			# to fix: if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix
 			# find the lowest value-sans-zero in the submatrix, then subtract that value from every member-sans-zero of the row in which it occurs
 			# do this only as many times as you need to make min permitted row assignments <= max column assignments possible
 			
 			working_matrix.make_more_column_assignments_possible
+			solveable = working_matrix.solveable?
 		end
 	end
 
@@ -588,10 +591,11 @@ class Array
 	# called on Array object; returns failure code if the matrix-array has no solution in its current state, 
 	# returns true if the matrix-array passes the tests
 	def solveable?
-		if self.collect {|row| row.include?(0)}.include?(false)
-			return "no, there are rows without zeros"
-		elsif self.transpose.collect {|col| col.include?(0)}.include?(false)
-			return "no, there are columns without zeros"
+		# checks to see if any columns or rows lack enough zeros to make the requisite minimum assignments
+		if !self.select {|row| row.count(0) < self.min_row_assignment}.empty?
+			return "no, not enough zeros in rows"
+		elsif !self.transpose.select {|col| col.count(0) < self.min_col_assignment}.empty?
+			return "no, not enough zeros in columns"
 		end
 
 		# checks to see if there are too many lonely zeros in any column

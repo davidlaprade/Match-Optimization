@@ -92,29 +92,30 @@ def make_matrix_solveable(working_matrix)
 	working_matrix = working_matrix.zero_rows_and_columns
 	dup = working_matrix.dup
 	working_matrix = working_matrix.transpose if dup.row_count > dup.column_count
+	solveable = working_matrix.solveable?
 
 	while working_matrix.solveable? != "true"
-		while working_matrix.solveable? == "no, there are rows without zeros"
+		while solveable == "no, not enough zeros in rows"
 			working_matrix = working_matrix.zero_each_row
+			solveable = working_matrix.solveable?
 		end
-
-		while working_matrix.solveable? == "no, there are columns without zeros"
+		while solveable == "no, not enough zeros in columns"
 			working_matrix = working_matrix.zero_each_column
+			solveable = working_matrix.solveable?
 		end
-
-		while working_matrix.solveable? == "no, too many lonely zeros in columns"
+		while solveable == "no, too many lonely zeros in columns"
 			working_matrix.fix_too_many_lonely_zeros_in_columns
+			solveable = working_matrix.solveable?
 		end
-
-		while working_matrix.solveable? == "no, too many lonely zeros in rows"
+		while solveable == "no, too many lonely zeros in rows"
 			working_matrix.fix_too_many_lonely_zeros_in_rows
+			solveable = working_matrix.solveable?
 		end
-
-		while working_matrix.solveable? == "no, min permitted row assignments > max column assignments possible"
+		while solveable == "no, min permitted row assignments > max column assignments possible"
 			working_matrix.make_more_column_assignments_possible
+			solveable = working_matrix.solveable?
 		end
 	end
-
 	working_matrix = working_matrix.transpose if dup.row_count > dup.column_count
 	return working_matrix
 end
@@ -375,10 +376,10 @@ class Array
 	end
 
 	def solveable?
-		if self.collect {|row| row.include?(0)}.include?(false)
-			return "no, there are rows without zeros"
-		elsif self.transpose.collect {|col| col.include?(0)}.include?(false)
-			return "no, there are columns without zeros"
+		if !self.select {|row| row.count(0) < self.min_row_assignment}.empty?
+			return "no, not enough zeros in rows"
+		elsif !self.transpose.select {|col| col.count(0) < self.min_col_assignment}.empty?
+			return "no, not enough zeros in columns"
 		end
 
 		self.lonely_zeros_per_column.each do |array|
