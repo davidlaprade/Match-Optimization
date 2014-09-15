@@ -503,41 +503,41 @@ class Array
 end
 
 
-rows_first_wins = 0
-cols_first_wins = 0
-method_works = 0
+# rows_first_wins = 0
+# cols_first_wins = 0
+# method_works = 0
 
-10000.times do
-	num_rows = rand(7)+3
-	num_columns = num_rows + (rand(7)+3)
-	a = Array.new(num_rows) {Array.new(num_columns) {rand(9)+1}}
-	original = a.dup
-	b = a.dup
-	c = a.dup
+# 10000.times do
+# 	num_rows = rand(7)+3
+# 	num_columns = num_rows + (rand(7)+3)
+# 	a = Array.new(num_rows) {Array.new(num_columns) {rand(9)+1}}
+# 	original = a.dup
+# 	b = a.dup
+# 	c = a.dup
 
-	solutionA = a.zero_each_row.zero_each_column
-	diffA = (original.to_m - solutionA.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
-	# print "degree of difference when rows are zeroed first: #{diffA}\n"
+# 	solutionA = a.zero_each_row.zero_each_column
+# 	diffA = (original.to_m - solutionA.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
+# 	# print "degree of difference when rows are zeroed first: #{diffA}\n"
 
-	solutionB = b.zero_each_column.zero_each_row
-	diffB = (original.to_m - solutionB.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
-	# print "degree of difference when columns are zeroed first: #{diffB}\n"
-	# print "--------------\n"
+# 	solutionB = b.zero_each_column.zero_each_row
+# 	diffB = (original.to_m - solutionB.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
+# 	# print "degree of difference when columns are zeroed first: #{diffB}\n"
+# 	# print "--------------\n"
 
-	# solutionC = c.zero_rows_and_columns
-	# diffC = (original.to_m - solutionC.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
+# 	# solutionC = c.zero_rows_and_columns
+# 	# diffC = (original.to_m - solutionC.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
 
-	rows_first_wins = rows_first_wins + 1 if diffA < diffB
-	cols_first_wins = cols_first_wins +1 if diffB < diffA
-	# method_works = method_works + 1 if diffC <= diffA && diffC <= diffB
+# 	rows_first_wins = rows_first_wins + 1 if diffA < diffB
+# 	cols_first_wins = cols_first_wins +1 if diffB < diffA
+# 	# method_works = method_works + 1 if diffC <= diffA && diffC <= diffB
 
-end
+# end
 
-print "When there are more columns than rows:\n"
-print "zeroing rows first wins #{100*rows_first_wins/10000}% of the time\n"
-print "zeroing columns first wins #{100*cols_first_wins/10000}% of the time\n"
-print "the two tie #{(100*(10000-rows_first_wins-cols_first_wins)/10000)}% of the time\n"
-print "my combined method works #{100*method_works/10000}% of the time\n"
+# print "When there are more columns than rows:\n"
+# print "zeroing rows first wins #{100*rows_first_wins/10000}% of the time\n"
+# print "zeroing columns first wins #{100*cols_first_wins/10000}% of the time\n"
+# print "the two tie #{(100*(10000-rows_first_wins-cols_first_wins)/10000)}% of the time\n"
+# print "my combined method works #{100*method_works/10000}% of the time\n"
 
 # array = [[6,0,0,0,0,0],[0,5,6,7,9,3],[4,0,0,0,0,0]]
 # array.print_readable

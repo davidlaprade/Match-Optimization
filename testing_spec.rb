@@ -577,7 +577,6 @@ describe Array, ".get_ids_and_row_mins" do
 
 end
 
-# No longer using this method
 describe Array, "zero_rows_and_columns" do
 	# call on Array object; return Array object which has been normalized in rows and in columns
 
@@ -589,6 +588,35 @@ describe Array, "zero_rows_and_columns" do
 
 	# normalizes columns and then rows:
 	# .transpose.each.map {|r| r.map {|v| v - r.min}}.transpose.each.map {|r| r.map {|v| v - r.min}}
+
+
+	it "should always choose the most efficient dimension to order first" do
+		method_works = 0
+
+		1000.times do
+			num_rows = rand(7)+3
+			num_columns = num_rows + (rand(7)+3)
+			a = Array.new(num_rows) {Array.new(num_columns) {rand(9)+1}}
+			original = a.dup
+			b = a.dup
+			c = a.dup
+
+			solutionA = a.zero_each_row.zero_each_column
+			diffA = (original.to_m - solutionA.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
+			# print "degree of difference when rows are zeroed first: #{diffA}\n"
+
+			solutionB = b.zero_each_column.zero_each_row
+			diffB = (original.to_m - solutionB.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
+			# print "degree of difference when columns are zeroed first: #{diffB}\n"
+			# print "--------------\n"
+
+			solutionC = c.zero_rows_and_columns
+			diffC = (original.to_m - solutionC.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
+
+			method_works = method_works + 1 if diffC <= diffA && diffC <= diffB
+		end
+		expect(100*method_works/1000).to eq(100)
+	end
 
 
 	it "works when # of columns = # of rows" do
@@ -605,9 +633,13 @@ describe Array, "zero_rows_and_columns" do
 	end
 
 	it "works when # of columns > # of rows" do
-		matrix = Array.new(20) {Array.new(80) {rand(11)}}
-		solution = matrix.transpose.each.map {|r| r.map {|v| v - r.min}}.transpose.each.map {|r| r.map {|v| v - r.min}}
-		expect(matrix.zero_rows_and_columns).to eq(solution)
+		array = [[6, 1, 4, 5], [9, 7, 9, 1], [3, 8, 3, 3], [7, 2, 5, 8], [4, 1, 6, 3], [4, 6, 7, 7], [7, 1, 9, 8], 
+			[2, 4, 7, 9], [8, 5, 4, 9], [6, 9, 1, 4], [5, 2, 5, 4], [6, 7, 1, 7], [3, 7, 9, 1], [1, 1, 3, 2], [9, 5, 6, 1], 
+			[6, 4, 5, 4], [2, 8, 9, 2], [4, 5, 2, 9], [6, 3, 4, 3], [9, 6, 2, 1]]
+		array.zero_rows_and_columns
+		expect(array).to eq([[5, 0, 3, 4], [8, 6, 8, 0], [0, 5, 0, 0], [5, 0, 3, 6], [3, 0, 5, 2], [0, 2, 3, 3], [6, 0, 8, 7], 
+			[0, 2, 5, 7], [4, 1, 0, 5], [5, 8, 0, 3], [3, 0, 3, 2], [5, 6, 0, 6], [2, 6, 8, 0], [0, 0, 2, 1], [8, 4, 5, 0], 
+			[2, 0, 1, 0], [0, 6, 7, 0], [2, 3, 0, 7], [3, 0, 1, 0], [8, 5, 1, 0]])
 	end
 
 	it "changes nothing when called on a Matrix that is already normalized" do
