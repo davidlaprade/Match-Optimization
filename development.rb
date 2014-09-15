@@ -545,6 +545,27 @@ class Array
 	end
 	# -----------------------------------------------------------------------------------------------------------------
 
+	# TESTED
+	# call on mask Array object; outputs coordinates of any zeros that are in "needy" rows/columns, where a row/column is needy iff every 
+	# assignable zero in it must be assigned in order for it to reach its minimum allowable value
+	def needy_zeros
+		# first find zeros in needy rows
+		row_coordinates = self.each.with_index.with_object([]) {|(row,row_id), obj| 
+			row.each_index {|col_id| 
+				obj << [row_id, col_id] if row[col_id]==0 && (row.count("!")+row.count(0) <= self.min_row_assignment)
+
+			}
+		}
+
+		# now do the same for needy columns
+		# run .uniq in case the coordinates for a zero were put in twice: once here and once above
+		# sort then sorts the coordinates by increasing x value, then by increasing y value
+		return self.transpose.each.with_index.with_object(row_coordinates) {|(column, column_id), obj|
+			column.each_index {|row_id|
+				obj << [row_id, column_id] if column[row_id]==0 && (column.count("!")+column.count(0) <= self.min_col_assignment)
+			}
+		}.uniq.sort_by {|x| [x[0],x[1]]}
+	end
 
 	# UNTESTED
 	# called on Array object; returns number of rows in array

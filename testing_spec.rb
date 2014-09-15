@@ -147,8 +147,6 @@ describe Array, ".needy_zeros" do
 		expect(array.needy_zeros).to eq([[0,3],[1,0],[2,1],[3,1],[4,2],[5,2],[6,0],[7,3]])
 	end
 
-
-
 end
 
 describe Array, ".lonely_zeros" do
@@ -1076,6 +1074,27 @@ describe Array, ".solveable?" do
 		matrix = [[1,6,1,2],[0,7,0,6],[1,1,3,1],[0,0,9,0],[5,1,1,1],[6,0,0,8],[9,23,6,2]]
 		expect(matrix.solveable?).to eq("no, min permitted row assignments > max column assignments possible")
 	end	
+
+	it "returns failure code when run on array that does not have enough zeros in a certain row to meet the min_row_assignment" do
+		array = [[1,2],[0,0]]
+		expect(array.solveable?).to eq("no, not enough zeros in rows")
+	end
+
+	it "returns failure code when run on array that does not have enough zeros in a certain row to meet the min_row_assignment" do
+		array = [[6,0,0,0,0,0],[0,5,6,7,9,3],[4,0,0,0,0,0]]
+		expect(array.solveable?).to eq("no, not enough zeros in rows")
+	end
+
+	it "returns failure code when run on array that does not have enough zeros in a certain column to meet the min_col_assignment" do
+		array = [[1,0],[2,0]]
+		expect(array.solveable?).to eq("no, not enough zeros in columns")
+	end
+
+	it "returns failure code when run on array that does not have enough zeros in a certain column to meet the min_col_assignment" do
+		array = [[6, 0, 4], [0, 5, 0], [0, 6, 0], [0, 7, 0], [0, 9, 0], [0, 3, 0]]
+		expect(array.solveable?).to eq("no, not enough zeros in columns")
+	end
+
 
 	# min_row_assmts_permitted > max_column_assmts_possible for any submatrix
 

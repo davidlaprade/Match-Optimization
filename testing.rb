@@ -9,7 +9,13 @@ def assign_lonely_zeros(mask)
 	# make sure the argument has Matrix-like dimensions
 	Matrix.columns(mask.transpose)
 
-	# Assign to all lonely zeros; you can get the coordinates with array.lonely_zeros, replace them with "!"s
+	# Assign to all needy zeros; a zero is needy iff it occurs in a needy row/column; a row/column is "needy" iff every zero in it 
+	# must be assigned in order for it to reach its minimum allowable value. The class of needy zeros includes the class of lonely
+	# zeros and thus also the class of extra-lonely zeros. And the checking algorithm has already ensured that there are enough zeros
+	# in columns and rows to reach the minimum assignments
+	# 
+
+	# you can get the coordinates with array.lonely_zeros, replace them with "!"s
 	mask.lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
 
 	# use this style of loop ( with a "break if...") because you want the first two commands to run at least once
@@ -341,11 +347,8 @@ class Array
 	end
 	# -----------------------------------------------------
 
-	# UNTESTED!! Belongs in Class ARRAY
-	# call on mask Array object; outputs coordinates of any zeros that are in "needy" rows/columns, where a row/column is needy iff every 
-	# assignable zero in it must be assigned in order for it to reach its minimum allowable value
+	# TESTED
 	def needy_zeros
-		# first find zeros in needy rows
 		row_coordinates = self.each.with_index.with_object([]) {|(row,row_id), obj| 
 			row.each_index {|col_id| 
 				obj << [row_id, col_id] if row[col_id]==0 && (row.count("!")+row.count(0) <= self.min_row_assignment)
@@ -353,9 +356,6 @@ class Array
 			}
 		}
 
-		# now do the same for needy columns
-		# run .uniq in case the coordinates for a zero were put in twice: once here and once above
-		# sort then sorts the coordinates by increasing x value, then by increasing y value
 		return self.transpose.each.with_index.with_object(row_coordinates) {|(column, column_id), obj|
 			column.each_index {|row_id|
 				obj << [row_id, column_id] if column[row_id]==0 && (column.count("!")+column.count(0) <= self.min_col_assignment)
@@ -489,6 +489,7 @@ class Array
 	end
 
 end
+
 
 
 # [[5,5],[5,10],[5,15],[5,25],[5,40],[10,5],[10,10],[10,15],[10,25],[10,40],[15,5],[25,5],[40,5]]
