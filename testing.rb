@@ -49,14 +49,21 @@ def assign_lonely_zeros(mask)
 		# row/col that needs it to be assigned in order to reach the minimum allowable assignment. Zeros that are extra lonely by extension
 		# are just one species of the latter--that is, they are if the check/correct method has succeeded up to this point! 
 		
+		req_assgn = mask.required_assignments
+		break if req_assgn.empty?
 
-		break if 
+		# assign to each zero that is in a needy column/row; where a row/column is "needy" iff every assignable zero in it must be assigned
+		# in order for it to reach its minimum allowable value
+		req_assgn.each {|coord| mask[coord[0]][coord[1]] = "!" }
 
-		# UNTESTED!!
+	end
+	return mask
+end
+
+		# UNTESTED!! Belongs in Class ARRAY
 		# call on Array object; outputs coordinates of any zeros that must be assigned in order for the array in its current state
 		# to get a complete assignment
 		def required_assignments
-
 			# first find zeros in needy rows; a row/column is "needy" iff every assignable zero in it must be assigned
 			# in order for it to reach its minimum allowable value
 			row_assignments = mask.each.with_index.with_object([]) {|(row,row_id), obj| 
@@ -73,24 +80,6 @@ def assign_lonely_zeros(mask)
 				}
 			}.uniq
 		end
-
-		# assign to zeros in rows that are needy by extension; a row/column is "needy" iff every assignable zero in it must be assigned
-		# in order for it to reach its minimum allowable value
-		mask.map! {|row| row.count("!")+row.count(0) <= mask.min_row_assignment ?
-			row.map {|value| value == 0 ? "!" : value} : row
-		}
-
-		# assign to zeros in columns that are needy by extension
-		mask.replace(
-			mask.transpose.map {|column| column.count("!")+column.count(0) <= mask.min_col_assignment ?
-				column.map {|value| value == 0 ? "!" : value} : column
-			}.transpose
-		)
-
-	end
-	return mask
-end
-
 
 
 # ARRAY FRIENDLY + TESTED
