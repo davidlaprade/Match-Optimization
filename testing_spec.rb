@@ -31,8 +31,6 @@ describe Array, ".zero_each_row" do
 	# called on Array object; subtracts the lowest value in each row from each member of that row, repeats process until each
 	# row contains at least enough zeros to support a minimum_row_assignment; then it returns the corrected array
 
-
-
 	it "changes the attributes of the array it's called on" do
 		array = [[2,7,5]]
 		array.zero_each_row
@@ -94,7 +92,74 @@ describe Array, ".zero_each_row" do
 
 end
 
-describe Array, "permissible assignment values, min_row_assignment, max_col_assignment, etc" do
+describe Array, ".zero_each_column" do
+
+	# called on Array object; subtracts the lowest value in each column from each member of that column, repeats process until each
+	# column contains at least enough zeros to support a minimum_column_assignment; then it returns the corrected array
+
+	it "changes the attributes of the array it's called on" do
+		array = [[2,7,5]].transpose
+		array.zero_each_column
+		expect(array).to eq([[0,0,0]].transpose)
+	end
+
+	it "works when each column needs one zero, will get it by just getting rid of first min" do
+		array = [[2,7,5],[9,1,2],[4,4,3]].transpose
+		expect(array.zero_each_column).to eq([[0,5,3],[8,0,1],[1,1,0]].transpose)
+	end
+
+	it "works when each column needs two zeros, will happen just by getting rid of first min" do
+		array = [[2,7,5,2],[9,1,1,7]].transpose
+		array.zero_each_column
+		expect(array).to eq([[0,5,3,0],[8,0,0,6]].transpose)
+	end
+
+	it "works when each column needs one zero, will happen just by getting rid of first min, one column ends up with two zeros" do
+		array = [[2,7,5],[9,1,1],[4,4,3]].transpose
+		expect(array.zero_each_column).to eq([[0,5,3],[8,0,0],[1,1,0]].transpose)
+	end
+
+
+	it "works when each column needs two zeros, will only happen by getting rid of second min" do
+		array = [[1,7,5,2],[9,1,2,7]].transpose
+		array.zero_each_column
+		expect(array).to eq([[0,5,3,0],[7,0,0,5]].transpose)
+	end
+
+	it "works when each column needs two zeros, one column needs to be normalized twice, other column once" do
+		array = [[1,7,5,2],[9,1,1,7]].transpose
+		array.zero_each_column
+		expect(array).to eq([[0,5,3,0],[8,0,0,6]].transpose)
+	end
+
+	it "works when each column needs three zeros, one needs to be normalized three times, another two, last one" do
+		array = [[1,2,3,3,3,9,8,8,6],[5,4,6,8,8,2,9,2,7],[5,5,9,10,12,6,7,9,5]].transpose
+		array.zero_each_column
+		expect(array).to eq([[0,0,0,0,0,6,5,5,3],[1,0,2,4,4,0,5,0,3],[0,0,4,5,7,1,2,4,0]].transpose)
+	end
+
+	it "works when one column doesn't have to be changed, one does" do
+		array = [[0,4,5,0],[2,3,3,2]].transpose
+		array.zero_each_column
+		expect(array).to eq([[0,4,5,0],[0,1,1,0]].transpose)
+	end
+
+	it "it changes nothing when no zeros need to be added" do
+		array = [[0,7,5],[0,1,2],[0,4,3]].transpose
+		array.zero_each_column
+		expect(array).to eq([[0,7,5],[0,1,2],[0,4,3]].transpose)
+	end
+
+	it "it changes nothing when no zeros need to be added" do
+		array = [[0,0,0]].transpose
+		array.zero_each_column
+		expect(array).to eq([[0,0,0]].transpose)
+	end
+
+
+end
+
+describe Array, "permissible assignment values, min_column_assignment, max_col_assignment, etc" do
 
 	# every object on the x axis gets mapped to at least one object on the y
 	# axis, and vice versa; perhaps sometimes the most optimal match is one in which an individual doesn't get matched; if so, 

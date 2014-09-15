@@ -437,9 +437,10 @@ class Array
 
 	# ARRAY FRIENDLY
 	# UNTESTED
-	# called on Array object; subtracts the lowest value in each column from each member of that column, returns correct array
+	# called on Array object; subtracts the lowest value in each column from each member of that column, repeats process until each
+	# column contains at least enough zeros to support a minimum_column_assignment; then it returns the corrected array
 	def zero_each_column
-		return self.transpose.each.map {|r| r.map {|v| v - r.min}}.transpose
+		return self.replace(self.transpose.zero_each_row.transpose)
 	end
 
 	# ARRAY FRIENDLY + TESTED

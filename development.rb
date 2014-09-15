@@ -683,12 +683,11 @@ class Array
 		return self
 	end
 
-	# ARRAY FRIENDLY
-	# UNTESTED
-	# called on Array object; subtracts the lowest value in each column from each member of that column, returns corrected array
+	# ARRAY FRIENDLY + TESTED
+	# called on Array object; subtracts the lowest value in each column from each member of that column, repeats process until each
+	# column contains at least enough zeros to support a minimum_column_assignment; then it returns the corrected array
 	def zero_each_column
-		self = self.transpose.each.map {|r| r.map {|v| v - r.min}}.transpose
-		return self
+		return self.replace(self.transpose.zero_each_row.transpose)
 	end
 
 	# ARRAY FRIENDLY + TESTED
