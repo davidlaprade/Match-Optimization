@@ -92,6 +92,69 @@ end
 
 #--------------------- HELPER METHODS----IN-ALPHABETICAL-ORDER----------------------------------------------------
 
+# passed mask Array object; assigns to lonely zeros and extended extra-lonely zeros in the mask, then returns the mask
+def assign_lonely_zeros(mask)
+	# make sure that the method is passed an array object
+	raise "Wrong kind of argument, requires an array" if mask.class != Array
+	# make sure the argument has Matrix-like dimensions
+	Matrix.columns(mask.transpose)
+
+	# Assign to all lonely zeros; you can get the coordinates with array.lonely_zeros, replace them with "!"s
+	mask.lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
+
+	# use this style of loop ( with a "break if...") because you want the first two commands to run at least once
+	loop do
+		# Making assignments to lonely zeros will often prevent you from making assignments to other zeros. When there are enough lonely zeros
+		# in a row/column to reach the maximum number of assignments for that row/column, then other zeros which occur in that row/column cannot
+		# be assigned. So, since these zeros can't be assigned, replace them with "X"s in the mask.(Remember, a zero is "lonely" iff it is the only zero in its
+		# row OR column; so a zero that's lonely, say, because of its column might well have other zeros in its row.)
+
+		# first check to see if there are zeros in ROWS with the max number of assignments; add Xs accordingly
+		mask.map! {|row| row.count("!") == mask.max_row_assignment ?
+			row.map {|value| value == 0 ? "X":value} : row
+		}
+
+		# now do the same thing for COLUMNS
+		mask.replace(
+			mask.transpose.map {|col| col.count("!") == mask.max_col_assignment ?
+				col.map {|value| value == 0 ? "X":value} : col
+			}.transpose
+		)
+
+		# Getting rid of the zeros just described might reveal new "extended" lonely zeros, or lonely zeros "by extension"--i.e. zeros which end up being lonely
+		# when the previous two classes of zeros are removed. Such zeros will have to be assigned, so repeat this process.
+		break if mask.extra_lonely_zeros.empty?
+
+		# Actually, you don't want to assign to zeros that are merely lonely by extension, they should be "extra" lonely by extension--i.e. 
+		# they should be the sole zero in their row AND column. Why? Consider [[0,0,0],[4,0,0],[5,5,5]]. Assigning lonely zeros gives: 
+		# [[!,0,0],[4,0,0],[5,5,5]]. Next, eliminating unassignables we get: [[!,x,x],[4,0,0],[5,5,5]]. But now notice: both zeros in row 1 are 
+		# lonely by extension, since both occur in a column in which they are the sole zero. But it's not the case that both zeros should be 
+		# assigned! That would leave row 1 with too many assignments. So, which zero in row 1 should be selected? That's not obvious. 
+		# Moreover, the conditions on which you would choose which to assign are the complex conditions that shape assignment generally, 
+		# so there's no point to to code that into the algorithm here. It will be coded elsewhere, and thus will be taken care of then.
+		# Just assign to zeros that are extra lonely by extension. There's no question that these need to be assigned. Here is the code to do it:
+		# mask.extra_lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
+
+		# CONCERN: extra lonely is not the only property that you want to assign to; you want to assign to any zero that is in a
+		# row/col that needs it to be assigned in order to reach the minimum allowable assignment. Zeros that are extra lonely by extension
+		# are just one species of the latter--that is, they are if the check/correct method has succeeded up to this point! 
+		# assign to zeros in rows that are needy by extension; a row/column is "needy" iff every assignable zero in it must be assigned
+		# in order for it to reach its minimum allowable value
+		mask.map! {|row| row.count("!")+row.count(0) <= mask.min_row_assignment ?
+			row.map {|value| value == 0 ? "!" : value} : row
+		}
+
+		# assign to zeros in columns that are needy by extension
+		mask.replace(
+			mask.transpose.map {|column| column.count("!")+column.count(0) <= mask.min_col_assignment ?
+				column.map {|value| value == 0 ? "!" : value} : column
+			}.transpose
+		)
+
+	end
+	return mask
+end
+
 # ARRAY FRIENDLY + TESTED
 # passed an array object (Hungarian.working_matrix); minimally changes the array to return an array which supports complete assignment
 def make_matrix_solveable(working_matrix)

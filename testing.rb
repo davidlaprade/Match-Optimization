@@ -12,7 +12,7 @@ def assign_lonely_zeros(mask)
 	# Assign to all lonely zeros; you can get the coordinates with array.lonely_zeros, replace them with "!"s
 	mask.lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
 
-	# use this style of loop ( with a "break unless...") because you want the first two commands to run at least once
+	# use this style of loop ( with a "break if...") because you want the first two commands to run at least once
 	loop do
 		# Making assignments to lonely zeros will often prevent you from making assignments to other zeros. When there are enough lonely zeros
 		# in a row/column to reach the maximum number of assignments for that row/column, then other zeros which occur in that row/column cannot
@@ -42,12 +42,24 @@ def assign_lonely_zeros(mask)
 		# assigned! That would leave row 1 with too many assignments. So, which zero in row 1 should be selected? That's not obvious. 
 		# Moreover, the conditions on which you would choose which to assign are the complex conditions that shape assignment generally, 
 		# so there's no point to to code that into the algorithm here. It will be coded elsewhere, and thus will be taken care of then.
-		# Just assign to zeros that are extra lonely by extension. There's no question that these need to be assigned.
-		mask.extra_lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
+		# Just assign to zeros that are extra lonely by extension. There's no question that these need to be assigned. Here is the code to do it:
+		# mask.extra_lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
 
-		# CONCERN: extra lonely is not necesarily the only property that you want to assign to; you want to assign to any zero that is in a
-		# row/col that needs it to be assigned in order to reach the minimum. This raises a subsidiary concern: should the min_row/col_assignment
-		# be set to 1 or set to .floor for the division used for the max? It seems the latter.
+		# CONCERN: extra lonely is not the only property that you want to assign to; you want to assign to any zero that is in a
+		# row/col that needs it to be assigned in order to reach the minimum allowable assignment. Zeros that are extra lonely by extension
+		# are just one species of the latter--that is, they are if the check/correct method has succeeded up to this point! 
+		# assign to zeros in rows that are needy by extension; a row/column is "needy" iff every assignable zero in it must be assigned
+		# in order for it to reach its minimum allowable value
+		mask.map! {|row| row.count("!")+row.count(0) <= mask.min_row_assignment ?
+			row.map {|value| value == 0 ? "!" : value} : row
+		}
+
+		# assign to zeros in columns that are needy by extension
+		mask.replace(
+			mask.transpose.map {|column| column.count("!")+column.count(0) <= mask.min_col_assignment ?
+				column.map {|value| value == 0 ? "!" : value} : column
+			}.transpose
+		)
 
 	end
 	return mask
@@ -284,7 +296,7 @@ class Array
 	# CONSTRAINTS----------------------------------------
 	# leave these as Array methods, don't set them to the hungarian object; you need to be able to access these values for the
 	# array and each of its submatrices
-	
+
 	# every object on the x axis gets mapped to at least one object on the y
 	# axis, and vice versa; perhaps sometimes the most optimal match is one in which an individual doesn't get matched; if so, 
 	# then my algorithm won't catch it; I have to start somewhere

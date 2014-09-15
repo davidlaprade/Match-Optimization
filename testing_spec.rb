@@ -30,7 +30,7 @@ require 'testing'
 
 describe Array, "permissible assignment values, min_row_assignment, max_col_assignment, etc" do
 
-	# I am going to set up my algorithm this way: so that every object on the x axis gets mapped to at least one object on the y
+	# every object on the x axis gets mapped to at least one object on the y
 	# axis, and vice versa; perhaps sometimes the most optimal match is one in which an individual doesn't get matched; if so, 
 	# then my algorithm won't catch it; I have to start somewhere
 
