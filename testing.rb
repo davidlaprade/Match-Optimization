@@ -3,12 +3,13 @@ require 'pry'
 require 'benchmark'
 
 # passed mask Array object; assigns to lonely zeros and extended extra-lonely zeros in the mask, then returns the mask
-def assign_lonely_zeros(mask)
+def assign_needy_zeros(mask)
 	# make sure that the method is passed an array object
 	raise "Wrong kind of argument, requires an array" if mask.class != Array
 	# make sure the argument has Matrix-like dimensions
 	Matrix.columns(mask.transpose)
 
+	while !mask.needy_zeros.empty?
 	# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	# Assign to all needy zeros; a zero is needy iff it occurs in a needy row/column; a row/column is "needy" iff every zero in it 
 	# must be assigned in order for it to reach its minimum allowable value. The class of needy zeros includes the class of lonely
@@ -16,16 +17,15 @@ def assign_lonely_zeros(mask)
 	# at least enough zeros in columns and rows to reach the minimum assignments; moreover the solveable method gaurantees that there
 	# aren't too many needy zeros in either rows or columns; consider an example: suppose there is an array that is 3 rows x 9 col,
 	# given the array's dimensions, the min_row_assignment is 3; hence, for a zero to be needy for its row there can be no more than 
-	# 3 zeros in that row; thus suppose that two rows are needy, and all of their zeros occupy the same columns; at most, then, they
-	# occupy 3 columns, meaning that there are 6 columns that must have zeros in them in the third row; but then, the zeros in these
-	# 6 columns would have to be lonely, else the zeros in the first two rows wouldn't be needy; but the solveable method won't allow
-	# for so many lonely zeros in a single row, so this won't be allowed; and so on: the point is that needy zeros only give you a 
-	# problem if they overlap in multiple rows/columns, and they only overlap in multiple rows/columns if there are other problems
-	# elsewhere in the array (e.g. columns/rows without zeros, or too many lonely zeros)
-	mask.needy_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
+	# 3 zeros in that row; thus suppose that two rows are needy and all of their zeros occupy the same columns; this would result
+	# in an unsolveable array; but, if all the zeros occupy the same columns then at most they occupy just 3 columns; so what about
+	# the other 6 columns? there are three options: (1) none have zeros in the thrid row, (2) some but not all have zeros in the third
+	# row, and (3) all have zeros in the third row; but if (1) and (2) then there are columns that lack zeros; and if (3) then there
+	# are too many lonely zeros in the third row; hence, the solveable? method will catch the issue; the point is: needy zeros only 
+	# cause a problem problem if they occur in multiple rows/columns, and they only overlap in multiple rows/columns if there are 
+	# other problems elsewhere in the array (e.g. columns/rows without zeros, or too many lonely zeros) that solveable? catches
+		mask.needy_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
 
-	# use this style of loop ( with a "break if...") because you want the first two commands to run at least once
-	loop do
 		# Making assignments to needy zeros will often prevent you from making assignments to other zeros. When there are enough needy zeros
 		# in a row/column to reach the maximum number of assignments for that row/column, then other zeros which occur in that row/column cannot
 		# be assigned. So, since these zeros can't be assigned, replace them with "X"s in the mask.
@@ -44,28 +44,6 @@ def assign_lonely_zeros(mask)
 
 		# Getting rid of the zeros just described might reveal new "extended" needy zeros, AKA needy zeros "by extension"--i.e. zeros which end up being needy
 		# when the previous two classes of zeros are removed. Such zeros will have to be assigned, so repeat this process.
-		needy = mask.needy_zeros
-		break if needy.empty?
-
-		# Actually, you don't want to assign to zeros that are merely lonely by extension, they should be "extra" lonely by extension--i.e. 
-		# they should be the sole zero in their row AND column. Why? Consider [[0,0,0],[4,0,0],[5,5,5]]. Assigning lonely zeros gives: 
-		# [[!,0,0],[4,0,0],[5,5,5]]. Next, eliminating unassignables we get: [[!,x,x],[4,0,0],[5,5,5]]. But now notice: both zeros in row 1 are 
-		# lonely by extension, since both occur in a column in which they are the sole zero. But it's not the case that both zeros should be 
-		# assigned! That would leave row 1 with too many assignments. So, which zero in row 1 should be selected? That's not obvious. 
-		# Moreover, the conditions on which you would choose which to assign are the complex conditions that shape assignment generally, 
-		# so there's no point to to code that into the algorithm here. It will be coded elsewhere, and thus will be taken care of then.
-		# Just assign to zeros that are extra lonely by extension. There's no question that these need to be assigned. Here is the code to do it:
-		# mask.extra_lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
-
-		# CONCERN: extra lonely is not the only property that you want to assign to; you want to assign to any zero that is in a
-		# row/col that needs it to be assigned in order to reach the minimum allowable assignment. Zeros that are extra lonely by extension
-		# are just one species of the latter--that is, they are if the check/correct method has succeeded up to this point! 
-		
-
-		# assign to each zero that is in a needy column/row; where a row/column is "needy" iff every assignable zero in it must be assigned
-		# in order for it to reach its minimum allowable value
-		needy.each {|coord| mask[coord[0]][coord[1]] = "!" }
-
 	end
 	return mask
 end
@@ -566,7 +544,7 @@ end
 # 	print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
 # 	print "degree of difference: #{(array.to_m - solution.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+) * 100 / array.flatten(1).inject(:+).to_f}\n"
 
-# 	assign_lonely_zeros(solution)
+# 	assign_needy_zeros(solution)
 # 	print "assigned lonely zeros:\n"
 # 	solution.print_readable
 
