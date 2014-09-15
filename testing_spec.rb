@@ -599,9 +599,9 @@ describe Array, "zero_rows_and_columns" do
 	end
 
 	it "works when # of rows > # of columns" do
-		matrix = Array.new(40) {Array.new(10) {rand(11)}}
-		solution = matrix.each.map {|r| r.map {|v| v - r.min}}.transpose.each.map {|r| r.map {|v| v - r.min}}.transpose
-		expect(matrix.zero_rows_and_columns).to eq(solution)
+		array = [[1,2,3,3,3,9,8,8,6],[5,4,6,8,8,2,9,2,7],[5,5,9,10,12,6,7,9,5]]
+		array.zero_rows_and_columns
+		expect(array).to eq([[0,0,0,0,0,6,3,5,3],[1,0,2,4,4,0,3,0,3],[0,0,4,5,7,1,0,4,0]])
 	end
 
 	it "works when # of columns > # of rows" do
