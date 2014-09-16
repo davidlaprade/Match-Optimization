@@ -332,21 +332,66 @@ describe Array, ".solution?" do
 		expect(array.solution?).to eq(false)
 	end
 
-	it "accepts solutions when there are multiple assignments per row" do
+	# it "accepts solutions when there are multiple assignments per row" do
 
+	# end
+
+	# it "rejects solutions when there are multiple assignments per row" do
+
+	# end
+
+	# it "accepts solutions when there are multiple assignments per column" do
+
+	# end
+
+	# it "rejects solutions when there are multiple assignments per column" do
+
+	# end
+
+end
+
+describe Array, ".reduce_problem" do
+	# call on mask Array object, does NOT change the mask, returns minimal array that needs to be assigned in order to finish
+	# assigning to the mask object the method was called on
+
+	it "does not change the array it is called on" do
+		mask = [[9,0,4,0],[1,3,"!",3],[2,0,0,0],["!",4,5,7]]
+		original = mask.dup
+		mask.reduce_problem
+		expect(mask).to eq(original)
 	end
 
-	it "rejects solutions when there are multiple assignments per row" do
-
+	it "has no problems with Xs" do
 	end
 
-	it "accepts solutions when there are multiple assignments per column" do
-
+	it "returns entire array unchanged when there are no assignments" do
 	end
 
-	it "rejects solutions when there are multiple assignments per column" do
-
+	it "isolates submatrix to solve when called on square mask array" do
+		mask = [[9,0,4,0],[1,3,"!",3],[2,0,0,0],["!",4,5,7]]
+		expect(mask.reduce_problem).to eq([[0,0],[0,0]])
 	end
+
+	it "isolates submatrix to solve when called on array with more columns than rows" do
+		mask = [[3, 3, 0, 3, 7, 2, 2, 6, 7, 2, "!", 4, 5, 4, 5, 1, 3, 5, 3, 0, "!", "!", 0, 6, 1],
+			[7, 2, 7, 4, 6, "!", 5, 0, 6, 5, 2, "!", 5, "!", 6, 3, 2, 0, 3, 0, 1, 3, 5, 0, 0],
+			[2, "!", 6, "!", 3, 8, 5, 4, 5, "X", 1, 1, "!", 1, 7, "X", "!", 6, "!", 1, "X", 5, 3, 6, 4],
+			["!", 3, 7, 1, 1, 6, 7, 0, "!", 0, 4, 2, 7, 3, 2, "!", 4, 0, 3, 3, 6, 1, 0, 1, 5],
+			[2, 7, 0, 7, "!", 1, "!", 1, 5, 0, 3, 5, 6, 2, "!", 4, 5, 1, 7, 3, 6, 4, 7, 0, 0]]
+		expect(mask.reduce_problem).to eq([[0, 6, 2, 5, 0, 0, 6, 1],[7, 0, 5, 0, 0, 5, 0, 0],
+			[7, 0, 0, 0, 3, 0, 1, 5],[0, 1, 0, 1, 3, 7, 0, 0]])
+	end
+
+	it "isolates submatrix to solve when called on array with more rows than columns" do
+		mask = [[6, 1, 8, "!", 2],[3, 2, 2, "!", 5],["X", 3, 1, 3, "!"],[1, 7, 4, 2, "!"],[8, "!", 2, 7, 7],[4, 0, 0, 2, 4],
+			[1, 3, 2, "!", 1],[8, 0, 6, 0, 2],[4, 4, "!", 6, 4],[5, "X", "X", 1, "!"],[5, 4, 0, 0, 5],[5, 2, 3, 1, "!"],
+			[2, 0, 2, 0, 4],[4, 0, 2, 0, 2],["X", 7, 7, "!", 4],["X", 2, 1, 5, "!"],["!", 1, 3, 2, 3],["!", 2, 7, 5, 4],
+			[1, 0, 3, 0, 3],["!", 1, 1, 4, 6],["!", 4, 6, 2, 3],["X", 6, "!", 1, 1],[6, 0, 0, 0, 5],["!", 3, 4, 6, 1],
+			[4, 1, "!", 3, 4]]
+		expect(mask.reduce_problem).to eq([[0, 0, 2],[0, 6, 0],[4, 0, 0],[0, 2, 0],[0, 2, 0],[0, 3, 0],[0, 0, 0]])
+	end
+
+
 
 end
 
