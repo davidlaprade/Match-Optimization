@@ -170,6 +170,12 @@ describe Array, "permissible assignment values, min_column_assignment, max_col_a
 	# then the minimums will seldom if ever be 1. In a square array, the min row/col assignments should be equal to the max row/col
 	# assignments
 
+	it "yeilds the right min/max_col_assignment when there is only one row" do
+		array = [["!","!","!","!","!"]]
+		expect(array.min_col_assignment).to eq(1)
+		expect(array.max_col_assignment).to eq(1)
+	end
+
 	it "yeilds the right values when there is only one row" do
 		array = [[2,4,4,3,5,21,4,5]]
 		expect(array.min_row_assignment).to eq(8)
@@ -242,42 +248,103 @@ describe Array, ".solution?" do
 	# call on mask Array object; returns true if the mask represents a complete, acceptable assignment, false otherwise
 
 	it "accepts solution with one row" do
-
+		array = [["!","!","!","!","!"]]
+		expect(array.solution?).to eq(true)
 	end
 
-	it "accepts solution with one column" do
-
+	it "treats 0s and Xs the same" do
+		solved = [["X",9],[2,"X"]]
+		unsolved = [[0,9],[2,0]]
+		expect(solved.solution?).to eq(unsolved.solution?)
 	end
 
-	it "try passing in some of the big arrays you solved by hand, see if it can tell if they are solutions" do
-
-	end
-
-	it "returns true for an array of all assignments" do
-
+	it "rejects non-solution with one row" do
+		array = [["!","!","!",9,"!"]]
+		expect(array.solution?).to eq(false)
 	end
 
 	it "distinguishes between zeros and assignments" do
+		solved = [["!",9],[2,"!"]]
+		unsolved = [[0,9],[2,0]]
+		expect(solved.solution?).to_not eq(unsolved.solution?)
+	end
 
+	it "accepts solution with one column" do
+		array = [["!"],["!"],["!"],["!"],["!"],["!"],["!"]]
+		expect(array.solution?).to eq(true)
+	end
+
+	it "rejects non-solution with one column" do
+		array = [["!"],[10],["!"],["!"],[2],["!"],["!"]]
+		expect(array.solution?).to eq(false)
+	end
+
+	it "accepts a solved, square array" do
+		array = [[6, 0, 8, "!", 3, 9], [5, "!", 8, 7, 3, 6], [7, 7, 1, 1, "!", 9], [3, 1, 2, 4, 0, "!"], ["!", 9, 4, 6, 1, 2],
+				[6, 9, "!", 2, 3, 5]]
+		expect(array.solution?).to eq(true)
+	end
+
+	it "accepts a solved array with more columns than rows, some zeros x'ed out" do
+		array = [["!",6,"X","X","X",1,1,"!","!",4],[6,"!",3,1,"!",2,1,3,6,"!"],[4, 5,2,3,2,"!","!",1,5,2],[6, 1,"!","!",1,3,"X",2,4,2]]
+		expect(array.solution?).to eq(true)
+	end
+
+	it "accepts a solved array with many more rows than columns" do
+		array = [[7,4,7,"!",5,1,6,5,2,5],["!",7,6,1,4,0,0,2,3,8],[5,2,4,1,4,5,2,8,5,"!"],[3,7,6,1,0,1,7,"!",7,6],[3,5,7,4,7,6,1,2,"!",5],
+		[1,7,1,6,4,4,3,7,6,"!"],[5,5,3,7,3,8,"!",8,1,4],[7,"!",4,8,5,5,2,7,7,7],[4,4,5,0,"!",7,2,6,0,0],[8,"!",7,2,1,8,4,7,5,1],
+		[6,0,5,3,6,3,4,5,"!",0],[2,8,4,"!",1,5,0,8,4,6],[2,1,3,"!",6,8,1,2,2,6],[1,1,4,4,5,1,"!",1,3,4],[7,4,"!",7,4,2,0,4,6,7],
+		[2,4,7,6,1,"!",6,6,2,7],[8,5,4,7,5,"!",8,0,4,8],[2,7,3,"!",1,3,7,4,6,6],[2,7,4,4,3,6,1,6,3,"!"],[8,5,3,2,"!",0,8,3,5,1],
+		[2,3,"!",3,0,0,4,8,1,3],[6,2,3,0,2,3,1,1,"!",3],["!",6,6,3,4,3,4,2,6,6],[6,"!",2,3,0,0,0,4,2,2],[4,4,4,5,3,3,"!",7,6,6],
+		[2,4,7,4,8,7,1,5,"!",2],[4,4,6,1,6,"!",3,3,4,4],[4,6,5,4,6,1,"!",1,1,4],[1,3,4,5,"!",3,2,5,2,2],[2,0,4,2,2,5,3,"!",3,0],
+		["!",4,3,2,4,5,4,1,6,6],[7,6,7,0,2,7,4,7,4,"!"],[7,2,"!",2,2,5,6,6,4,1],[0,6,"!",8,7,3,1,7,2,7],["!",0,4,4,5,3,3,6,3,5],
+		[7,1,2,8,1,"!",6,5,1,3],[0,7,7,8,0,7,8,"!",4,3],[5,0,3,4,2,5,4,"!",0,7],[2,"!",5,1,2,0,2,3,1,2],[5,2,7,2,"!",6,4,2,2,1]]
+		expect(array.solution?).to eq(true)
+	end
+
+	it "returns false for an array of all assignments" do
+		array = [["!","!"],["!","!"]]
+		expect(array.solution?).to eq(false)
 	end
 
 	it "returns false when there are no assignments" do
-
-	end
-
-	it "returns false when there are too few col assignments" do
-
+		array = [[5,5],[5,5]]
+		expect(array.solution?).to eq(false)
 	end
 
 	it "returns false when there are too many col assignments" do
+		array = [["!",5],[6,"!"],[1,"!"],[7,"!"]]
+		expect(array.solution?).to eq(false)
+	end
 
+	it "returns false when there are too few col assignments" do
+		array = [["!",5],[6,7],[1,"!"],[7,"!"]]
+		expect(array.solution?).to eq(false)
 	end
 
 	it "returns false when there are too few row assignments" do
-
+		array = [[2,"!",4,"!",6,7],["!",3,"!",5,6,"!"]]
+		expect(array.solution?).to eq(false)
 	end
 
 	it "returns false when there are too many row assignments" do
+		array = [[2,"!",4,"!",6,7],["!",3,"!",5,"!","!"]]
+		expect(array.solution?).to eq(false)
+	end
+
+	it "accepts solutions when there are multiple assignments per row" do
+
+	end
+
+	it "rejects solutions when there are multiple assignments per row" do
+
+	end
+
+	it "accepts solutions when there are multiple assignments per column" do
+
+	end
+
+	it "rejects solutions when there are multiple assignments per column" do
 
 	end
 

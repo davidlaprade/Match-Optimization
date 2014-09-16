@@ -587,6 +587,25 @@ class Array
 		return Matrix.columns(self.transpose)
 	end
 
+	# TESTED
+	# call on mask Array object; returns true if the mask represents a complete, acceptable assignment, false otherwise
+	def solution?
+		# complete assigns are those that have >= min row/col assignment, <= max row/col assignment
+		# is that it???
+
+		# so that you don't have to repeatedly call these methods within the select scripts below
+		min_row_assignment = self.min_row_assignment
+		max_row_assignment = self.max_row_assignment
+		min_col_assignment = self.min_col_assignment
+		max_col_assignment = self.max_col_assignment
+
+		return self.select {|row| 
+			row.count("!") < min_row_assignment || row.count("!") > max_row_assignment
+		}.empty? && self.transpose.select {|col|
+			col.count("!") < min_col_assignment || col.count("!") > max_col_assignment
+		}.empty?
+	end
+
 	# ARRAY FRIENDLY + TESTED
 	# called on Array object; returns failure code if the matrix-array has no solution in its current state, 
 	# returns true if the matrix-array passes the tests
