@@ -241,25 +241,45 @@ end
 describe Array, ".solution?" do
 	# call on mask Array object; returns true if the mask represents a complete, acceptable assignment, false otherwise
 
-	# accepts solution with one row
+	it "accepts solution with one row" do
 
-	# accepts solution with one column
+	end
 
-	# try passing in some of the big arrays you solved by hand, see if it can tell if they are solutions
+	it "accepts solution with one column" do
 
-	# returns true for an array of all assignments
+	end
 
-	# distinguishes between zeros and assignments
+	it "try passing in some of the big arrays you solved by hand, see if it can tell if they are solutions" do
 
-	# returns false when there are no assignments
+	end
 
-	# returns false when there are too few col assignments
+	it "returns true for an array of all assignments" do
 
-	# returns false when there are too many col assignments
+	end
 
-	# returns false when there are too few row assignments
+	it "distinguishes between zeros and assignments" do
 
-	# returns false when there are too many row assignments
+	end
+
+	it "returns false when there are no assignments" do
+
+	end
+
+	it "returns false when there are too few col assignments" do
+
+	end
+
+	it "returns false when there are too many col assignments" do
+
+	end
+
+	it "returns false when there are too few row assignments" do
+
+	end
+
+	it "returns false when there are too many row assignments" do
+
+	end
 
 end
 

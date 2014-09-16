@@ -75,6 +75,10 @@ class Hungarian
 
 			Step 1: assign to needy zeros, remove unassignable zeros, assign to extended needy zeros
 			Step 2: check to see if youve got a solution
+			Step 3? create a new array from the old one; get rid of all rows/columns which have reached
+					the max assignments, then get rid of all rows/columns with no zeros in them, then the
+					resulting array is all that needs to be solved to solve the larger array
+
 			Step 3: 
 				collect array of coordinates of each remaining zero
 				create a new class Zero object with attribute ".coordinate" the coordinates
@@ -275,7 +279,7 @@ class Array
 		return self.transpose.length
 	end
 
-	UNTESTED
+	# UNTESTED
 	# called on mask Array object; replaces unassignable zeros with "X"s, returns corrected array;
 	def cover_unassignables
 		# The idea is this: when there are enough assignments in a row/column to reach the maximum permissible, then other zeros 
