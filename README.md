@@ -1,3 +1,5 @@
+# Match Optimization
+
 This is an algorithm to optimize matches. It is a generalized version of the Hungarian algorithm from match theory, meaning that it optimizes matches even for matrices that are non-square.
 
 What is a match? Suppose there are a group of people who are going to put on a play. These people have different preferences as to which roles they would like to have. Some would really like to play Romeo, others Juliet. A choice is going to have to be made about who plays whom. When we make such a choice, we are making a "match" between actors and roles--a pairing off, or mapping, between actors and roles. Put a little more precisely, a match between A's and B's is any subset of the cross product of A and B.
