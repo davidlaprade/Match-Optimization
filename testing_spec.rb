@@ -238,6 +238,11 @@ describe Array, "max_column_assmts_possible(max_col_assignment)" do
 	end
 end
 
+desribte Array, ".solution?" do
+	# call on mask Array object; returns true if the mask represents a complete, acceptable assignment, false otherwise
+
+end
+
 describe Array, ".needy_zeros" do
 
 	# call on mask Array object; outputs coordinates of any zeros that are in "needy" rows/columns, where a row/column is needy iff every 

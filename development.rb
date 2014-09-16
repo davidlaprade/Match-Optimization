@@ -73,7 +73,7 @@ class Hungarian
 				end
 
 
-			Step 1: assign to lonely zeros, then any other required assignments that result from them
+			Step 1: assign to needy zeros, remove unassignable zeros, assign to extended needy zeros
 			Step 2: check to see if youve got a solution
 			Step 3: 
 				collect array of coordinates of each remaining zero
@@ -81,7 +81,23 @@ class Hungarian
 				put all the Zero objects created in this way in an array
 				now add the other relevant Zero attributes that you used in your algorithm before
 
+				# call on mask Array object; returns true if the mask represents a complete, acceptable assignment, false otherwise
+				def solution?
+					# complete assigns are those that have >= min row/col assignment, <= max row/col assignment
+					# is that it???
 
+					# so that you don't have to repeatedly call these methods within the select script...
+					min_row_assignment = self.min_row_assignment
+					max_row_assignment = self.max_row_assignment
+					min_col_assignment = self.min_row_assignment
+					max_col_assignment = self.max_row_assignment
+
+					return self.select {|row| 
+						row.count("!") < min_row_assignment || row.count("!") > max_row_assignment
+					}.empty? && self.transpose.select {|col|
+						col.count("!") < min_col_assignment || col.count("!") > max_col_assignment
+					}.empty?
+				end
 
 
 
@@ -102,22 +118,34 @@ end
 
 #--------------------- HELPER METHODS----IN-ALPHABETICAL-ORDER----------------------------------------------------
 
-# passed mask Array object; assigns to lonely zeros and extended extra-lonely zeros in the mask, then returns the mask
+# TESTED
+# passed mask Array object; assigns to needy zeros and extended needy zeros in the mask, then returns the mask
 def assign_needy_zeros(mask)
 	# make sure that the method is passed an array object
 	raise "Wrong kind of argument, requires an array" if mask.class != Array
 	# make sure the argument has Matrix-like dimensions
 	Matrix.columns(mask.transpose)
 
-	# Assign to all lonely zeros; you can get the coordinates with array.lonely_zeros, replace them with "!"s
-	mask.lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
+	while !mask.needy_zeros.empty?
+	# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	# Assign to all needy zeros; a zero is needy iff it occurs in a needy row/column; a row/column is "needy" iff every zero in it 
+	# must be assigned in order for it to reach its minimum allowable value. The class of needy zeros includes the class of lonely
+	# zeros and thus also the class of extra-lonely zeros. And the make_matrix_solveable method has already ensured that there are 
+	# at least enough zeros in columns and rows to reach the minimum assignments; moreover the solveable method gaurantees that there
+	# aren't too many needy zeros in either rows or columns; consider an example: suppose there is an array that is 3 rows x 9 col,
+	# given the array's dimensions, the min_row_assignment is 3; hence, for a zero to be needy for its row there can be no more than 
+	# 3 zeros in that row; thus suppose that two rows are needy and all of their zeros occupy the same columns; this would result
+	# in an unsolveable array; but, if all the zeros occupy the same columns then at most they occupy just 3 columns; so what about
+	# the other 6 columns? there are three options: (1) none have zeros in the thrid row, (2) some but not all have zeros in the third
+	# row, and (3) all have zeros in the third row; but if (1) and (2) then there are columns that lack zeros; and if (3) then there
+	# are too many lonely zeros in the third row; hence, the solveable? method will catch the issue; the point is: needy zeros only 
+	# cause a problem problem if they occur in multiple rows/columns, and they only overlap in multiple rows/columns if there are 
+	# other problems elsewhere in the array (e.g. columns/rows without zeros, or too many lonely zeros) that solveable? catches
+		mask.needy_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
 
-	# use this style of loop ( with a "break if...") because you want the first two commands to run at least once
-	loop do
-		# Making assignments to lonely zeros will often prevent you from making assignments to other zeros. When there are enough lonely zeros
+		# Making assignments to needy zeros will often prevent you from making assignments to other zeros. When there are enough needy zeros
 		# in a row/column to reach the maximum number of assignments for that row/column, then other zeros which occur in that row/column cannot
-		# be assigned. So, since these zeros can't be assigned, replace them with "X"s in the mask.(Remember, a zero is "lonely" iff it is the only zero in its
-		# row OR column; so a zero that's lonely, say, because of its column might well have other zeros in its row.)
+		# be assigned. So, since these zeros can't be assigned, replace them with "X"s in the mask.
 
 		# first check to see if there are zeros in ROWS with the max number of assignments; add Xs accordingly
 		mask.map! {|row| row.count("!") == mask.max_row_assignment ?
@@ -131,36 +159,8 @@ def assign_needy_zeros(mask)
 			}.transpose
 		)
 
-		# Getting rid of the zeros just described might reveal new "extended" lonely zeros, or lonely zeros "by extension"--i.e. zeros which end up being lonely
+		# Getting rid of the zeros just described might reveal new "extended" needy zeros, AKA needy zeros "by extension"--i.e. zeros which end up being needy
 		# when the previous two classes of zeros are removed. Such zeros will have to be assigned, so repeat this process.
-		break if mask.extra_lonely_zeros.empty?
-
-		# Actually, you don't want to assign to zeros that are merely lonely by extension, they should be "extra" lonely by extension--i.e. 
-		# they should be the sole zero in their row AND column. Why? Consider [[0,0,0],[4,0,0],[5,5,5]]. Assigning lonely zeros gives: 
-		# [[!,0,0],[4,0,0],[5,5,5]]. Next, eliminating unassignables we get: [[!,x,x],[4,0,0],[5,5,5]]. But now notice: both zeros in row 1 are 
-		# lonely by extension, since both occur in a column in which they are the sole zero. But it's not the case that both zeros should be 
-		# assigned! That would leave row 1 with too many assignments. So, which zero in row 1 should be selected? That's not obvious. 
-		# Moreover, the conditions on which you would choose which to assign are the complex conditions that shape assignment generally, 
-		# so there's no point to to code that into the algorithm here. It will be coded elsewhere, and thus will be taken care of then.
-		# Just assign to zeros that are extra lonely by extension. There's no question that these need to be assigned. Here is the code to do it:
-		# mask.extra_lonely_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
-
-		# CONCERN: extra lonely is not the only property that you want to assign to; you want to assign to any zero that is in a
-		# row/col that needs it to be assigned in order to reach the minimum allowable assignment. Zeros that are extra lonely by extension
-		# are just one species of the latter--that is, they are if the check/correct method has succeeded up to this point! 
-		# assign to zeros in rows that are needy by extension; a row/column is "needy" iff every assignable zero in it must be assigned
-		# in order for it to reach its minimum allowable value
-		mask.map! {|row| row.count("!")+row.count(0) <= mask.min_row_assignment ?
-			row.map {|value| value == 0 ? "!" : value} : row
-		}
-
-		# assign to zeros in columns that are needy by extension
-		mask.replace(
-			mask.transpose.map {|column| column.count("!")+column.count(0) <= mask.min_col_assignment ?
-				column.map {|value| value == 0 ? "!" : value} : column
-			}.transpose
-		)
-
 	end
 	return mask
 end

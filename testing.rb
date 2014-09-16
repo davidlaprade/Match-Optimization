@@ -4,71 +4,21 @@ require 'benchmark'
 
 # passed mask Array object; assigns to needy zeros and extended needy zeros in the mask, then returns the mask
 def assign_needy_zeros(mask)
-	# make sure that the method is passed an array object
 	raise "Wrong kind of argument, requires an array" if mask.class != Array
-	# make sure the argument has Matrix-like dimensions
 	Matrix.columns(mask.transpose)
-
 	while !mask.needy_zeros.empty?
-	# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	# Assign to all needy zeros; a zero is needy iff it occurs in a needy row/column; a row/column is "needy" iff every zero in it 
-	# must be assigned in order for it to reach its minimum allowable value. The class of needy zeros includes the class of lonely
-	# zeros and thus also the class of extra-lonely zeros. And the make_matrix_solveable method has already ensured that there are 
-	# at least enough zeros in columns and rows to reach the minimum assignments; moreover the solveable method gaurantees that there
-	# aren't too many needy zeros in either rows or columns; consider an example: suppose there is an array that is 3 rows x 9 col,
-	# given the array's dimensions, the min_row_assignment is 3; hence, for a zero to be needy for its row there can be no more than 
-	# 3 zeros in that row; thus suppose that two rows are needy and all of their zeros occupy the same columns; this would result
-	# in an unsolveable array; but, if all the zeros occupy the same columns then at most they occupy just 3 columns; so what about
-	# the other 6 columns? there are three options: (1) none have zeros in the thrid row, (2) some but not all have zeros in the third
-	# row, and (3) all have zeros in the third row; but if (1) and (2) then there are columns that lack zeros; and if (3) then there
-	# are too many lonely zeros in the third row; hence, the solveable? method will catch the issue; the point is: needy zeros only 
-	# cause a problem problem if they occur in multiple rows/columns, and they only overlap in multiple rows/columns if there are 
-	# other problems elsewhere in the array (e.g. columns/rows without zeros, or too many lonely zeros) that solveable? catches
 		mask.needy_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
-
-		# Making assignments to needy zeros will often prevent you from making assignments to other zeros. When there are enough needy zeros
-		# in a row/column to reach the maximum number of assignments for that row/column, then other zeros which occur in that row/column cannot
-		# be assigned. So, since these zeros can't be assigned, replace them with "X"s in the mask.
-
-		# first check to see if there are zeros in ROWS with the max number of assignments; add Xs accordingly
 		mask.map! {|row| row.count("!") == mask.max_row_assignment ?
 			row.map {|value| value == 0 ? "X":value} : row
 		}
-
-		# now do the same thing for COLUMNS
 		mask.replace(
 			mask.transpose.map {|col| col.count("!") == mask.max_col_assignment ?
 				col.map {|value| value == 0 ? "X":value} : col
 			}.transpose
 		)
-
-		# Getting rid of the zeros just described might reveal new "extended" needy zeros, AKA needy zeros "by extension"--i.e. zeros which end up being needy
-		# when the previous two classes of zeros are removed. Such zeros will have to be assigned, so repeat this process.
 	end
 	return mask
 end
-
-		# UNTESTED!! Belongs in Class ARRAY
-		# call on mask Array object; outputs coordinates of any zeros that are in "needy" rows/columns, where a row/column is needy iff every 
-		# assignable zero in it must be assigned in order for it to reach its minimum allowable value
-		def needy_zeros
-			# first find zeros in needy rows
-			row_coordinates = mask.each.with_index.with_object([]) {|(row,row_id), obj| 
-				row.each_index {|col_id| 
-					obj << [row_id, col_id] if row[col_id]==0 && (row.count("!")+row.count(0) <= mask.min_row_assignment)
-
-				}
-			}
-
-			# now do the same for needy columns
-			# run .uniq in case the coordinates for a zero were put in twice: once here and once above
-			return mask.transpose.each.with_index.with_object(row_coordinates) {|(column, column_id), obj|
-				column.each_index {|row_id|
-					obj << [row_id, column_id] if column[row_id]==0 && (column.count("!")+column.count(0) <= mask.min_col_assignment)
-				}
-			}.uniq
-		end
-
 
 # ARRAY FRIENDLY + TESTED
 def make_matrix_solveable(working_matrix)
@@ -356,6 +306,24 @@ class Array
 	# called on Array object; returns array in Matrix form
 	def to_m
 		return Matrix.columns(self.transpose)
+	end
+
+	# call on mask Array object; returns true if the mask represents a complete, acceptable assignment, false otherwise
+	def solution?
+		# complete assigns are those that have >= min row/col assignment, <= max row/col assignment
+		# is that it???
+
+		# so that you don't have to repeatedly call these methods within the select scripts below
+		min_row_assignment = self.min_row_assignment
+		max_row_assignment = self.max_row_assignment
+		min_col_assignment = self.min_row_assignment
+		max_col_assignment = self.max_row_assignment
+
+		return self.select {|row| 
+			row.count("!") < min_row_assignment || row.count("!") > max_row_assignment
+		}.empty? && self.transpose.select {|col|
+			col.count("!") < min_col_assignment || col.count("!") > max_col_assignment
+		}.empty?
 	end
 
 	def solveable?
