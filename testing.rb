@@ -2,7 +2,7 @@ require 'matrix'
 require 'pry'
 require 'benchmark'
 
-# passed mask Array object; assigns to lonely zeros and extended extra-lonely zeros in the mask, then returns the mask
+# passed mask Array object; assigns to needy zeros and extended needy zeros in the mask, then returns the mask
 def assign_needy_zeros(mask)
 	# make sure that the method is passed an array object
 	raise "Wrong kind of argument, requires an array" if mask.class != Array

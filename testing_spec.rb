@@ -439,39 +439,40 @@ describe Object, "assign_needy_zeros(mask)" do
 		expect {assign_needy_zeros(array)}.to raise_error()
 	end
 
-	it "assigns lonely zero when there is only one" do
+	it "assigns lonely zero when there is only one, no other zeros around" do
 		array = [[0,1,3],[4,7,2],[12,11,1]]
 		expect(assign_needy_zeros(array)).to eq([["!",1,3],[4,7,2],[12,11,1]])
 	end
 
-	it "assigns lonely zero when there is only one" do
+	it "assigns lonely zero when there is only one and other zeros are around" do
 		array = [[0,1,0],[4,0,2],[0,11,0]]
 		expect(assign_needy_zeros(array)).to eq([[0,1,0],[4,"!",2],[0,11,0]])
 	end
 
-	it "changes nothing when there are no lonely zeros" do
+	it "changes nothing when there are no needy zeros" do
 		array = [[0,1,0],[4,8,2],[0,11,0]]
 		assign_needy_zeros(array)
 		expect(array).to eq([[0,1,0],[4,8,2],[0,11,0]])
 	end
 
-	it "assigns lonely zeros when there are multiple" do
+	it "assigns needy zeros when there are multiple" do
 		array = [[0,1,3],[4,0,2],[12,11,1]]
 		expect(assign_needy_zeros(array)).to eq([["!",1,3],[4,"!",2],[12,11,1]])
 	end
 
-	it "assigns lonely zeros in columns when they occur in rows with other zeros" do
+	it "assigns needy zeros in columns when they occur in rows with other zeros" do
 		array = [[0,9,3],[4,0,0],[12,0,0]]
 		expect(assign_needy_zeros(array)).to eq([["!",9,3],[4,0,0],[12,0,0]])
 	end
 
-	it "assigns lonely zeros in rows when they occur in with other zeros, marks other zeros with Xs" do
+	it "assigns needy zeros in rows when they occur with other zeros, marks unassignable zeros with Xs, 
+		assigns extended needy zeros" do
 		array = [[0,7,3],[0,0,0],[0,0,6]]
 		assign_needy_zeros(array)
 		expect(array).to eq([["!",7,3],["X","X","!"],["X","!",6]])
 	end
 
-	it "assigns lonely zeros in a medium-sized array of randomly generated values between 0 and 9" do
+	it "assigns needy zeros in a medium-sized array of randomly generated values between 0 and 9" do
 		array = [[3,7,3,6,3,8,2,1,6],[3,5,1,9,4,8,7,8,0],[9,9,6,6,2,4,0,1,2],[9,5,6,1,3,8,7,1,1],[7,7,3,8,7,7,4,2,9],
 			[0,9,4,5,5,7,5,8,3],[9,0,2,8,3,7,9,3,4],[8,2,1,5,9,4,3,4,8],[8,6,2,3,3,6,9,0,7]]
 		assign_needy_zeros(array)
@@ -507,6 +508,19 @@ describe Object, "assign_needy_zeros(mask)" do
 		array = [[0,0,0,2,9],[4,0,8,5,0],[2,3,0,3,0],[2,2,2,2,0],[5,3,2,8,4]]
 		assign_needy_zeros(array)
 		expect(array).to eq([["!","X","X",2,9],[4,"!",8,5,"X"],[2,3,"!",3,"X"],[2,2,2,2,"!"],[5,3,2,8,4]])
+	end
+
+	it "assigns to all of the extended lonely zeros when they appear only after several rounds of changes" do
+		array = [[0,0,0,9,1],[0,6,7,8,9],[0,0,0,0,0],[0,0,1,2,4],[0,0,0,0,8]]
+		assign_needy_zeros(array)
+		expect(array).to eq([["X","X","!",9,1],["!",6,7,8,9],["X","X","X","X","!"],["X","!",1,2,4],["X","X","X","!",8]])
+	end
+
+	it "assigns to all of the extended lonely zeros when they appear only after several rounds of changes, when the
+			min_row_assignment is greater than 1" do
+		array = [[0,0,9,9,1,0,7,0],[0,6,7,8,9,1,2,0],[0,0,0,0,0,1,2,0],[0,0,0,2,4,6,0,0]]
+		assign_needy_zeros(array)
+		expect(array).to eq([["X","!",9,9,1,"!",7,"X"],["!",6,7,8,9,1,2,"!"],["X","X","X","!","!",1,2,"X"],["X","X","!",2,4,6,"!","X"]])
 	end
 
 	# it "does not add assignments over the max allowable for columns" do
