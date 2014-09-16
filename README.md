@@ -11,13 +11,13 @@ An algorithm exists for calculating optimized matches. It is called the "Hungari
 This, then, is an attempt to generalize the Hungarian algorithm. It takes the same general strategy, but it is broadened in ways which allow it to handle uneven matches. It makes two important assumptions: (1) an optimal match is one in which every individual is matched with at least one other individual; and (2) an optimal match is one in which the mapping is as even as possible, i.e. members of the same set are all matched with the same number of individuals (+/-1). So it won't ever be the case that Jim is assigned to 10 roles, and Martha to 3.
 
 It seems to me that we encounter matching problems like the one described all the time. We encounter them when:
-(1) assigning roles to members of a team
-(2) making factories/plants more efficient by assigning jobs to workers on the basis of their varying rates of pay, or speed of work
-(3) matching students with classes for enrollment
-(4) matching residents with residency programs
-(5) pairing foster parents with children
-(6) determining the best way to distribute blood at a blood bank
-(7) matching organ donors to which patients
-(9) matching actors to roles, or musicians to parts, in a school play
+- assigning roles to members of a team
+- assigning jobs to workers on the basis of their varying rates of pay, or speed of work
+- matching students with classes for enrollment
+- matching residents with residency programs
+- pairing foster parents with children
+- determining the best way to distribute blood at a blood bank
+- matching organ donors to patients
+- matching actors to roles, or musicians to parts, in a school play
 
 And so on. Such problems are as widespread as they are difficult to solve. And they seldom involve matching equal sets.
