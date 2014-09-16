@@ -275,6 +275,27 @@ class Array
 		return self.transpose.length
 	end
 
+	UNTESTED
+	# called on mask Array object; replaces unassignable zeros with "X"s, returns corrected array;
+	def cover_unassignables
+		# The idea is this: when there are enough assignments in a row/column to reach the maximum permissible, then other zeros 
+		# which occur in that row/column cannot be assigned. So, since these zeros can't be assigned, replace them with "X"s
+
+		# first check to see if there are zeros in ROWS with the max number of assignments; add Xs accordingly
+		self.map! {|row| row.count("!") == self.max_row_assignment ?
+			row.map {|value| value == 0 ? "X":value} : row
+		}
+
+		# now do the same thing for COLUMNS
+		self.replace(
+			self.transpose.map {|col| col.count("!") == self.max_col_assignment ?
+				col.map {|value| value == 0 ? "X":value} : col
+			}.transpose
+		)
+
+		return self
+	end
+
 	# called on array object; returns array of coordinates [p,q] such that each self[p][q] is an extra-lonely zero
 	# an "extra lonely" zero is one which occurs as the only zero in both its row AND column
 	def extra_lonely_zeros
@@ -494,16 +515,20 @@ class Array
 
 	# CONSTRAINTS--------------------------------------------------------------------------------------------------
 	# leave these as Array methods, don't set them to the hungarian object; you need to be able to access these values for the
-	# array and each of its submatrices
+	# array and each of its submatrices, and also when you transpose arrays and then perform operations on them, e.g. in assign_needy
 	
-	# every object on the x axis gets mapped to at least one object on the y
-	# axis, and vice versa; perhaps sometimes the most optimal match is one in which an individual doesn't get matched; if so, 
-	# then my algorithm won't catch it; I have to start somewhere
+	# ASUMPTIONS: (1) an optimal match is one in which every object on the x axis will get mapped to at least one object on the y axis, 
+	# and vice versa; (2) an optimal match is one in which the mapping is as even as possible, i.e. every row has the same number of 
+	# assignments (+/- 1) as any other row, and similarly for columns.
+	
+	# Perhaps sometimes the most optimal match will be one in which an individual just doesn't get matched at all; if so, 
+	# then my algorithm won't catch it. I have to start somewhere.
 
 	# Formerly, I had just set min_row and min_col_assignment to 1 automatically. But it's not clear why I should have. If what
 	# these values are supposed to be are the minimum/maximum number of assignments in an optimal match for the relevant array, 
-	# then the minimums will seldom if ever be 1. In a square array, the min row/col assignments should be equal to the max row/col
-	# assignments
+	# then given my assumptions the minimums will seldom if ever be 1. In a square array, the min row/col assignments should be 
+	# equal to the max row/col assignments
+
 	def max_col_assignment 
 		return (self.row_count/self.column_count.to_f).ceil
 	end

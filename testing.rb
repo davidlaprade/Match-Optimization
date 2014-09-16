@@ -8,14 +8,7 @@ def assign_needy_zeros(mask)
 	Matrix.columns(mask.transpose)
 	while !mask.needy_zeros.empty?
 		mask.needy_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
-		mask.map! {|row| row.count("!") == mask.max_row_assignment ?
-			row.map {|value| value == 0 ? "X":value} : row
-		}
-		mask.replace(
-			mask.transpose.map {|col| col.count("!") == mask.max_col_assignment ?
-				col.map {|value| value == 0 ? "X":value} : col
-			}.transpose
-		)
+		mask.cover_unassignables
 	end
 	return mask
 end
@@ -94,6 +87,27 @@ class Array
 	# called on array; outputs the number of columns in the array
 	def column_count
 		return self.first.length
+	end
+
+	# UNTESTED
+	# called on mask Array object; replaces unassignable zeros with "X"s, returns corrected array;
+	def cover_unassignables
+		# The idea is this: when there are enough assignments in a row/column to reach the maximum permissible, then other zeros 
+		# which occur in that row/column cannot be assigned. So, since these zeros can't be assigned, replace them with "X"s
+
+		# first check to see if there are zeros in ROWS with the max number of assignments; add Xs accordingly
+		self.map! {|row| row.count("!") == self.max_row_assignment ?
+			row.map {|value| value == 0 ? "X":value} : row
+		}
+
+		# now do the same thing for COLUMNS
+		self.replace(
+			self.transpose.map {|col| col.count("!") == self.max_col_assignment ?
+				col.map {|value| value == 0 ? "X":value} : col
+			}.transpose
+		)
+
+		return self
 	end
 
 	# called on array object; returns array of coordinates [p,q] such that each self[p][q] is an extra-lonely zero
@@ -308,6 +322,7 @@ class Array
 		return Matrix.columns(self.transpose)
 	end
 
+	# UNTESTED
 	# call on mask Array object; returns true if the mask represents a complete, acceptable assignment, false otherwise
 	def solution?
 		# complete assigns are those that have >= min row/col assignment, <= max row/col assignment

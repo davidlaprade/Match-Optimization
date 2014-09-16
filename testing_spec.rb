@@ -238,8 +238,28 @@ describe Array, "max_column_assmts_possible(max_col_assignment)" do
 	end
 end
 
-desribte Array, ".solution?" do
+describe Array, ".solution?" do
 	# call on mask Array object; returns true if the mask represents a complete, acceptable assignment, false otherwise
+
+	# accepts solution with one row
+
+	# accepts solution with one column
+
+	# try passing in some of the big arrays you solved by hand, see if it can tell if they are solutions
+
+	# returns true for an array of all assignments
+
+	# distinguishes between zeros and assignments
+
+	# returns false when there are no assignments
+
+	# returns false when there are too few col assignments
+
+	# returns false when there are too many col assignments
+
+	# returns false when there are too few row assignments
+
+	# returns false when there are too many row assignments
 
 end
 
@@ -622,12 +642,9 @@ describe Array, "zero_rows_and_columns" do
 
 			solutionA = a.zero_each_row.zero_each_column
 			diffA = (original.to_m - solutionA.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
-			# print "degree of difference when rows are zeroed first: #{diffA}\n"
 
 			solutionB = b.zero_each_column.zero_each_row
 			diffB = (original.to_m - solutionB.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
-			# print "degree of difference when columns are zeroed first: #{diffB}\n"
-			# print "--------------\n"
 
 			solutionC = c.zero_rows_and_columns
 			diffC = (original.to_m - solutionC.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
