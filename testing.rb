@@ -516,7 +516,7 @@ end
 # [[5,5],[5,10],[5,15],[5,25],[5,40],[10,5],[10,10],[10,15],[10,25],[10,40],[15,5],[25,5],[40,5],
 # [40,10],[7,7],[10,10],[12,12],[15,15],[16,16],[17,17],[18,18],[19,19],[20,20]]
 
-# [[4,10]].each do |v|
+# [[5,5],[5,10],[5,15],[5,25],[5,40]].each do |v|
 # 	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
 # 	# print "%f\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
 # 	print "original array: #{v[0]}x#{v[1]}\n"
@@ -531,7 +531,7 @@ end
 # 	print "assigned lonely zeros:\n"
 # 	solution.print_readable
 
-# # calculate degree of difference
-	
-# 	# print "--------------------------------------------------------\n"
+# 	print "solution?: #{solution.solution?}\n"
+
+# 	print "--------------------------------------------------------\n"
 # end

@@ -75,36 +75,44 @@ class Hungarian
 
 			Step 1: assign to needy zeros, remove unassignable zeros, assign to extended needy zeros
 			Step 2: check to see if youve got a solution
-			Step 3? create a new array from the old one; get rid of all rows/columns which have reached
+			Step 3: create a new array from the old one; get rid of all rows/columns which have reached
 					the max assignments, then get rid of all rows/columns with no zeros in them, then the
 					resulting array is all that needs to be solved to solve the larger array
 
-			Step 3: 
+			Step 4: 
 				collect array of coordinates of each remaining zero
 				create a new class Zero object with attribute ".coordinate" the coordinates
 				put all the Zero objects created in this way in an array
 				now add the other relevant Zero attributes that you used in your algorithm before
 
-				# call on mask Array object; returns true if the mask represents a complete, acceptable assignment, false otherwise
-				def solution?
-					# complete assigns are those that have >= min row/col assignment, <= max row/col assignment
-					# is that it???
 
-					# so that you don't have to repeatedly call these methods within the select script...
-					min_row_assignment = self.min_row_assignment
-					max_row_assignment = self.max_row_assignment
-					min_col_assignment = self.min_row_assignment
-					max_col_assignment = self.max_row_assignment
+			# call on mask Array object, does NOT change the mask, returns minimal array that needs to be assigned in order to finish
+			# assigning to the mask object the method was called on
+			def reduce_problem
+				columns = self.transpose
 
-					return self.select {|row| 
-						row.count("!") < min_row_assignment || row.count("!") > max_row_assignment
-					}.empty? && self.transpose.select {|col|
-						col.count("!") < min_col_assignment || col.count("!") > max_col_assignment
-					}.empty?
-				end
+				return self.select {|row| row.count("!") < self.max_row_assignment
+				}.transpose.select.with_index {|col, col_index| 
+					columns[col_index].count("!") < self.max_col_assignment
+					}.transpose
+			end
 
 
+[9,0,4,0]
+[1,3,!,3]
+[2,0,0,0]
+[!,4,5,7]
 
+[9,8,4,6]
+[2,3,5,1]
+
+[[9,2],[8,3],[4,5],[6,1]]
+
+
+[8,6]
+[3,3]
+[3,1]
+[4,7]
 
 
 
