@@ -322,8 +322,7 @@ class Array
 		return Matrix.columns(self.transpose)
 	end
 
-	# call on mask Array object, does NOT change the mask, returns minimal array that needs to be assigned in order to finish
-	# assigning to the mask object the method was called on
+	# TESTED
 	def reduce_problem
 		columns = self.transpose
 
@@ -527,22 +526,26 @@ end
 # [[5,5],[5,10],[5,15],[5,25],[5,40],[10,5],[10,10],[10,15],[10,25],[10,40],[15,5],[25,5],[40,5],
 # [40,10],[7,7],[10,10],[12,12],[15,15],[16,16],[17,17],[18,18],[19,19],[20,20]]
 
-# [[25,5]].each do |v|
-# 	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
-# 	# print "%f\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
-# 	print "original array: #{v[0]}x#{v[1]}\n"
-# 	array.print_readable
-# 	print "solveable array:"
-# 	solution = make_matrix_solveable(array)
-# 	solution.print_readable
-# 	print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
-# 	print "degree of difference: #{(array.to_m - solution.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+) * 100 / array.flatten(1).inject(:+).to_f}\n"
+[[27,7],[29,7],[30,7],[13,7]].each do |v|
+	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
+	# print "%f\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
+	print "original array: #{v[0]}x#{v[1]}\n"
+	array.print_readable
+	print "solveable array:"
+	solution = make_matrix_solveable(array)
+	solution.print_readable
+	print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
+	print "degree of difference: #{(array.to_m - solution.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+) * 100 / array.flatten(1).inject(:+).to_f}\n"
 
-# 	assign_needy_zeros(solution)
-# 	print "assigned lonely zeros:\n"
-# 	solution.print_readable
+	assign_needy_zeros(solution)
+	print "assigned lonely zeros:"
+	solution.print_readable
 
-# 	print "solution?: #{solution.solution?}\n"
+	print "solution?: #{solution.solution?}\n"
 
-# 	print "--------------------------------------------------------\n"
-# end
+	print "problem reduced:"
+	solution.reduce_problem.print_readable
+
+	print "--------------------------------------------------------\n"
+end
+

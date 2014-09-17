@@ -362,9 +362,22 @@ describe Array, ".reduce_problem" do
 	end
 
 	it "has no problems with Xs" do
+		mask = [[6, 1, 8, "!", 2],[3, 2, 2, "!", 5],["X", 3, 1, 3, "!"],[1, 7, 4, 2, "!"],[8, "!", 2, 7, 7],[4, 0, 0, 2, 4],
+			[1, 3, 2, "!", 1],[8, 0, 6, 0, 2],[4, 4, "!", 6, 4],[5, "X", "X", 1, "!"],[5, 4, 0, 0, 5],[5, 2, 3, 1, "!"],
+			[2, 0, 2, 0, 4],[4, 0, 2, 0, 2],["X", 7, 7, "!", 4],["X", 2, 1, 5, "!"],["!", 1, 3, 2, 3],["!", 2, 7, 5, 4],
+			[1, 0, 3, 0, 3],["!", 1, 1, 4, 6],["!", 4, 6, 2, 3],["X", 6, "!", 1, 1],[6, 0, 0, 0, 5],["!", 3, 4, 6, 1],
+			[4, 1, "!", 3, 4]]
+		expect(mask.reduce_problem).to eq([[0, 0, 2],[0, 6, 0],[4, 0, 0],[0, 2, 0],[0, 2, 0],[0, 3, 0],[0, 0, 0]])
+	end
+
+	it "returns nothing when called on an array that is solved" do
+		mask = [["!",9,4],[1,"!",3],[7,3,"!"]]
+		expect(mask.reduce_problem).to eq([])
 	end
 
 	it "returns entire array unchanged when there are no assignments" do
+		mask = [[9,0,4,0],[1,3,6,3],[2,0,0,0],[6,4,5,7]]
+		expect(mask.reduce_problem).to eq([[9,0,4,0],[1,3,6,3],[2,0,0,0],[6,4,5,7]])
 	end
 
 	it "isolates submatrix to solve when called on square mask array" do
@@ -389,6 +402,49 @@ describe Array, ".reduce_problem" do
 			[1, 0, 3, 0, 3],["!", 1, 1, 4, 6],["!", 4, 6, 2, 3],["X", 6, "!", 1, 1],[6, 0, 0, 0, 5],["!", 3, 4, 6, 1],
 			[4, 1, "!", 3, 4]]
 		expect(mask.reduce_problem).to eq([[0, 0, 2],[0, 6, 0],[4, 0, 0],[0, 2, 0],[0, 2, 0],[0, 3, 0],[0, 0, 0]])
+	end
+
+	# here the example array is 5x27, meaning that two rows will need 6 assignments; so, what can happen is that a row might
+	# have the minimum requirement, but still fail to have the max allowable, so that row will get left in the reduce problem
+	# array even if it contains no zeros
+	it "removes rows that contain no zeros even when dimensions are uneven" do
+		mask = [["X", 4, 3, 3, 7, 6, 6, "!", 2, "!", 1, 1, "!", 4, "!", 1, 6, 5, 7, 3, 2, 1, 6, 1, 3, 5, "!"],
+			["!", "!", 4, 3, 4, 5, 6, 6, "!", 1, 1, 2, 1, 3, 2, "!", 3, 2, 4, 7, "!", 2, 4, 2, 1, 2, 1],
+			[5, "X", 2, "!", 2, "!", 6, 2, 3, 2, 0, 3, "X", 2, "X", 3, 7, "!", "!", 3, 1, 0, "!", 4, 8, 6, 1],
+			[5, "X", 3, 3, "!", 6, "!", 2, 1, 4, 1, 0, 6, 1, 4, "X", 5, 4, 6, "!", 2, 0, 6, 2, "!", 2, 4],
+			[1, 3, "!", 2, 2, 4, 1, 4, 5, 3, 0, 0, 7, "!", 5, 6, "!", 4, 1, 8, 2, 2, 5, "!", 4, "!", 2]]
+		expect(mask.reduce_problem).to eq([[0, 3, 0],[1, 0, 0],[0, 0, 2]])
+	end
+
+	# same problem as described above, 5x27 array
+	it "removes rows that contain no zeros even when dimensions are uneven" do
+		mask = [[5, 5, "X", 3, 4, 2, 2, 6, 3, 1, 7, 4, 0, 5, 3, 6, 0, 5, "!", 0, 0, 2, 2, "!", 3, 0, "!"],
+			[6, 2, "!", 3, "!", 1, "!", 4, 6, "!", 6, 2, 4, 7, 2, 4, 1, 3, 2, 2, 3, 1, "!", 1, 5, 2, 4],
+			[4, 3, 6, 0, 1, 5, 7, 4, "!", 5, "!", "!", 8, 6, 6, 7, 0, 4, 3, 3, 8, 4, 2, 3, "!", 5, 1],
+			[4, "!", "X", 0, "X", "!", 5, "!", 6, "X", 8, 3, 0, 5, 3, 4, 0, "!", 2, 0, 0, 4, "X", 1, 1, 0, 3],
+			["!", 6, 2, 5, 6, 2, 7, 1, 1, "X", 7, 3, 7, "!", "!", "!", 7, 1, 2, 1, 3, "!", "X", 4, 1, 2, 6]]
+			expect(mask.reduce_problem).to eq([[3, 0, 0, 0, 0, 0],[0, 8, 0, 3, 8, 5],[0, 0, 0, 0, 0, 0]])
+	end
+
+	# analogous problem to the ones above, 13x7 array
+	it "removes columns that contain no zeros even when dimensions are uneven" do
+		mask = [[4, 1, 6, "!", 4, 1, 4],[0, 4, 8, 0, 8, 1, 7],[0, "X", 8, 3, 1, 0, 7],[6, 8, 3, 4, 3, 3, "!"],
+			[3, 1, 2, 7, "!", 2, 3],[4, "!", 4, 8, 4, 5, 6],[0, 6, "X", 0, 2, 4, 7],[1, "X", 2, 7, 2, "!", 1],
+			[7, 6, "!", 6, 2, 4, 5],[7, 6, 7, 7, "!", 4, 4],[1, "!", "X", 1, 3, 5, 4],[5, 8, "!", 4, 7, 6, 1],
+			["!", 6, 2, 5, 5, 2, 2]]
+		expect(mask.reduce_problem).to eq([[0, 0],[0, 3],[0, 0]])
+	end
+
+	# analogous problem to the ones above, 29x7 array
+	it "removes columns that contain no zeros even when dimensions are uneven" do
+		mask = [["X", 6, "!", "X", 1, 3, 6],[3, 5, 7, 2, 4, "!", 6],[6, 3, 4, 5, 1, "!", 3],["!", 1, 2, 6, 1, 1, 6],
+			[3, 6, 5, 4, 1, 6, "!"],[3, 0, 3, 0, 1, 5, 4],[7, "X", "!", "X", 4, 6, "X"],[7, 5, 4, 7, 7, "!", 3],
+			[7, 1, 6, "!", 4, 8, 8],[6, "!", 5, 7, 6, 4, 6],[2, "X", "!", "X", 1, "X", 2],["!", "X", 3, 3, "X", 6, 6],
+			[1, 1, 1, 3, "!", 2, 4],["!", 2, 2, 5, 1, 6, 7],[6, 0, 2, 7, 2, 6, 0],[3, 6, 2, 0, 0, 8, 0],["!", 2, 5, 3, 5, 2, "X"],
+			[2, 3, 7, "!", 4, 6, 6],[4, 2, 1, 6, 3, 4, "!"],[1, 6, 2, "!", 7, 4, 6],[3, 4, 3, "!", 8, 8, 4],
+			[6, 1, 3, 6, 6, "!", 1],[4, "!", 3, 8, 1, "X", 7],[7, 0, 5, 4, 0, 1, 3],[5, 2, "!", 1, 4, "X", 7],
+			[4, 4, 3, 3, 3, "!", 2],[4, 0, 4, 1, 0, "X", 5],[2, 2, 5, 4, "!", 5, 2],[5, 6, 7, 0, 2, 2, 0]]
+		expect(mask.reduce_problem).to eq([[0, 0, 1, 4],[0, 7, 2, 0],[6, 0, 0, 0],[0, 4, 0, 3],[0, 1, 0, 5],[6, 0, 2, 0]])
 	end
 
 

@@ -86,16 +86,7 @@ class Hungarian
 				now add the other relevant Zero attributes that you used in your algorithm before
 
 
-			# call on mask Array object, does NOT change the mask, returns minimal array that needs to be assigned in order to finish
-			# assigning to the mask object the method was called on
-			def reduce_problem
-				columns = self.transpose
 
-				return self.select {|row| row.count("!") < self.max_row_assignment
-				}.transpose.select.with_index {|col, col_index| 
-					columns[col_index].count("!") < self.max_col_assignment
-					}.transpose
-			end
 
 
 
@@ -575,6 +566,18 @@ class Array
 	# called on Array object; returns array in Matrix form
 	def to_m
 		return Matrix.columns(self.transpose)
+	end
+
+	# TESTED
+	# call on mask Array object, does NOT change the mask, returns minimal array that needs to be assigned in order to finish
+	# assigning to the mask object the method was called on
+	def reduce_problem
+		columns = self.transpose
+
+		return self.select {|row| row.count("!") < self.max_row_assignment
+		}.transpose.select.with_index {|col, col_index| 
+			columns[col_index].count("!") < self.max_col_assignment
+			}.transpose
 	end
 
 	# TESTED
