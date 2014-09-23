@@ -17,8 +17,7 @@ end
 def make_matrix_solveable(working_matrix)
 
 	working_matrix = working_matrix.zero_rows_and_columns
-	dup = working_matrix.dup
-	working_matrix = working_matrix.transpose if dup.row_count > dup.column_count
+
 	solveable = working_matrix.solveable?
 	
 	while solveable != "true"
@@ -49,7 +48,7 @@ def make_matrix_solveable(working_matrix)
 		end
 	
 	end
-	working_matrix = working_matrix.transpose if dup.row_count > dup.column_count
+
 	return working_matrix
 end
 
@@ -572,12 +571,12 @@ end
 # array.print_readable
 # print array.solveable?
 
-	500.times do
+	# 1000.times do
 
-			cols = rand(7)+1
-			rows = (2*cols)+rand(4)
-			matrix = Array.new(rows) {Array.new(cols) {rand(10)}}
-			matrix.print_readable
-			print "#{make_matrix_solveable(matrix).solveable?}\n"
+	# 		cols = rand(7)+1
+	# 		rows = (2*cols)+rand(4)
+	# 		matrix = Array.new(rows) {Array.new(cols) {rand(10)}}
+	# 		matrix.print_readable
+	# 		print "#{make_matrix_solveable(matrix).solveable?}\n"
 
-	end
+	# end

@@ -58,6 +58,12 @@ describe "make_matrix_solveable" do
 		expect(make_matrix_solveable(matrix).solveable?).to eq("true")
 	end
 
+	it "should not throw a RuntimeError" do
+		matrix = [[4, 3, 7, 9, 4, 6],[6, 0, 2, 6, 1, 5],[1, 8, 6, 9, 5, 7],[6, 2, 5, 6, 2, 4],[9, 0, 6, 3, 0, 7],[2, 4, 9, 7, 3, 5],
+	[8, 1, 0, 5, 8, 5],[8, 9, 4, 6, 4, 6],[9, 3, 4, 1, 7, 0],[7, 1, 9, 9, 9, 6],[4, 8, 1, 1, 9, 0],[0, 0, 1, 2, 0, 7]]
+		expect(make_matrix_solveable(matrix).solveable?).to eq("true")
+	end
+
 	it "yeilds a solveable array when called on an array bordered by low values" do
 		matrix = [[1,1,1,1,1,1],[1,4,5,6,3,1],[1,9,3,8,5,1],[1,5,8,7,3,1],[1,3,9,5,7,1],[1,1,1,1,1,1]]
 		expect(make_matrix_solveable(matrix).solveable?).to eq("true")

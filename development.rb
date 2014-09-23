@@ -31,7 +31,8 @@ class Hungarian
 	# call on Hungarian object; refreshes its degree_of_diff attribute; returns the updated Hungarian object
 	def calc_degree_of_diff
 		# first get difference between corresponding members of the array, sum the differences, then divide by the sum of all the original members
-		self.degree_of_diff = (original_matrix.to_m - working_matrix.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+) * 100 / original_matrix.flatten(1).inject(:+).to_f
+		self.degree_of_diff = (original_matrix.to_m - working_matrix.to_m).collect{|e| 
+			e.abs}.to_a.flatten(1).inject(:+) * 100 / original_matrix.flatten(1).inject(:+).to_f
 		return self
 	end
 
