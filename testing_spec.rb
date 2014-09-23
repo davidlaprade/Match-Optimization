@@ -24,6 +24,18 @@ describe "make_matrix_solveable" do
 		expect(make_matrix_solveable(matrix).solveable?).to eq("true")
 	end
 
+	40.times do
+		it "yeilds a solveable array when called on an array of random size filled with random numbers" do
+			rows = rand(13)+2
+			cols = rand(13)+2
+			matrix = Array.new(rows) {Array.new(cols) {rand(10)}}
+			original = matrix.dup
+			solveable = make_matrix_solveable(matrix).solveable?
+			original.print_readable if solveable != true
+			expect(solveable).to eq("true")
+		end	
+	end
+
 end
 
 
