@@ -150,7 +150,7 @@ def assign_needy_zeros(mask)
 	return mask
 end
 
-# ARRAY FRIENDLY + TESTED
+# ARRAY FRIENDLY + MANUALLY TESTED
 # passed an array object (Hungarian.working_matrix); minimally changes the array to return an array which supports complete assignment
 def make_matrix_solveable(working_matrix)
 	# first normalize the rows and columns, in the appropriate order
@@ -164,7 +164,7 @@ def make_matrix_solveable(working_matrix)
 	# this will prevent the algorithm from having to run the .solveable? method uncessarily between tests
 	solveable = working_matrix.solveable?
 
-	while working_matrix.solveable? != "true"
+	while solveable != "true"
 		# you want to include the following two methods in case the methods below them change the Matrix in such a way
 		# as to remove a lonely zero from a row/column
 
@@ -199,6 +199,7 @@ def make_matrix_solveable(working_matrix)
 			# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
 			solveable = working_matrix.solveable?
 		end
+		
 		while solveable == "no, min permitted row assignments > max column assignments possible"
 			# to fix: if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix
 			# find the lowest value-sans-zero in the submatrix, then subtract that value from every member-sans-zero of the row in which it occurs
@@ -575,9 +576,11 @@ class Array
 		columns = self.transpose
 
 		return self.select {|row| row.count("!") < self.max_row_assignment
-		}.transpose.select.with_index {|col, col_index| 
-			columns[col_index].count("!") < self.max_col_assignment
-			}.transpose
+			}.transpose.select.with_index {|col, col_index| 
+				columns[col_index].count("!") < self.max_col_assignment
+					}.transpose.select {|row| row.include?(0)}.transpose.select {|col| 
+						col.include?(0)
+		}.transpose
 	end
 
 	# TESTED

@@ -3,30 +3,30 @@
 $LOAD_PATH << '.'
 require 'testing'
 
-# //////////////////////////////////////////////////////////////////////////////////////////////////////
-# THE OVERALL CHECKING ALGORITHM HAS TO PASS THIS TEST
-# [1,1,1,1,1,1]
-# [1,4,5,6,3,1]
-# [1,9,3,8,5,1]
-# [1,5,8,7,3,1]
-# [1,3,9,5,7,1]
-# [1,1,1,1,1,1]
-# After rows and columns are zeroed, this becomes:
-# [0,0,0,0,0,0]
-# [0,3,4,5,2,0]
-# [0,8,2,7,4,0]
-# [0,4,7,6,2,0]
-# [0,2,8,4,6,0]
-# [0,0,0,0,0,0]
-# Now, none of these zeros is lonely, so the first two steps in the algorithm should pass it.
-# Moreover, the third step in the algorithm should pass it as well, since 
-# min_row_assmts_permitted = 6 and max_col_assignments_possible=6! But this matrix is plainly unsolveable
-# in its current state.
-# ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 # METHODS THAT DO NOT DEPEND ON OTHER METHODS I HAVE WRITTEN SHOULD BE TESTED FIRST, SO THAT IF THERE IS A PROBLEM WITH THEM, THE PROBLEM
 # IS DISPLAYED FIRST WHEN I RUN RSPEC
+# ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+# temporarily breaking the above rule so that I focus on this issue first; it does not depend on problems with other methods; rather, the
+# problem has to do with how I'm trying to speed up the algorithm by transposing non-square arrays
+describe "make_matrix_solveable" do
+
+	it "yeilds a solveable array when called on an uneven array" do
+		matrix = [[6, 2, 2, 6, 4, 7, 3],[2, 6, 6, 6, 9, 2, 5],[6, 2, 4, 1, 2, 3, 1],[1, 5, 6, 5, 8, 2, 5],
+			[2, 3, 1, 8, 9, 1, 5],[1, 9, 4, 8, 7, 7, 2],[5, 6, 9, 8, 9, 6, 3],[7, 1, 6, 7, 6, 6, 1],
+			[5, 4, 2, 8, 8, 2, 2],[3, 2, 5, 9, 5, 6, 3],[7, 3, 1, 8, 9, 5, 6],[9, 7, 1, 1, 4, 9, 8],[9, 5, 3, 8, 5, 1, 6]]
+		expect(make_matrix_solveable(matrix).solveable?).to eq("true")
+	end
+
+	it "yeilds a solveable array when called on an array bordered by low values" do
+		matrix = [[1,1,1,1,1,1],[1,4,5,6,3,1],[1,9,3,8,5,1],[1,5,8,7,3,1],[1,3,9,5,7,1],[1,1,1,1,1,1]]
+		expect(make_matrix_solveable(matrix).solveable?).to eq("true")
+	end
+
+end
+
+
 describe Array, ".zero_each_row" do
 	# called on Array object; subtracts the lowest value in each row from each member of that row, repeats process until each
 	# row contains at least enough zeros to support a minimum_row_assignment; then it returns the corrected array
@@ -375,9 +375,14 @@ describe Array, ".reduce_problem" do
 		expect(mask.reduce_problem).to eq([])
 	end
 
+	# a choice has to be made here: should the "reduce_problem" method be the kind of thing you could call on an unsolsveable array?
+	# Or the kind of thing you should only call on a solveable array? I certainly intend to only use it on solveable arrays. Either
+	# way, the choice will effect how the code is written. I have decided on the latter option, and this test respects that fact.
+	# But a a similar test could be written which the current code would fail--one which was called on
+	# an array that lacked zeros in rows and certain columns.
 	it "returns entire array unchanged when there are no assignments" do
-		mask = [[9,0,4,0],[1,3,6,3],[2,0,0,0],[6,4,5,7]]
-		expect(mask.reduce_problem).to eq([[9,0,4,0],[1,3,6,3],[2,0,0,0],[6,4,5,7]])
+		mask = [[9,0,4,0],[0,3,6,3],[2,0,7,0],[6,4,0,7]]
+		expect(mask.reduce_problem).to eq([[9,0,4,0],[0,3,6,3],[2,0,7,0],[6,4,0,7]])
 	end
 
 	it "isolates submatrix to solve when called on square mask array" do
@@ -432,7 +437,7 @@ describe Array, ".reduce_problem" do
 			[3, 1, 2, 7, "!", 2, 3],[4, "!", 4, 8, 4, 5, 6],[0, 6, "X", 0, 2, 4, 7],[1, "X", 2, 7, 2, "!", 1],
 			[7, 6, "!", 6, 2, 4, 5],[7, 6, 7, 7, "!", 4, 4],[1, "!", "X", 1, 3, 5, 4],[5, 8, "!", 4, 7, 6, 1],
 			["!", 6, 2, 5, 5, 2, 2]]
-		expect(mask.reduce_problem).to eq([[0, 0],[0, 3],[0, 0]])
+		expect(mask.reduce_problem).to eq([[0, 0, 1],[0, 3, 0],[0, 0, 4]])
 	end
 
 	# analogous problem to the ones above, 29x7 array
@@ -1395,9 +1400,22 @@ describe Array, ".add_value_if_zero_else_subtract_value_in_rows" do
 	end
 end
 
+
+
 describe Array, ".solveable?" do
 	# called on Array object; returns failure code if the matrix-array has no solution in its current state, 
 	# returns true if the matrix-array passes the tests
+
+	# this matrix is not solveable; once lonely zeros are assigned, no assignment can be made in row 7
+	# Here is the original array before make_matrix_solveable is called on it:
+		# [6, 2, 2, 6, 4, 7, 3],[2, 6, 6, 6, 9, 2, 5],[6, 2, 4, 1, 2, 3, 1],[1, 5, 6, 5, 8, 2, 5],
+		# [2, 3, 1, 8, 9, 1, 5],[1, 9, 4, 8, 7, 7, 2],[5, 6, 9, 8, 9, 6, 3],[7, 1, 6, 7, 6, 6, 1],
+		# [5, 4, 2, 8, 8, 2, 2],[3, 2, 5, 9, 5, 6, 3],[7, 3, 1, 8, 9, 5, 6],[9, 7, 1, 1, 4, 9, 8],[9, 5, 3, 8, 5, 1, 6]
+	it "does not return 'yes' when called on an unsolveable array with uneven rows/columns" do
+		matrix = [[4,0,0,4,1,5,1],[0,4,4,4,6,0,3],[5,1,3,0,0,2,0],[0,4,5,4,6,1,4],[1,2,0,7,7,0,4],[0,8,3,7,5,6,1],
+			[2,3,6,5,5,3,0],[6,0,5,6,4,5,0],[3,2,0,6,5,0,0],[1,0,3,7,2,4,1],[6,2,0,7,7,4,5],[8,6,0,0,2,8,7],[8,4,2,7,3,0,5]]
+		expect(matrix.solveable?).to_not eq("true")
+	end
 
 	it "returns true when run on [[0,0,0],[4,0,6],[0,0,0]]" do
 		matrix = [[0,0,0],[4,0,6],[0,0,0]]

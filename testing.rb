@@ -13,34 +13,41 @@ def assign_needy_zeros(mask)
 	return mask
 end
 
-# ARRAY FRIENDLY + TESTED
+# ARRAY FRIENDLY + MANUALLY TESTED
 def make_matrix_solveable(working_matrix)
+
 	working_matrix = working_matrix.zero_rows_and_columns
 	dup = working_matrix.dup
 	working_matrix = working_matrix.transpose if dup.row_count > dup.column_count
 	solveable = working_matrix.solveable?
-
-	while working_matrix.solveable? != "true"
+	
+	while solveable != "true"
+	
 		while solveable == "no, not enough zeros in rows"
 			working_matrix = working_matrix.zero_each_row
 			solveable = working_matrix.solveable?
 		end
+	
 		while solveable == "no, not enough zeros in columns"
 			working_matrix = working_matrix.zero_each_column
 			solveable = working_matrix.solveable?
 		end
+	
 		while solveable == "no, too many lonely zeros in columns"
 			working_matrix.fix_too_many_lonely_zeros_in_columns
 			solveable = working_matrix.solveable?
 		end
+	
 		while solveable == "no, too many lonely zeros in rows"
 			working_matrix.fix_too_many_lonely_zeros_in_rows
 			solveable = working_matrix.solveable?
 		end
+
 		while solveable == "no, min permitted row assignments > max column assignments possible"
 			working_matrix.make_more_column_assignments_possible
 			solveable = working_matrix.solveable?
 		end
+	
 	end
 	working_matrix = working_matrix.transpose if dup.row_count > dup.column_count
 	return working_matrix
@@ -329,7 +336,8 @@ class Array
 		return self.select {|row| row.count("!") < self.max_row_assignment
 		}.transpose.select.with_index {|col, col_index| 
 			columns[col_index].count("!") < self.max_col_assignment
-			}.transpose
+			}.transpose.select {|row| row.include?(0)}.transpose.select {|col| 
+				col.include?(0)}.transpose
 	end
 
 	# TESTED
@@ -526,26 +534,31 @@ end
 # [[5,5],[5,10],[5,15],[5,25],[5,40],[10,5],[10,10],[10,15],[10,25],[10,40],[15,5],[25,5],[40,5],
 # [40,10],[7,7],[10,10],[12,12],[15,15],[16,16],[17,17],[18,18],[19,19],[20,20]]
 
-[[27,7],[29,7],[30,7],[13,7]].each do |v|
-	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
-	# print "%f\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
-	print "original array: #{v[0]}x#{v[1]}\n"
-	array.print_readable
-	print "solveable array:"
-	solution = make_matrix_solveable(array)
-	solution.print_readable
-	print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
-	print "degree of difference: #{(array.to_m - solution.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+) * 100 / array.flatten(1).inject(:+).to_f}\n"
+# [[5,6],[7,5],[4,7],[9,5],[10,12]]
 
-	assign_needy_zeros(solution)
-	print "assigned lonely zeros:"
-	solution.print_readable
+# [[27,7],[29,7],[30,7],[13,7]].each do |v|
+# 	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
+# 	# print "%f\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
+# 	print "original array: #{v[0]}x#{v[1]}\n"
+# 	array.print_readable
+# 	print "solveable array:"
+# 	solution = make_matrix_solveable(array)
+# 	solution.print_readable
+# 	print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
+# 	print "degree of difference: #{(array.to_m - solution.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+) * 100 / array.flatten(1).inject(:+).to_f}\n"
 
-	print "solution?: #{solution.solution?}\n"
+# 	assign_needy_zeros(solution)
+# 	print "assigned lonely zeros:"
+# 	solution.print_readable
 
-	print "problem reduced:"
-	solution.reduce_problem.print_readable
+# 	print "solution?: #{solution.solution?}\n"
 
-	print "--------------------------------------------------------\n"
-end
+# 	print "problem reduced:"
+# 	solution.reduce_problem.print_readable
+
+# 	print "--------------------------------------------------------\n"
+# end
+
+# print [[4,0,0,4,1,5,1],[0,4,4,4,6,0,3],[5,1,3,0,0,2,0],[0,4,5,4,6,1,4],[1,2,0,7,7,0,4],[0,8,3,7,5,6,1],
+# 			[2,3,6,5,5,3,0],[6,0,5,6,4,5,0],[3,2,0,6,5,0,0],[1,0,3,7,2,4,1],[6,2,0,7,7,4,5],[8,6,0,0,2,8,7],[8,4,2,7,3,0,5]].solveable?
 
