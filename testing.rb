@@ -328,15 +328,32 @@ class Array
 		return Matrix.columns(self.transpose)
 	end
 
-	# TESTED
+	# UNTESTED
 	def reduce_problem
-		columns = self.transpose
+		columns = self.transpose.unshift(Array.new(self[0].length))
+		# otherwise array.unshift will change the row values of the self array
+		copy = self.map {|r| r.dup}
 
-		return self.select {|row| row.count("!") < self.max_row_assignment
-		}.transpose.select.with_index {|col, col_index| 
-			columns[col_index].count("!") < self.max_col_assignment
-			}.transpose.select {|row| row.include?(0)}.transpose.select {|col| 
-				col.include?(0)}.transpose
+		# add array [p,q] to first member of each row, where p is the row_id, q is the # assignments needed to reach the minimum in that row
+		copy.map.with_index {|row, row_id| 
+			row.unshift([row_id, self.min_row_assignment - row.count("!")])
+		}
+
+		# add array [p,q] to top of each column, where p is the col_id, q is the # assignments needed to reach the minimum in that col
+		copy.unshift(copy.transpose.each.with_index.with_object(["X"]) { |(col, col_id), new_col|
+			new_col << [col_id-1, self.min_col_assignment - col.count("!")] if col_id > 0
+		})
+
+		# now strip off all the rows that already have met the max-assignment limit
+		return copy.select {|row| row.count("!") < self.max_row_assignment
+			# now strip off columns that have met the max_col_assignment
+			}.transpose.select.with_index {|col, col_index| 
+				columns[col_index].count("!") < self.max_col_assignment
+					# getting rid of the columns might have left rows without zeros, get rid of them
+					}.transpose.select.with_index {|row, row_id| row.include?(0) || row_id == 0
+						# getting rid of the rows might have left cols without zeros, get rid of them
+						}.transpose.select.with_index {|col, col_id| 
+							col.include?(0) || col_id == 0 }.transpose
 	end
 
 	# TESTED
@@ -535,28 +552,7 @@ end
 
 # [[5,6],[7,5],[4,7],[9,5],[10,12]]
 
-# [[27,7],[29,7],[30,7],[13,7]].each do |v|
-# 	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
-# 	# print "%f\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
-# 	print "original array: #{v[0]}x#{v[1]}\n"
-# 	array.print_readable
-# 	print "solveable array:"
-# 	solution = make_matrix_solveable(array)
-# 	solution.print_readable
-# 	print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
-# 	print "degree of difference: #{(array.to_m - solution.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+) * 100 / array.flatten(1).inject(:+).to_f}\n"
 
-# 	assign_needy_zeros(solution)
-# 	print "assigned lonely zeros:"
-# 	solution.print_readable
-
-# 	print "solution?: #{solution.solution?}\n"
-
-# 	print "problem reduced:"
-# 	solution.reduce_problem.print_readable
-
-# 	print "--------------------------------------------------------\n"
-# end
 
 # print [[4,0,0,4,1,5,1],[0,4,4,4,6,0,3],[5,1,3,0,0,2,0],[0,4,5,4,6,1,4],[1,2,0,7,7,0,4],[0,8,3,7,5,6,1],
 # 			[2,3,6,5,5,3,0],[6,0,5,6,4,5,0],[3,2,0,6,5,0,0],[1,0,3,7,2,4,1],[6,2,0,7,7,4,5],[8,6,0,0,2,8,7],[8,4,2,7,3,0,5]].solveable?
@@ -580,3 +576,27 @@ end
 	# 		print "#{make_matrix_solveable(matrix).solveable?}\n"
 
 	# end
+
+# [[5,8],[13,7],[4,9]].each do |v|
+# 	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
+# 	# print "%f\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
+# 	print "original array: #{v[0]}x#{v[1]}\n"
+# 	array.print_readable
+# 	print "solveable array:"
+# 	solution = make_matrix_solveable(array)
+# 	solution.print_readable
+# 	print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
+# 	print "degree of difference: #{(array.to_m - solution.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+) * 100 / array.flatten(1).inject(:+).to_f}\n"
+
+# 	assign_needy_zeros(solution)
+# 	print "assigned lonely zeros:"
+# 	solution.print_readable
+
+# 	print "solution?: #{solution.solution?}\n"
+
+# 	print "problem reduced:"
+# 	solution.reduce_problem.print_readable
+
+# 	print "--------------------------------------------------------\n"
+# end
+

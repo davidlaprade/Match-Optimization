@@ -69,29 +69,29 @@ describe "make_matrix_solveable" do
 		expect(make_matrix_solveable(matrix).solveable?).to eq("true")
 	end
 
-	40.times do
-		it "yeilds a solveable array when called on an array with more rows than columns" do
-			cols = rand(7)+1
-			rows = (2*cols)+rand(4)
-			matrix = Array.new(rows) {Array.new(cols) {rand(10)}}
-			original = matrix.dup
-			solveable = make_matrix_solveable(matrix).solveable?
-			original.print_readable if solveable != "true"
-			expect(solveable).to eq("true")
-		end	
-	end
+	# 40.times do
+	# 	it "yeilds a solveable array when called on an array with more rows than columns" do
+	# 		cols = rand(7)+1
+	# 		rows = (2*cols)+rand(4)
+	# 		matrix = Array.new(rows) {Array.new(cols) {rand(10)}}
+	# 		original = matrix.dup
+	# 		solveable = make_matrix_solveable(matrix).solveable?
+	# 		original.print_readable if solveable != "true"
+	# 		expect(solveable).to eq("true")
+	# 	end	
+	# end
 
-	40.times do
-		it "yeilds a solveable array when called on an array of random size filled with random numbers" do
-			rows = rand(13)+2
-			cols = rand(13)+2
-			matrix = Array.new(rows) {Array.new(cols) {rand(10)}}
-			original = matrix.dup
-			solveable = make_matrix_solveable(matrix).solveable?
-			original.print_readable if solveable != "true"
-			expect(solveable).to eq("true")
-		end	
-	end
+	# 40.times do
+	# 	it "yeilds a solveable array when called on an array of random size filled with random numbers" do
+	# 		rows = rand(13)+2
+	# 		cols = rand(13)+2
+	# 		matrix = Array.new(rows) {Array.new(cols) {rand(10)}}
+	# 		original = matrix.dup
+	# 		solveable = make_matrix_solveable(matrix).solveable?
+	# 		original.print_readable if solveable != "true"
+	# 		expect(solveable).to eq("true")
+	# 	end	
+	# end
 
 end
 
@@ -436,37 +436,38 @@ describe Array, ".reduce_problem" do
 			[2, 0, 2, 0, 4],[4, 0, 2, 0, 2],["X", 7, 7, "!", 4],["X", 2, 1, 5, "!"],["!", 1, 3, 2, 3],["!", 2, 7, 5, 4],
 			[1, 0, 3, 0, 3],["!", 1, 1, 4, 6],["!", 4, 6, 2, 3],["X", 6, "!", 1, 1],[6, 0, 0, 0, 5],["!", 3, 4, 6, 1],
 			[4, 1, "!", 3, 4]]
-		expect(mask.reduce_problem).to eq([[0, 0, 2],[0, 6, 0],[4, 0, 0],[0, 2, 0],[0, 2, 0],[0, 3, 0],[0, 0, 0]])
+		expect(mask.reduce_problem).to eq([["X", [1,4], [2,2], [3,1]],[[5,1], 0, 0, 2],[[7,1], 0, 6, 0],[[10,1], 4, 0, 0],
+			[[12,1], 0, 2, 0],[[13,1], 0, 2, 0],[[18,1], 0, 3, 0],[[22,1], 0, 0, 0]])
 	end
 
-	it "returns nothing when called on an array that is solved" do
+	it "returns [X] when called on an array that is solved" do
 		mask = [["!",9,4],[1,"!",3],[7,3,"!"]]
-		expect(mask.reduce_problem).to eq([])
+		expect(mask.reduce_problem).to eq([["X"]])
 	end
 
 	# a choice has to be made here: should the "reduce_problem" method be the kind of thing you could call on an unsolsveable array?
 	# Or the kind of thing you should only call on a solveable array? I certainly intend to only use it on solveable arrays. Either
 	# way, the choice will effect how the code is written. I have decided on the latter option, and this test respects that fact.
-	# But a a similar test could be written which the current code would fail--one which was called on
-	# an array that lacked zeros in rows and certain columns.
+	# But a a similar test could be written which the current code would fail--one which was called on an array that lacked zeros in 
+	# rows and certain columns.
 	it "returns entire array unchanged when there are no assignments" do
 		mask = [[9,0,4,0],[0,3,6,3],[2,0,7,0],[6,4,0,7]]
-		expect(mask.reduce_problem).to eq([[9,0,4,0],[0,3,6,3],[2,0,7,0],[6,4,0,7]])
+		expect(mask.reduce_problem).to eq([["X",[0,1],[1,1],[2,1],[3,1]],[[0,1],9,0,4,0],[[1,1],0,3,6,3],[[2,1],2,0,7,0],[[3,1],6,4,0,7]])
 	end
 
 	it "isolates submatrix to solve when called on square mask array" do
 		mask = [[9,0,4,0],[1,3,"!",3],[2,0,0,0],["!",4,5,7]]
-		expect(mask.reduce_problem).to eq([[0,0],[0,0]])
+		expect(mask.reduce_problem).to eq([["X",[1,1],[3,1]],[[0,1],0,0],[[2,1],0,0]])
 	end
 
 	it "isolates submatrix to solve when called on array with more columns than rows" do
 		mask = [[3, 3, 0, 3, 7, 2, 2, 6, 7, 2, "!", 4, 5, 4, 5, 1, 3, 5, 3, 0, "!", "!", 0, 6, 1],
-			[7, 2, 7, 4, 6, "!", 5, 0, 6, 5, 2, "!", 5, "!", 6, 3, 2, 0, 3, 0, 1, 3, 5, 0, 0],
-			[2, "!", 6, "!", 3, 8, 5, 4, 5, "X", 1, 1, "!", 1, 7, "X", "!", 6, "!", 1, "X", 5, 3, 6, 4],
-			["!", 3, 7, 1, 1, 6, 7, 0, "!", 0, 4, 2, 7, 3, 2, "!", 4, 0, 3, 3, 6, 1, 0, 1, 5],
-			[2, 7, 0, 7, "!", 1, "!", 1, 5, 0, 3, 5, 6, 2, "!", 4, 5, 1, 7, 3, 6, 4, 7, 0, 0]]
-		expect(mask.reduce_problem).to eq([[0, 6, 2, 5, 0, 0, 6, 1],[7, 0, 5, 0, 0, 5, 0, 0],
-			[7, 0, 0, 0, 3, 0, 1, 5],[0, 1, 0, 1, 3, 7, 0, 0]])
+			    [7, 2, 7, 4, 6, "!", 5, 0, 6, 5, 2, "!", 5, "!", 6, 3, 2, 0, 3, 0, 1, 3, 5, 0, 0],
+			    [2, "!", 6, "!", 3, 8, 5, 4, 5, "X", 1, 1, "!", 1, 7, "X", "!", 6, "!", 1, "X", 5, 3, 6, 4],
+			    ["!", 3, 7, 1, 1, 6, 7, 0, "!", 0, 4, 2, 7, 3, 2, "!", 4, 0, 3, 3, 6, 1, 0, 1, 5],
+			    [2, 7, 0, 7, "!", 1, "!", 1, 5, 0, 3, 5, 6, 2, "!", 4, 5, 1, 7, 3, 6, 4, 7, 0, 0]]
+		expect(mask.reduce_problem).to eq([["X",[2,1],[7,1],[9,1],[17,1],[19,1],[22,1],[23,1],[24,1]],[[0,2],0, 6, 2, 5, 0, 0, 6, 1],[[1,2],7, 0, 5, 0, 0, 5, 0, 0],
+			[[3,2],7, 0, 0, 0, 3, 0, 1, 5],[[4,2],0, 1, 0, 1, 3, 7, 0, 0]])
 	end
 
 	it "isolates submatrix to solve when called on array with more rows than columns" do
@@ -475,8 +476,10 @@ describe Array, ".reduce_problem" do
 			[2, 0, 2, 0, 4],[4, 0, 2, 0, 2],["X", 7, 7, "!", 4],["X", 2, 1, 5, "!"],["!", 1, 3, 2, 3],["!", 2, 7, 5, 4],
 			[1, 0, 3, 0, 3],["!", 1, 1, 4, 6],["!", 4, 6, 2, 3],["X", 6, "!", 1, 1],[6, 0, 0, 0, 5],["!", 3, 4, 6, 1],
 			[4, 1, "!", 3, 4]]
-		expect(mask.reduce_problem).to eq([[0, 0, 2],[0, 6, 0],[4, 0, 0],[0, 2, 0],[0, 2, 0],[0, 3, 0],[0, 0, 0]])
+		expect(mask.reduce_problem).to eq([["X", [1,4], [2,2], [3,1]],[[5,1], 0, 0, 2],[[7,1], 0, 6, 0],[[10,1], 4, 0, 0],
+			[[12,1], 0, 2, 0],[[13,1], 0, 2, 0],[[18,1], 0, 3, 0],[[22,1], 0, 0, 0]])
 	end
+
 
 	# here the example array is 5x27, meaning that two rows will need 6 assignments; so, what can happen is that a row might
 	# have the minimum requirement, but still fail to have the max allowable, so that row will get left in the reduce problem

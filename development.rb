@@ -159,8 +159,9 @@ def make_matrix_solveable(working_matrix)
 
 	# the remaining algorithm runs up to 2 orders of magnitute faster when there are fewer rows than columns
 	# so, just transpose the array to create an array with more columns than rows
-	dup = working_matrix.dup
-	working_matrix = working_matrix.transpose if dup.row_count > dup.column_count
+	# Unfortunately, this sometimes (1/50 times) results in arrays that are not solveable!
+	# dup = working_matrix.dup
+	# working_matrix = working_matrix.transpose if dup.row_count > dup.column_count
 
 	# this will prevent the algorithm from having to run the .solveable? method uncessarily between tests
 	solveable = working_matrix.solveable?
@@ -212,7 +213,7 @@ def make_matrix_solveable(working_matrix)
 	end
 
 	# tanspose the matrix back into its original form if it was flipped
-	working_matrix = working_matrix.transpose if dup.row_count > dup.column_count
+	# working_matrix = working_matrix.transpose if dup.row_count > dup.column_count
 
 	return working_matrix
 end
@@ -575,8 +576,17 @@ class Array
 	# assigning to the mask object the method was called on
 	def reduce_problem
 		columns = self.transpose
+		copy = self.dup
 
-		return self.select {|row| row.count("!") < self.max_row_assignment
+		# add number of assignments needed to top of each column, leftmost cell of each row
+		copy.map {|row| 
+			row.unshift([self.min_row_assignment - row.count("!")])
+		}
+		copy.replace(copy.transpose.map {|col| 
+			col.unshift([self.min_col_assignment - col.count("!")])
+		}.transpose)
+
+		return copy.select {|row| row.count("!") < self.max_row_assignment
 			}.transpose.select.with_index {|col, col_index| 
 				columns[col_index].count("!") < self.max_col_assignment
 					}.transpose.select {|row| row.include?(0)}.transpose.select {|col| 
