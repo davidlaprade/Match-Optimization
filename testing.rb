@@ -577,7 +577,7 @@ end
 
 	# end
 
-[[5,8],[13,7],[4,9],[8,8],[10,10],[9,13]].each do |v|
+[[5,8],[13,7],[4,9],[8,8],[10,10],[9,13],[10,42]].each do |v|
 	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
 	# print "%f\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
 	print "original array: #{v[0]}x#{v[1]}\n"

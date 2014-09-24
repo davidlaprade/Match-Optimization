@@ -295,20 +295,38 @@ class Array
 	# changes mask array
 	def finish_assignment
 
-["X",   [2,1], [3,1], [4,1], [5,1], [7,1]]
-[[0, 2], !,      x,     1,     1,     !]
-[[1, 0], 6,      x,     0,     x,     x]
-[[2, 2], x,      !,     2,     !,     5]
-[[3, 0], 1,      2,     !,     3,     x]
+		while self.solution? != true
+			reduction = self.reduce_problem
 
-if a row/col needs X assignments to reach the min, it will contain at least X+1 zeros
+			# get row/col with most assignments needed to reach min, in event of tie go with row, in event of tie go with left most
+			# output array [p,q] where p is the row/col ID and q is the number of needed assignments; I don't care if there are multiple
+			# arrays that are identical to [p,q]
+			def find_row_or_col_to_assign
+
+			# passed array [p,q] where p is the row/col ID and q is the number of needed assignments; finds that value first in row 0 of
+			# the reduction array, and if not there then in col 0 of the reduction array; once found, it assigns to the zero with the fewest
+			# other zeros in its respective row/col, in event of tie it assigns to zero closest to the top/left; then it makes the corresponding
+			# assignment to the mask; then it reruns assign to needy zeros (abstract sub-methods from the assign_needy_zeros method)
+			def make_assignment
+
+			reduction.find_row_or_col_to_assign.make_assignment
+		end
+	end
+
 	-start with col/row that needs the most assignments to reach min
+		-ideally, sort zeros as follows: by num assignments needed, then by zeros nutered, then by original value
 	-assign to zero in that col/row which occurs with the fewest other zeros (i.e. minimize the zeros youre nutering)
 	-once assignment is made, X-out any zeros that are now in a row/col with the max allowable
 	-now check to see if an assignment is forced, if so, assign to it
 		-repeat this process until no more assignments are forced
 	-repeat
 	-continue until there are no more zeros (i.e. every zero has either been assigned or x-ed out)
+
+["X",   [2,1], [3,1], [4,1], [5,1], [7,1]]
+[[0, 2], !,      x,     1,     1,     !]
+[[1, 0], 6,      x,     0,     x,     x]
+[[2, 2], x,      !,     2,     !,     5]
+[[3, 0], 1,      2,     !,     3,     x]
 
 ["X",   [1,1], [3,1], [4,0], [6,0]]
 [[0, 1],  x,     !,     x,     2]
@@ -320,6 +338,29 @@ if a row/col needs X assignments to reach the min, it will contain at least X+1 
 ["X",   [6, 1], [7, 1]]
 [[1, 0],  !,       x]
 [[3, 1],  x,       !]
+
+["X",   [0, 1], [3, 1], [6, 1], [7, 1], [8, 1]]
+[[0, 1],   !,     4,       0,      3,      1]
+[[1, 1],   6,     6,       6,      !,      x]
+[[2, 1],   3,     !,       4,      2,      x]
+[[5, 1],   x,     x,       !,      x,      x]
+[[9, 1],   7,     7,       3,      x,      !]
+
+["X",   [1, 1], [2, 1], [3, 1], [5, 1]]
+[[0, 1], 7,       5,      !,      x]
+[[1, 1], !,       x,      7,      4]
+[[5, 1], x,       !,      1,      1]
+[[7, 1], 1,       3,      x,      !]
+
+["X",   [7, 0], [8, 0], [18, 0], [19, 0], [25, 0], [28, 0], [29, 0], [30, 0], [31, 0], [34, 0], [36, 0], [37, 0], [38, 1], [40, 0]]
+[[0, 0], !,       !,       !,       2,        3,      7,       x,       !,       3,       6,       5,       8,       8,       3]
+[[1, 0], x,       4,       7,       !,        5,      6,       !,       2,       6,       !,       4,       7,       5,       4]
+[[2, 0], 5,       x,       x,       x,        7,      2,       3,       3,       x,       2,       x,       4,       !,       1]
+[[3, 0], 7,       x,       8,       6,        6,      x,       1,       4,       6,       2,       4,       x,       5,       1]
+[[5, 0], 1,       8,       5,       4,        x,      x,       5,       2,       8,       x,       5,       !,       3,       !]
+[[8, 0], 6,       x,       3,       x,        !,      !,       x,       x,       6,       4,       !,       6,       5,       7]
+[[9, 0], 2,       6,       5,       1,        1,      2,       x,       x,       !,       2,       6,       8,       x,       x]
+
 
 
 
