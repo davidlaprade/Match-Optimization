@@ -291,6 +291,41 @@ class Array
 		return self.lonely_zeros.select {|coord| self[coord[0]].count(0)==1 && columns[coord[1]].count(0)==1}
 	end
 
+	# called on mask array object; reduces problem, assigns to mask based on reduction, returns finished mask assignment object;
+	# changes mask array
+	def finish_assignment
+
+["X",   [2,1], [3,1], [4,1], [5,1], [7,1]]
+[[0, 2], !,      x,     1,     1,     !]
+[[1, 0], 6,      x,     0,     x,     x]
+[[2, 2], x,      !,     2,     !,     5]
+[[3, 0], 1,      2,     !,     3,     x]
+
+if a row/col needs X assignments to reach the min, it will contain at least X+1 zeros
+	-start with col/row that needs the most assignments to reach min
+	-assign to zero in that col/row which occurs with the fewest other zeros (i.e. minimize the zeros youre nutering)
+	-once assignment is made, X-out any zeros that are now in a row/col with the max allowable
+	-now check to see if an assignment is forced, if so, assign to it
+		-repeat this process until no more assignments are forced
+	-repeat
+	-continue until there are no more zeros (i.e. every zero has either been assigned or x-ed out)
+
+["X",   [1,1], [3,1], [4,0], [6,0]]
+[[0, 1],  x,     !,     x,     2]
+[[3, 1],  3,     4,     !,     x]
+[[5, 1],  x,     7,     8,     !]
+[[8, 1],  !,     x,     4,     2]
+[[10,1],  !,     x,     x,     1]
+
+["X",   [6, 1], [7, 1]]
+[[1, 0],  !,       x]
+[[3, 1],  x,       !]
+
+
+
+
+	end
+
 	# called on submatrix Array; finds columns that do not contain zeros; outputs an ordered array of ALL arrays [p,q] where 
 	# p is the index of a row in the submatrix, and q is a value in that row such that no zeros occur in that value's column
 	# in the submatrix; the arrays are ordered by increasing q value, then by increasing row index
@@ -575,23 +610,30 @@ class Array
 	# call on mask Array object, does NOT change the mask, returns minimal array that needs to be assigned in order to finish
 	# assigning to the mask object the method was called on
 	def reduce_problem
-		columns = self.transpose
-		copy = self.dup
+		columns = self.transpose.unshift(Array.new(self[0].length))
+		# otherwise array.unshift will change the row values of the self array
+		copy = self.map {|r| r.dup}
 
-		# add number of assignments needed to top of each column, leftmost cell of each row
-		copy.map {|row| 
-			row.unshift([self.min_row_assignment - row.count("!")])
+		# add array [p,q] to first member of each row, where p is the row_id, q is the # assignments needed to reach the minimum in that row
+		copy.map.with_index {|row, row_id| 
+			row.unshift([row_id, self.min_row_assignment - row.count("!")])
 		}
-		copy.replace(copy.transpose.map {|col| 
-			col.unshift([self.min_col_assignment - col.count("!")])
-		}.transpose)
 
+		# add array [p,q] to top of each column, where p is the col_id, q is the # assignments needed to reach the minimum in that col
+		copy.unshift(copy.transpose.each.with_index.with_object(["X"]) { |(col, col_id), new_col|
+			new_col << [col_id-1, self.min_col_assignment - col.count("!")] if col_id > 0
+		})
+
+		# now strip off all the rows that already have met the max-assignment limit
 		return copy.select {|row| row.count("!") < self.max_row_assignment
+			# now strip off columns that have met the max_col_assignment
 			}.transpose.select.with_index {|col, col_index| 
 				columns[col_index].count("!") < self.max_col_assignment
-					}.transpose.select {|row| row.include?(0)}.transpose.select {|col| 
-						col.include?(0)
-		}.transpose
+					# getting rid of the columns might have left rows without zeros, get rid of them
+					}.transpose.select.with_index {|row, row_id| row.include?(0) || row_id == 0
+						# getting rid of the rows might have left cols without zeros, get rid of them
+						}.transpose.select.with_index {|col, col_id| 
+							col.include?(0) || col_id == 0 }.transpose
 	end
 
 	# TESTED

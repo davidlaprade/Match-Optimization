@@ -328,7 +328,7 @@ class Array
 		return Matrix.columns(self.transpose)
 	end
 
-	# UNTESTED
+	# TESTED
 	def reduce_problem
 		columns = self.transpose.unshift(Array.new(self[0].length))
 		# otherwise array.unshift will change the row values of the self array
@@ -577,26 +577,26 @@ end
 
 	# end
 
-# [[5,8],[13,7],[4,9]].each do |v|
-# 	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
-# 	# print "%f\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
-# 	print "original array: #{v[0]}x#{v[1]}\n"
-# 	array.print_readable
-# 	print "solveable array:"
-# 	solution = make_matrix_solveable(array)
-# 	solution.print_readable
-# 	print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
-# 	print "degree of difference: #{(array.to_m - solution.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+) * 100 / array.flatten(1).inject(:+).to_f}\n"
+[[5,8],[13,7],[4,9],[8,8],[10,10],[9,13]].each do |v|
+	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
+	# print "%f\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
+	print "original array: #{v[0]}x#{v[1]}\n"
+	array.print_readable
+	print "solveable array:"
+	solution = make_matrix_solveable(array)
+	solution.print_readable
+	print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
+	print "degree of difference: #{(array.to_m - solution.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+) * 100 / array.flatten(1).inject(:+).to_f}\n"
 
-# 	assign_needy_zeros(solution)
-# 	print "assigned lonely zeros:"
-# 	solution.print_readable
+	assign_needy_zeros(solution)
+	print "assigned lonely zeros:"
+	solution.print_readable
 
-# 	print "solution?: #{solution.solution?}\n"
+	print "solution?: #{solution.solution?}\n"
 
-# 	print "problem reduced:"
-# 	solution.reduce_problem.print_readable
+	print "problem reduced:"
+	solution.reduce_problem.print_readable
 
-# 	print "--------------------------------------------------------\n"
-# end
+	print "--------------------------------------------------------\n"
+end
 
