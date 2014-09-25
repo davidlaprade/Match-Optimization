@@ -132,24 +132,14 @@ def assign_needy_zeros(mask)
 		# Making assignments to needy zeros will often prevent you from making assignments to other zeros. When there are enough needy zeros
 		# in a row/column to reach the maximum number of assignments for that row/column, then other zeros which occur in that row/column cannot
 		# be assigned. So, since these zeros can't be assigned, replace them with "X"s in the mask.
-
-		# first check to see if there are zeros in ROWS with the max number of assignments; add Xs accordingly
-		mask.map! {|row| row.count("!") == mask.max_row_assignment ?
-			row.map {|value| value == 0 ? "X":value} : row
-		}
-
-		# now do the same thing for COLUMNS
-		mask.replace(
-			mask.transpose.map {|col| col.count("!") == mask.max_col_assignment ?
-				col.map {|value| value == 0 ? "X":value} : col
-			}.transpose
-		)
+		mask.x_unassignables
 
 		# Getting rid of the zeros just described might reveal new "extended" needy zeros, AKA needy zeros "by extension"--i.e. zeros which end up being needy
 		# when the previous two classes of zeros are removed. Such zeros will have to be assigned, so repeat this process.
 	end
 	return mask
 end
+
 
 # ARRAY FRIENDLY + MANUALLY TESTED
 # passed an array object (Hungarian.working_matrix); minimally changes the array to return an array which supports complete assignment
@@ -783,6 +773,25 @@ class Array
 		raise 'Row does not exist in array' if row_id >= self.length || row_id < 0
 		raise 'Would result in negative value' if self[row_id].dup.map {|x| x.zero? ? value_to_subtract : x}.min < value_to_subtract
 		self[row_id].map! {|x| !x.zero? ? x-value_to_subtract : x }
+		return self
+	end
+
+	# UNTESTED
+	# called on Array object; checks to see if there are zeros in rows/columns that already have reached the max allowable assignments;
+	# if there are, it replaces those zeros with "X"s in the array, then returns the changed array object
+	def x_unassignables
+		# first check to see if there are zeros in ROWS with the max number of assignments; add Xs accordingly
+		self.map! {|row| row.count("!") == self.max_row_assignment ?
+			row.map {|value| value == 0 ? "X":value} : row
+		}
+
+		# now do the same thing for COLUMNS
+		self.replace(
+			self.transpose.map {|col| col.count("!") == self.max_col_assignment ?
+				col.map {|value| value == 0 ? "X":value} : col
+			}.transpose
+		)
+
 		return self
 	end
 
