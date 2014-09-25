@@ -281,17 +281,21 @@ class Array
 		return self.lonely_zeros.select {|coord| self[coord[0]].count(0)==1 && columns[coord[1]].count(0)==1}
 	end
 
-	# called on mask array object; reduces problem, assigns to mask based on reduction, returns finished mask assignment object;
-	# changes mask array
+	# called on mask array object AFTER calling assign_needy_zeros on it; reduces problem, assigns to mask based on reduction, 
+	# returns finished mask assignment object; changes mask array
 	def finish_assignment
 
 		while self.solution? != true
-			reduction = self.reduce_problem
 
+			# call on mask Array object; run reduce_problem on the object; use result to get
 			# get row/col with most assignments needed to reach min, in event of tie go with row, in event of tie go with left most
 			# output array [p,q] where p is the row/col ID and q is the number of needed assignments; I don't care if there are multiple
 			# arrays that are identical to [p,q]
-			def find_row_or_col_to_assign
+			def find_next_assignment
+				# reduce problem places arrays [p,q] where p is a row/col index, q is number of assignments needed to reach max
+				# we sort these arrays by descending q value
+				return self.reduce_problem.map {|row| row.select {|value| value.class == Array}}.flatten(1).sort { |x,y| y[1] <=> x[1] }
+			end
 
 			# passed array [p,q] where p is the row/col ID and q is the number of needed assignments; finds that value first in row 0 of
 			# the reduction array, and if not there then in col 0 of the reduction array; once found, it assigns to the zero with the fewest
@@ -302,6 +306,11 @@ class Array
 			reduction.find_row_or_col_to_assign.make_assignment
 		end
 	end
+
+		# UNTESTED
+	# called on Array object; checks to see if there are zeros in rows/columns that already have reached the max allowable assignments;
+	# if there are, it replaces those zeros with "X"s in the array, then returns the changed array object
+	def x_unassignables
 
 	-start with col/row that needs the most assignments to reach min
 		-ideally, sort zeros as follows: by num assignments needed, then by zeros nutered, then by original value
@@ -317,6 +326,8 @@ class Array
 [[1, 0], 6,      x,     0,     x,     x]
 [[2, 2], x,      !,     2,     !,     5]
 [[3, 0], 1,      2,     !,     3,     x]
+
+[["X",   [2,1], [3,1], [4,1], [5,1], [7,1]],[[0, 2], "!", "X", 1, 1, "!"],[[1, 0], 6, "X", 0, "X", "X"],[[2, 2], "X", "!", 2, "!", 5],[[3, 0], 1, 2, "!", 3, "X"]]
 
 ["X",   [1,1], [3,1], [4,0], [6,0]]
 [[0, 1],  x,     !,     x,     2]
