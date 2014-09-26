@@ -543,9 +543,10 @@ class Array
 		# reduce problem places arrays [p,q] where p is a row/col index, q is number of assignments needed to reach max
 		# we sort these arrays by descending q value
 
-		return self.reduce_problem.map {|row| 
+		array = self.reduce_problem.map {|row| 
 			row.select {|value| value.class == Array}
-		}.flatten(1).sort { |x,y| y[1] <=> x[1] }.first
+		}.flatten(1).sort { |x,y| y[1] <=> x[1] }
+		return array.select {|x| x[1] == array.first[1]}.sort_by {|x| x[0]}.first
 	end
 
 	# UNTESTED

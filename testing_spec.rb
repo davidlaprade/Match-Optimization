@@ -633,11 +633,32 @@ describe Array, ".make_next_assignment" do
 		expect(mask[5][3]).to eq("X")
 	end
 
+	it "x's out an unassignable zeros in both rows and columns after the assignment is made" do
+		mask = [[4, 1, 6, "!", 4, 1, 4],[0, 4, 8, 0, 8, 1, 7],[0, "X", 8, 3, 1, 0, 7],[6, 8, 3, 4, 3, 3, "!"],
+		[3, 1, 2, 7, "!", 2, 3],[4, "!", 4, 8, 4, 5, 6],[0, 6, "X", 0, 2, 4, 7],[1, "X", 2, 7, 2, "!", 1],
+		[7, 6, "!", 6, 2, 4, 5],[7, 6, 7, 7, "!", 4, 4],[1, "!", "X", 1, 3, 5, 4],[5, 8, "!", 4, 7, 6, 1],
+		["!", 6, 2, 5, 5, 2, 2]]
+		mask.make_next_assignment
+		expect(mask[1][0]).to eq("X")
+		expect(mask[6][3]).to eq("X")
+	end
+
 	it "assigns correct zero when a row requires most assignments, and it is the first zero in that row" do
+
 	end
 
 	it "assigns correct zero when a row requires most assignments, and it is not the first zero in that row,
 	 but it has the fewest zeros in its column, no ties" do
+ 		mask = [[4, 1, 6, "!", 4, 1, 4],[0, 4, 8, 0, 8, 1, 7],[0, "X", 8, 3, 1, 0, 7],[6, 8, 3, 4, 3, 3, "!"],
+		[3, 1, 2, 7, "!", 2, 3],[4, "!", 4, 8, 4, 5, 6],[0, 6, "X", 0, 2, 4, 7],[1, "X", 2, 7, 2, "!", 1],
+		[7, 6, "!", 6, 2, 4, 5],[7, 6, 7, 7, "!", 4, 4],[1, "!", "X", 1, 3, 5, 4],[5, 8, "!", 4, 7, 6, 1],
+		["!", 6, 2, 5, 5, 2, 2]]
+		expected_result = [[4, 1, 6, "!", 4, 1, 4],["X", 4, 8, "!", 8, 1, 7],[0, "X", 8, 3, 1, 0, 7],[6, 8, 3, 4, 3, 3, "!"],
+		[3, 1, 2, 7, "!", 2, 3],[4, "!", 4, 8, 4, 5, 6],[0, 6, "X", "X", 2, 4, 7],[1, "X", 2, 7, 2, "!", 1],
+		[7, 6, "!", 6, 2, 4, 5],[7, 6, 7, 7, "!", 4, 4],[1, "!", "X", 1, 3, 5, 4],[5, 8, "!", 4, 7, 6, 1],
+		["!", 6, 2, 5, 5, 2, 2]]
+		mask.make_next_assignment
+		expect(mask).to eq(expected_result)
 	end
 
 	it "assigns correct zero when a row requires most assignments, and is not the first zero in that row, and
@@ -671,9 +692,9 @@ describe Array, ".make_next_assignment" do
 	 it is tied with another zero in the column for the number of zeros in its row" do
 	end
 
-
-
 end
+
+describe Array, ".finish_assignment" do
 
 describe Array, ".needy_zeros" do
 
