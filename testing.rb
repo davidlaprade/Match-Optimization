@@ -556,6 +556,14 @@ class Array
 	# assignment to the mask; then it reruns assign to needy zeros (abstract sub-methods from the assign_needy_zeros method)
 	# returns array it was called on
 	def make_next_assignment
+		# ///////////////////////////////////////////////////////////////////
+		# PROBLEM
+		# once the target row/col has been selected, it should rank zeros by: (i) number of assignments needed in opposite dimension,
+		# (ii) number of zeros, (iii) nearness to top/left.
+		# Otherwise what can happen is you can end up filling columns/rows to the max, thereby x-ing out crucial zeros too fast
+		# ///////////////////////////////////////////////////////////////////////////
+
+
 		# exit the method if reduce_problem can find no issues
 		reduction = self.reduce_problem
 		return self if reduction == [["X"]]
@@ -567,12 +575,13 @@ class Array
 		# first try to find the assignment in rows
 		reduction_cols.first.each.with_index do |value, row_id|
 			if value == next_assignment
-				# find each zero in the target row; output array of arrays [p,q] where p is the column ID of a zero in the
-				# target row and q is the number of other zeros in its column; the [p,q] arrays are then sorted by 
-				# ascending number of zeros in column
+				# find each zero in the target row; output array of arrays [p,q,r] where p is the column ID of a zero in the
+				# target row, q is the number of other zeros in its column, and r is the number of needed assignments in that col; 
+				# the [p,q,r] arrays are then sorted by ascending q value, then descending r value, then ascending p value
 				zeros_in_row = reduction[row_id].each.with_index.with_object([]) {|(val,col_id), obj| 
-					obj << [col_id, reduction_cols[col_id].count(0) - 1] if val == 0
+					obj << [col_id, reduction_cols[col_id].count(0) - 1, reduction[0][col_id][1]] if val == 0
 				}.sort_by {|x| x[1]}
+				zeros_in_row = zeros_in_row.select {|x| x[1] == zeros_in_row.first[1]}.sort {|x,y| y[2]<=>x[2]}
 
 				# now get the coordinates of the zero in the mask array
 				x = reduction[row_id][0][0]
@@ -593,12 +602,13 @@ class Array
 		if check == self
 			reduction.first.each.with_index do |value, col_id|
 				if value == next_assignment
-					# find each zero in the target column; output array of arrays [p,q] where p is the row ID of a zero in the
-					# target column and q is the number of other zeros in its row; the [p,q] arrays are then sorted by 
-					# ascending number of zeros in row
+					# find each zero in the target column; output array of arrays [p,q,r] where p is the row ID of a zero in the
+					# target column, q is the number of other zeros in its row, and r is the number of needed assignments in that row; 
+					# the [p,q,r] arrays are then sorted by ascending q value, then descending r value, then ascending p value
 					zeros_in_column = reduction_cols[col_id].each.with_index.with_object([]) {|(val,row_id), obj| 
-						obj << [row_id, reduction[row_id].count(0) - 1] if val == 0
+						obj << [row_id, reduction[row_id].count(0) - 1, reduction[row_id][0][1]] if val == 0
 					}.sort_by {|x| x[1]}
+					zeros_in_column = zeros_in_column.select {|x| x[1] == zeros_in_column.first[1]}.sort {|x,y| y[2]<=>x[2]}
 
 					# now get the coordinates of the zero in the mask array
 					x = reduction[zeros_in_column.first[0]][0][0]
@@ -721,4 +731,18 @@ end
 
 # 	print "--------------------------------------------------------\n"
 # end
+
+matrix = [[9, 7, 1, 5, 1, 3, 8, 8],[1, 4, 7, 1, 2, 5, 2, 4],[6, 2, 3, 6, 9, 8, 7, 7],[1, 8, 3, 1, 5, 3, 4, 4],
+		[5, 4, 3, 7, 8, 2, 7, 7],[5, 9, 3, 5, 1, 2, 7, 5],[7, 6, 5, 6, 9, 8, 3, 4],[9, 1, 2, 4, 2, 3, 8, 8],
+		[9, 2, 7, 5, 3, 5, 9, 6],[2, 2, 3, 1, 4, 1, 5, 4],[1, 7, 2, 7, 3, 1, 1, 6]]
+
+
+make_matrix_solveable(matrix)
+			assign_needy_zeros(matrix).finish_assignment
+			solution = matrix.solution?
+			matrix.print_readable if solution != true
+			expect(solution).to eq(true)
+
+
+
 
