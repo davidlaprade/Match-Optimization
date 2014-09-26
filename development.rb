@@ -311,17 +311,19 @@ class Array
 				# first try to find the assignment in rows
 				reduction_cols.first.each.with_index do |value, row_id|
 					if value == next_assignment
-						# you've found the row to change in the reduction array
-						# assign to the zero with the fewest othre zeros in its column in the reduction array
-						# now assign that zero in the self/mask array
-
-						# find each zero in the target row; output array of arrays [p,q] where p is the column ID of the zero in the
-						# target row of the reduction array and q is the number of other zeros in that column; [p,q] arrays are sorted by 
+						# find each zero in the target row; output array of arrays [p,q] where p is the column ID of a zero in the
+						# target row and q is the number of other zeros in its column; the [p,q] arrays are then sorted by 
 						# ascending number of zeros in column
-						zeros_in_rows = reduction[row_id].each.with_index.with_object([]) {|(val,col_id) obj| 
-							obj << [col_id, reduction_cols.count(0) - 1] if val == 0
+						zeros_in_row = reduction[row_id].each.with_index.with_object([]) {|(val,col_id) obj| 
+							obj << [col_id, reduction_cols[col_id].count(0) - 1] if val == 0
 						}.sort_by {|x| x[1]}
 
+						# now get the coordinates of the zero in the mask array
+						x = reduction[row_id][0][0]
+						y = reduction[0][zeros_in_row.first[0]][0]
+
+						# now assign the zero in the mask array
+						self.replace(self[x][y] = "!")
 
 						# once you've made a change you want this loop to end
 						break
@@ -331,15 +333,27 @@ class Array
 				# if you've changed something in the self array, you want to skip this part, since you want to x_unassignables and repeat
 				# before you make another assignment
 				if check == self
-					reduction.first.each do |value|
+					reduction.first.each.with_index do |value, col_id|
 						if value == next_assignment
-							# you've found the column to change; so invert the reduction array and change it
-							# now change it in the self array as well
+							# find each zero in the target column; output array of arrays [p,q] where p is the row ID of a zero in the
+							# target column and q is the number of other zeros in its row; the [p,q] arrays are then sorted by 
+							# ascending number of zeros in row
+							zeros_in_column = reduction_cols[col_id].each.with_index.with_object([]) {|(val,row_id) obj| 
+								obj << [row_id, reduction[row_id].count(0) - 1] if val == 0
+							}.sort_by {|x| x[1]}
+
+							# now get the coordinates of the zero in the mask array
+							x = reduction[zeros_in_column.first[0]][0][0]
+							y = reduction[0][col_id][0]
+
+							# now assign the zero in the mask array
+							self.replace(self[x][y] = "!")
+
+							# once you've made a change you want this loop to end
 							break
 						end
 					end
 				end
-
 
 
 				self.x_unassignables
