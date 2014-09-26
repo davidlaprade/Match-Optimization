@@ -500,6 +500,97 @@ class Array
 		print "\n"
 	end
 
+
+	# UNTESTED
+	# called on mask array object AFTER calling assign_needy_zeros on it; reduces problem, assigns to mask based on reduction, 
+	# returns finished mask assignment object; changes mask array
+	def finish_assignment
+		# repeat until there are no more zeros in the mask array
+		while self.flatten(1).include?(0) == true
+			self.make_assignment(self.next_assignment)
+
+			# making the assignment might have revealed new needy zeros, assign to them
+			assign_needy_zeros(self)
+		end
+	end
+
+
+	# UNTESTED
+	# call on mask Array object; run reduce_problem on the object; use result to get
+	# row/col with most assignments needed to reach min, in event of tie choice is random;
+	# outputs array [p,q] where p is the row/col ID and q is the number of needed assignments; 
+	# I don't care if there are multiple arrays that are identical to [p,q]
+	def next_assignment
+		# reduce problem places arrays [p,q] where p is a row/col index, q is number of assignments needed to reach max
+		# we sort these arrays by descending q value
+
+		return self.reduce_problem.map {|row| 
+			row.select {|value| value.class == Array}
+		}.flatten(1).sort { |x,y| y[1] <=> x[1] }.first
+	end
+
+	# UNTESTED
+	# called on mask Array object; passed array [p,q] where p is a row/col ID and q is the number of needed assignments; finds that value first in row 0 of
+	# the reduction array, and if not there then in col 0 of the reduction array; once found, it assigns to the zero with the fewest
+	# other zeros in its respective row/col, in event of tie it assigns to zero closest to the top/left; then it makes the corresponding
+	# assignment to the mask; then it reruns assign to needy zeros (abstract sub-methods from the assign_needy_zeros method)
+	def make_assignment(next_assignment)
+		reduction = self.reduce problem
+		check = self.dup
+		reduction_cols = reduction.transpose
+
+		# first try to find the assignment in rows
+		reduction_cols.first.each.with_index do |value, row_id|
+			if value == next_assignment
+				# find each zero in the target row; output array of arrays [p,q] where p is the column ID of a zero in the
+				# target row and q is the number of other zeros in its column; the [p,q] arrays are then sorted by 
+				# ascending number of zeros in column
+				zeros_in_row = reduction[row_id].each.with_index.with_object([]) {|(val,col_id), obj| 
+					obj << [col_id, reduction_cols[col_id].count(0) - 1] if val == 0
+				}.sort_by {|x| x[1]}
+
+				# now get the coordinates of the zero in the mask array
+				x = reduction[row_id][0][0]
+				y = reduction[0][zeros_in_row.first[0]][0]
+
+				# now assign the zero in the mask array
+				self.replace(self[x][y] = "!")
+
+				# once you've made a change you want this loop to end
+				break
+			end
+		end
+
+		# if you've changed something in the self array, you want to skip this part, since you want to x_unassignables and repeat
+		# before you make another assignment
+		if check == self
+			reduction.first.each.with_index do |value, col_id|
+				if value == next_assignment
+					# find each zero in the target column; output array of arrays [p,q] where p is the row ID of a zero in the
+					# target column and q is the number of other zeros in its row; the [p,q] arrays are then sorted by 
+					# ascending number of zeros in row
+					zeros_in_column = reduction_cols[col_id].each.with_index.with_object([]) {|(val,row_id), obj| 
+						obj << [row_id, reduction[row_id].count(0) - 1] if val == 0
+					}.sort_by {|x| x[1]}
+
+					# now get the coordinates of the zero in the mask array
+					x = reduction[zeros_in_column.first[0]][0][0]
+					y = reduction[0][col_id][0]
+
+					# now assign the zero in the mask array
+					self.replace(self[x][y] = "!")
+
+					# once you've made a change you want this loop to end
+					break
+				end
+			end
+		end
+
+		# making an assignment above may have rendered some zeros unassignable, replace those zeros with x's
+		self.x_unassignables
+	end
+
+
 end
 
 
@@ -577,26 +668,26 @@ end
 
 	# end
 
-[[5,8],[13,7],[4,9],[8,8],[10,10],[9,13],[10,42]].each do |v|
-	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
-	# print "%f\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
-	print "original array: #{v[0]}x#{v[1]}\n"
-	array.print_readable
-	print "solveable array:"
-	solution = make_matrix_solveable(array)
-	solution.print_readable
-	print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
-	print "degree of difference: #{(array.to_m - solution.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+) * 100 / array.flatten(1).inject(:+).to_f}\n"
+# [[5,8],[13,7],[4,9],[8,8],[10,10],[9,13],[10,42]].each do |v|
+# 	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
+# 	# print "%f\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
+# 	print "original array: #{v[0]}x#{v[1]}\n"
+# 	array.print_readable
+# 	print "solveable array:"
+# 	solution = make_matrix_solveable(array)
+# 	solution.print_readable
+# 	print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
+# 	print "degree of difference: #{(array.to_m - solution.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+) * 100 / array.flatten(1).inject(:+).to_f}\n"
 
-	assign_needy_zeros(solution)
-	print "assigned lonely zeros:"
-	solution.print_readable
+# 	assign_needy_zeros(solution)
+# 	print "assigned lonely zeros:"
+# 	solution.print_readable
 
-	print "solution?: #{solution.solution?}\n"
+# 	print "solution?: #{solution.solution?}\n"
 
-	print "problem reduced:"
-	solution.reduce_problem.print_readable
+# 	print "problem reduced:"
+# 	solution.reduce_problem.print_readable
 
-	print "--------------------------------------------------------\n"
-end
+# 	print "--------------------------------------------------------\n"
+# end
 

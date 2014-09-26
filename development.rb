@@ -253,27 +253,6 @@ class Array
 		return self.transpose.length
 	end
 
-	# UNTESTED
-	# called on mask Array object; replaces unassignable zeros with "X"s, returns corrected array;
-	def cover_unassignables
-		# The idea is this: when there are enough assignments in a row/column to reach the maximum permissible, then other zeros 
-		# which occur in that row/column cannot be assigned. So, since these zeros can't be assigned, replace them with "X"s
-
-		# first check to see if there are zeros in ROWS with the max number of assignments; add Xs accordingly
-		self.map! {|row| row.count("!") == self.max_row_assignment ?
-			row.map {|value| value == 0 ? "X":value} : row
-		}
-
-		# now do the same thing for COLUMNS
-		self.replace(
-			self.transpose.map {|col| col.count("!") == self.max_col_assignment ?
-				col.map {|value| value == 0 ? "X":value} : col
-			}.transpose
-		)
-
-		return self
-	end
-
 	# called on array object; returns array of coordinates [p,q] such that each self[p][q] is an extra-lonely zero
 	# an "extra lonely" zero is one which occurs as the only zero in both its row AND column
 	def extra_lonely_zeros
@@ -281,149 +260,94 @@ class Array
 		return self.lonely_zeros.select {|coord| self[coord[0]].count(0)==1 && columns[coord[1]].count(0)==1}
 	end
 
+	# UNTESTED
 	# called on mask array object AFTER calling assign_needy_zeros on it; reduces problem, assigns to mask based on reduction, 
 	# returns finished mask assignment object; changes mask array
 	def finish_assignment
-
-		while self.solution? != true
-
-			# call on mask Array object; run reduce_problem on the object; use result to get
-			# row/col with most assignments needed to reach min, in event of tie choice is random;
-			# outputs array [p,q] where p is the row/col ID and q is the number of needed assignments; 
-			# I don't care if there are multiple arrays that are identical to [p,q]
-			def next_assignment
-				# reduce problem places arrays [p,q] where p is a row/col index, q is number of assignments needed to reach max
-				# we sort these arrays by descending q value
-				return self.reduce_problem.map {|row| 
-					row.select {|value| value.class == Array}
-				}.flatten(1).sort { |x,y| y[1] <=> x[1] }
-			end
-
-			# called on mask Array object; passed array [p,q] where p is a row/col ID and q is the number of needed assignments; finds that value first in row 0 of
-			# the reduction array, and if not there then in col 0 of the reduction array; once found, it assigns to the zero with the fewest
-			# other zeros in its respective row/col, in event of tie it assigns to zero closest to the top/left; then it makes the corresponding
-			# assignment to the mask; then it reruns assign to needy zeros (abstract sub-methods from the assign_needy_zeros method)
-			def make_assignment(next_assignment)
-				reduction = self.reduce problem
-				check = self.dup
-				reduction_cols = reduction.transpose
-
-				# first try to find the assignment in rows
-				reduction_cols.first.each.with_index do |value, row_id|
-					if value == next_assignment
-						# find each zero in the target row; output array of arrays [p,q] where p is the column ID of a zero in the
-						# target row and q is the number of other zeros in its column; the [p,q] arrays are then sorted by 
-						# ascending number of zeros in column
-						zeros_in_row = reduction[row_id].each.with_index.with_object([]) {|(val,col_id) obj| 
-							obj << [col_id, reduction_cols[col_id].count(0) - 1] if val == 0
-						}.sort_by {|x| x[1]}
-
-						# now get the coordinates of the zero in the mask array
-						x = reduction[row_id][0][0]
-						y = reduction[0][zeros_in_row.first[0]][0]
-
-						# now assign the zero in the mask array
-						self.replace(self[x][y] = "!")
-
-						# once you've made a change you want this loop to end
-						break
-					end
-				end
-
-				# if you've changed something in the self array, you want to skip this part, since you want to x_unassignables and repeat
-				# before you make another assignment
-				if check == self
-					reduction.first.each.with_index do |value, col_id|
-						if value == next_assignment
-							# find each zero in the target column; output array of arrays [p,q] where p is the row ID of a zero in the
-							# target column and q is the number of other zeros in its row; the [p,q] arrays are then sorted by 
-							# ascending number of zeros in row
-							zeros_in_column = reduction_cols[col_id].each.with_index.with_object([]) {|(val,row_id) obj| 
-								obj << [row_id, reduction[row_id].count(0) - 1] if val == 0
-							}.sort_by {|x| x[1]}
-
-							# now get the coordinates of the zero in the mask array
-							x = reduction[zeros_in_column.first[0]][0][0]
-							y = reduction[0][col_id][0]
-
-							# now assign the zero in the mask array
-							self.replace(self[x][y] = "!")
-
-							# once you've made a change you want this loop to end
-							break
-						end
-					end
-				end
-
-
-				self.x_unassignables
-			end
-
-
+		# repeat until there are no more zeros in the mask array
+		while self.flatten(1).include?(0) == true
 			self.make_assignment(self.next_assignment)
+
+			# making the assignment might have revealed new needy zeros, assign to them
+			assign_needy_zeros(self)
 		end
 	end
 
-		# UNTESTED
-	# called on Array object; checks to see if there are zeros in rows/columns that already have reached the max allowable assignments;
-	# if there are, it replaces those zeros with "X"s in the array, then returns the changed array object
-	def x_unassignables
 
-	-start with col/row that needs the most assignments to reach min
-		-ideally, sort zeros as follows: by num assignments needed, then by zeros nutered, then by original value
-	-assign to zero in that col/row which occurs with the fewest other zeros (i.e. minimize the zeros youre nutering)
-	-once assignment is made, X-out any zeros that are now in a row/col with the max allowable
-	-now check to see if an assignment is forced, if so, assign to it
-		-repeat this process until no more assignments are forced
-	-repeat
-	-continue until there are no more zeros (i.e. every zero has either been assigned or x-ed out)
-
-["X",   [2,1], [3,1], [4,1], [5,1], [7,1]]
-[[0, 2], !,      x,     1,     1,     !]
-[[1, 0], 6,      x,     0,     x,     x]
-[[2, 2], x,      !,     2,     !,     5]
-[[3, 0], 1,      2,     !,     3,     x]
-
-[["X",   [2,1], [3,1], [4,1], [5,1], [7,1]],[[0, 2], "!", "X", 1, 1, "!"],[[1, 0], 6, "X", 0, "X", "X"],[[2, 2], "X", "!", 2, "!", 5],[[3, 0], 1, 2, "!", 3, "X"]]
-
-["X",   [1,1], [3,1], [4,0], [6,0]]
-[[0, 1],  x,     !,     x,     2]
-[[3, 1],  3,     4,     !,     x]
-[[5, 1],  x,     7,     8,     !]
-[[8, 1],  !,     x,     4,     2]
-[[10,1],  !,     x,     x,     1]
-
-["X",   [6, 1], [7, 1]]
-[[1, 0],  !,       x]
-[[3, 1],  x,       !]
-
-["X",   [0, 1], [3, 1], [6, 1], [7, 1], [8, 1]]
-[[0, 1],   !,     4,       0,      3,      1]
-[[1, 1],   6,     6,       6,      !,      x]
-[[2, 1],   3,     !,       4,      2,      x]
-[[5, 1],   x,     x,       !,      x,      x]
-[[9, 1],   7,     7,       3,      x,      !]
-
-["X",   [1, 1], [2, 1], [3, 1], [5, 1]]
-[[0, 1], 7,       5,      !,      x]
-[[1, 1], !,       x,      7,      4]
-[[5, 1], x,       !,      1,      1]
-[[7, 1], 1,       3,      x,      !]
-
-["X",   [7, 0], [8, 0], [18, 0], [19, 0], [25, 0], [28, 0], [29, 0], [30, 0], [31, 0], [34, 0], [36, 0], [37, 0], [38, 1], [40, 0]]
-[[0, 0], !,       !,       !,       2,        3,      7,       x,       !,       3,       6,       5,       8,       8,       3]
-[[1, 0], x,       4,       7,       !,        5,      6,       !,       2,       6,       !,       4,       7,       5,       4]
-[[2, 0], 5,       x,       x,       x,        7,      2,       3,       3,       x,       2,       x,       4,       !,       1]
-[[3, 0], 7,       x,       8,       6,        6,      x,       1,       4,       6,       2,       4,       x,       5,       1]
-[[5, 0], 1,       8,       5,       4,        x,      x,       5,       2,       8,       x,       5,       !,       3,       !]
-[[8, 0], 6,       x,       3,       x,        !,      !,       x,       x,       6,       4,       !,       6,       5,       7]
-[[9, 0], 2,       6,       5,       1,        1,      2,       x,       x,       !,       2,       6,       8,       x,       x]
-
-
-
-
-
+	# UNTESTED
+	# call on mask Array object; run reduce_problem on the object; use result to get
+	# row/col with most assignments needed to reach min, in event of tie choice is random;
+	# outputs array [p,q] where p is the row/col ID and q is the number of needed assignments; 
+	# I don't care if there are multiple arrays that are identical to [p,q]
+	def next_assignment
+		# reduce problem places arrays [p,q] where p is a row/col index, q is number of assignments needed to reach max
+		# we sort these arrays by descending q value
+		return self.reduce_problem.map {|row| 
+			row.select {|value| value.class == Array}
+		}.flatten(1).sort { |x,y| y[1] <=> x[1] }.first
 	end
+
+	# UNTESTED
+	# called on mask Array object; passed array [p,q] where p is a row/col ID and q is the number of needed assignments; finds that value first in row 0 of
+	# the reduction array, and if not there then in col 0 of the reduction array; once found, it assigns to the zero with the fewest
+	# other zeros in its respective row/col, in event of tie it assigns to zero closest to the top/left; then it makes the corresponding
+	# assignment to the mask; then it reruns assign to needy zeros (abstract sub-methods from the assign_needy_zeros method)
+	def make_assignment(next_assignment)
+		reduction = self.reduce problem
+		check = self.dup
+		reduction_cols = reduction.transpose
+
+		# first try to find the assignment in rows
+		reduction_cols.first.each.with_index do |value, row_id|
+			if value == next_assignment
+				# find each zero in the target row; output array of arrays [p,q] where p is the column ID of a zero in the
+				# target row and q is the number of other zeros in its column; the [p,q] arrays are then sorted by 
+				# ascending number of zeros in column
+				zeros_in_row = reduction[row_id].each.with_index.with_object([]) {|(val,col_id), obj| 
+					obj << [col_id, reduction_cols[col_id].count(0) - 1] if val == 0
+				}.sort_by {|x| x[1]}
+
+				# now get the coordinates of the zero in the mask array
+				x = reduction[row_id][0][0]
+				y = reduction[0][zeros_in_row.first[0]][0]
+
+				# now assign the zero in the mask array
+				self.replace(self[x][y] = "!")
+
+				# once you've made a change you want this loop to end
+				break
+			end
+		end
+
+		# if you've changed something in the self array, you want to skip this part, since you want to x_unassignables and repeat
+		# before you make another assignment
+		if check == self
+			reduction.first.each.with_index do |value, col_id|
+				if value == next_assignment
+					# find each zero in the target column; output array of arrays [p,q] where p is the row ID of a zero in the
+					# target column and q is the number of other zeros in its row; the [p,q] arrays are then sorted by 
+					# ascending number of zeros in row
+					zeros_in_column = reduction_cols[col_id].each.with_index.with_object([]) {|(val,row_id), obj| 
+						obj << [row_id, reduction[row_id].count(0) - 1] if val == 0
+					}.sort_by {|x| x[1]}
+
+					# now get the coordinates of the zero in the mask array
+					x = reduction[zeros_in_column.first[0]][0][0]
+					y = reduction[0][col_id][0]
+
+					# now assign the zero in the mask array
+					self.replace(self[x][y] = "!")
+
+					# once you've made a change you want this loop to end
+					break
+				end
+			end
+		end
+
+		# making an assignment above may have rendered some zeros unassignable, replace those zeros with x's
+		self.x_unassignables
+	end
+
 
 	# called on submatrix Array; finds columns that do not contain zeros; outputs an ordered array of ALL arrays [p,q] where 
 	# p is the index of a row in the submatrix, and q is a value in that row such that no zeros occur in that value's column

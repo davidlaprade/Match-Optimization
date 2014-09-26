@@ -530,9 +530,62 @@ describe Array, ".reduce_problem" do
 			[[23,1], 0, 4, 0, 3],[[26,1], 0, 1, 0, 5],[[28,1], 6, 0, 2, 0]])
 	end
 
+end
+
+describe Array, ".next_assignment" do
+	# call on mask Array object; run reduce_problem on the object; use result to get
+	# row/col with most assignments needed to reach min, in event of tie choice is random;
+	# outputs array [p,q] where p is the row/col ID and q is the number of needed assignments; 
+	# I don't care if there are multiple arrays that are identical to [p,q]
+
+	it "does not change the array it is called on" do
+		mask = [[3, 3, 0, 3, 7, 2, 2, 6, 7, 2, "!", 4, 5, 4, 5, 1, 3, 5, 3, 0, "!", "!", 0, 6, 1],
+			    [7, 2, 7, 4, 6, "!", 5, 0, 6, 5, 2, "!", 5, "!", 6, 3, 2, 0, 3, 0, 1, 3, 5, 0, 0],
+			    [2, "!", 6, "!", 3, 8, 5, 4, 5, "X", 1, 1, "!", 1, 7, "X", "!", 6, "!", 1, "X", 5, 3, 6, 4],
+			    ["!", 3, 7, 1, 1, 6, 7, 0, "!", 0, 4, 2, 7, 3, 2, "!", 4, 0, 3, 3, 6, 1, 0, 1, 5],
+			    [2, 7, 0, 7, "!", 1, "!", 1, 5, 0, 3, 5, 6, 2, "!", 4, 5, 1, 7, 3, 6, 4, 7, 0, 0]]
+		original = mask.dup
+		mask.next_assignment
+		expect(mask).to eq(original)
+	end
+
+	it "returns nothing when called on a solved mask" do
+		mask = [[3, 2, 4, "!", 5, 2, 4, 4, 7, 7],["!", 4, 1, 2, 2, "X", 5, 2, 2, 5],[7, 7, "X", 1, 1, 1, 4, 5, 4, "!"],
+		[6, 2, "!", 2, 5, 2, 1, 1, 7, 3],["X", 5, "X", 1, "!", 2, 5, 3, 5, "X"],["X", 4, 7, 1, 1, 2, 7, "!", "X", 7],
+		[2, 4, 1, 3, 6, "!", 5, 4, 6, "X"],[8, "!", 3, 2, 5, "X", 5, 4, 1, 7],[4, 1, 5, 3, 2, 2, "!", 1, "X", 6],
+		[6, 6, "X", 8, 4, 4, 8, 7, "!", 3]]
+		expect(mask.next_assignment).to eq(nil)
+	end
+
+	# these are taken care of by the tests below
+	# it "outputs the correct array when it occurs in a row" do
+	# end
+
+	# it "outputs the correct array when it occurs in a column" do
+	# end
+
+	it "outputs correct array when there are three different values for needed assignemnts, and a column requires the most assignments" do
+		mask = [["X", 6, "!", "X", 1, 3, 6],[3, 5, 7, 2, 4, "!", 6],[6, 3, 4, 5, 1, "!", 3],["!", 1, 2, 6, 1, 1, 6],
+			[3, 6, 5, 4, 1, 6, "!"],[3, 0, 3, 0, 1, 5, 4],[7, "X", "!", "X", 4, 6, "X"],[7, 5, 4, 7, 7, "!", 3],
+			[7, 1, 6, "!", 4, 8, 8],[6, "!", 5, 7, 6, 4, 6],[2, "X", "!", "X", 1, "X", 2],["!", "X", 3, 3, "X", 6, 6],
+			[1, 1, 1, 3, "!", 2, 4],["!", 2, 2, 5, 1, 6, 7],[6, 0, 2, 7, 2, 6, 0],[3, 6, 2, 0, 0, 8, 0],["!", 2, 5, 3, 5, 2, "X"],
+			[2, 3, 7, "!", 4, 6, 6],[4, 2, 1, 6, 3, 4, "!"],[1, 6, 2, "!", 7, 4, 6],[3, 4, 3, "!", 8, 8, 4],
+			[6, 1, 3, 6, 6, "!", 1],[4, "!", 3, 8, 1, "X", 7],[7, 0, 5, 4, 0, 1, 3],[5, 2, "!", 1, 4, "X", 7],
+			[4, 4, 3, 3, 3, "!", 2],[4, 0, 4, 1, 0, "X", 5],[2, 2, 5, 4, "!", 5, 2],[5, 6, 7, 0, 2, 2, 0]]
+		expect(mask.next_assignment).to eq([1,2])
+	end
+
+	it "outputs correct array when dimensions are uneven, and a row requires the most assignments" do
+		mask = [[5, 5, "X", 3, 4, 2, 2, 6, 3, 1, 7, 4, 0, 5, 3, 6, 0, 5, "!", 0, 0, 2, 2, "!", 3, 0, "!"],
+			    [6, 2, "!", 3, "!", 1, "!", 4, 6, "!", 6, 2, 4, 7, 2, 4, 1, 3, 2, 2, 3, 1, "!", 1, 5, 2, 4],
+			    [4, 3, 6, 0, 1, 5, 7, 4, "!", 5, "!", "!", 8, 6, 6, 7, 0, 4, 3, 3, 8, 4, 2, 3, "!", 5, 1],
+			    [4, "!", "X", 0, "X", "!", 5, "!", 6, "X", 8, 3, 0, 5, 3, 4, 0, "!", 2, 0, 0, 4, "X", 1, 1, 0, 3],
+			    ["!", 6, 2, 5, 6, 2, 7, 1, 1, "X", 7, 3, 7, "!", "!", "!", 7, 1, 2, 1, 3, "!", "X", 4, 1, 2, 6]]
+		expect(mask.next_assignment).to eq([0,2])
+	end		   
 
 
-
+	
 end
 
 describe Array, ".needy_zeros" do
