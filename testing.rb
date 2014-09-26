@@ -553,10 +553,11 @@ class Array
 	# the reduction array, and if not there then in col 0 of the reduction array; once found, it assigns to the zero with the fewest
 	# other zeros in its respective row/col, in event of tie it assigns to zero closest to the top/left; then it makes the corresponding
 	# assignment to the mask; then it reruns assign to needy zeros (abstract sub-methods from the assign_needy_zeros method)
+	# returns array it was called on
 	def make_next_assignment
 		# exit the method if reduce_problem can find no issues
 		reduction = self.reduce_problem
-		return "finished" if reduction == [["X"]]
+		return self if reduction == [["X"]]
 
 		reduction_cols = reduction.transpose
 		next_assignment = self.next_assignment
@@ -615,6 +616,8 @@ class Array
 
 		# making an assignment above may have rendered some zeros unassignable, replace those zeros with x's
 		self.x_unassignables
+
+		return self
 	end
 
 
