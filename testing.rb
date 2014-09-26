@@ -426,6 +426,25 @@ class Array
 		return self
 	end
 
+	# UNTESTED
+	# called on Array object; checks to see if there are zeros in rows/columns that already have reached the max allowable assignments;
+	# if there are, it replaces those zeros with "X"s in the array, then returns the changed array object
+	def x_unassignables
+		# first check to see if there are zeros in ROWS with the max number of assignments; add Xs accordingly
+		self.map! {|row| row.count("!") == self.max_row_assignment ?
+			row.map {|value| value == 0 ? "X":value} : row
+		}
+
+		# now do the same thing for COLUMNS
+		self.replace(
+			self.transpose.map {|col| col.count("!") == self.max_col_assignment ?
+				col.map {|value| value == 0 ? "X":value} : col
+			}.transpose
+		)
+
+		return self
+	end
+
 	# ARRAY FRIENDLY
 	def zero_each_row
 		while !self.select {|row| row.count(0) < self.min_row_assignment}.empty?
@@ -507,7 +526,7 @@ class Array
 	def finish_assignment
 		# repeat until there are no more zeros in the mask array
 		while self.flatten(1).include?(0) == true
-			self.make_assignment(self.next_assignment)
+			self.make_next_assignment
 
 			# making the assignment might have revealed new needy zeros, assign to them
 			assign_needy_zeros(self)
@@ -515,7 +534,7 @@ class Array
 	end
 
 
-	# UNTESTED
+	# TESTED
 	# call on mask Array object; run reduce_problem on the object; use result to get
 	# row/col with most assignments needed to reach min, in event of tie choice is random;
 	# outputs array [p,q] where p is the row/col ID and q is the number of needed assignments; 
@@ -530,14 +549,18 @@ class Array
 	end
 
 	# UNTESTED
-	# called on mask Array object; passed array [p,q] where p is a row/col ID and q is the number of needed assignments; finds that value first in row 0 of
+	# called on mask Array object; gets array [p,q] from next_assignment, where p is a row/col ID and q is the number of needed assignments; finds that value first in row 0 of
 	# the reduction array, and if not there then in col 0 of the reduction array; once found, it assigns to the zero with the fewest
 	# other zeros in its respective row/col, in event of tie it assigns to zero closest to the top/left; then it makes the corresponding
 	# assignment to the mask; then it reruns assign to needy zeros (abstract sub-methods from the assign_needy_zeros method)
-	def make_assignment(next_assignment)
-		reduction = self.reduce problem
-		check = self.dup
+	def make_next_assignment
+		# exit the method if reduce_problem can find no issues
+		reduction = self.reduce_problem
+		return "finished" if reduction == [["X"]]
+
 		reduction_cols = reduction.transpose
+		next_assignment = self.next_assignment
+		check = self.dup
 
 		# first try to find the assignment in rows
 		reduction_cols.first.each.with_index do |value, row_id|
@@ -554,7 +577,9 @@ class Array
 				y = reduction[0][zeros_in_row.first[0]][0]
 
 				# now assign the zero in the mask array
-				self.replace(self[x][y] = "!")
+				rep = self.dup
+				rep[x][y] = "!"
+				self.replace(rep)
 
 				# once you've made a change you want this loop to end
 				break
@@ -578,7 +603,9 @@ class Array
 					y = reduction[0][col_id][0]
 
 					# now assign the zero in the mask array
-					self.replace(self[x][y] = "!")
+					rep = self.dup
+					rep[x][y] = "!"
+					self.replace(rep)
 
 					# once you've made a change you want this loop to end
 					break

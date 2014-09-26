@@ -583,9 +583,70 @@ describe Array, ".next_assignment" do
 			    ["!", 6, 2, 5, 6, 2, 7, 1, 1, "X", 7, 3, 7, "!", "!", "!", 7, 1, 2, 1, 3, "!", "X", 4, 1, 2, 6]]
 		expect(mask.next_assignment).to eq([0,2])
 	end		   
-
-
 	
+end
+
+describe Array, ".make_next_assignment" do
+	# called on mask Array object; gets array [p,q] from next_assignment, where p is a row/col ID and q is the number of needed assignments; finds that value first in row 0 of
+	# the reduction array, and if not there then in col 0 of the reduction array; once found, it assigns to the zero with the fewest
+	# other zeros in its respective row/col, in event of tie it assigns to zero closest to the top/left; then it makes the corresponding
+	# assignment to the mask; then it reruns assign to needy zeros (abstract sub-methods from the assign_needy_zeros method)
+
+	it "changes the array it is called on when mask is not a complete assignment" do
+		mask = [[6, 1, 8, "!", 2],[3, 2, 2, "!", 5],["X", 3, 1, 3, "!"],[1, 7, 4, 2, "!"],[8, "!", 2, 7, 7],[4, 0, 0, 2, 4],
+			[1, 3, 2, "!", 1],[8, 0, 6, 0, 2],[4, 4, "!", 6, 4],[5, "X", "X", 1, "!"],[5, 4, 0, 0, 5],[5, 2, 3, 1, "!"],
+			[2, 0, 2, 0, 4],[4, 0, 2, 0, 2],["X", 7, 7, "!", 4],["X", 2, 1, 5, "!"],["!", 1, 3, 2, 3],["!", 2, 7, 5, 4],
+			[1, 0, 3, 0, 3],["!", 1, 1, 4, 6],["!", 4, 6, 2, 3],["X", 6, "!", 1, 1],[6, 0, 0, 0, 5],["!", 3, 4, 6, 1],
+			[4, 1, "!", 3, 4]]
+		original = mask.dup
+		mask.make_next_assignment
+		expect(mask).to_not eq(original)
+	end
+
+	it "returns 'finished' when called on a solved mask" do
+		mask = [[3, 2, 4, "!", 5, 2, 4, 4, 7, 7],["!", 4, 1, 2, 2, "X", 5, 2, 2, 5],[7, 7, "X", 1, 1, 1, 4, 5, 4, "!"],
+		[6, 2, "!", 2, 5, 2, 1, 1, 7, 3],["X", 5, "X", 1, "!", 2, 5, 3, 5, "X"],["X", 4, 7, 1, 1, 2, 7, "!", "X", 7],
+		[2, 4, 1, 3, 6, "!", 5, 4, 6, "X"],[8, "!", 3, 2, 5, "X", 5, 4, 1, 7],[4, 1, 5, 3, 2, 2, "!", 1, "X", 6],
+		[6, 6, "X", 8, 4, 4, 8, 7, "!", 3]]
+		print mask.solution?
+		print mask.reduce_problem
+		expect(mask.make_next_assignment).to eq("finished")
+	end
+
+	it "does not change the array it's called on when called on a solved mask" do
+		mask = [[3, 2, 4, "!", 5, 2, 4, 4, 7, 7],["!", 4, 1, 2, 2, "X", 5, 2, 2, 5],[7, 7, "X", 1, 1, 1, 4, 5, 4, "!"],
+		[6, 2, "!", 2, 5, 2, 1, 1, 7, 3],["X", 5, "X", 1, "!", 2, 5, 3, 5, "X"],["X", 4, 7, 1, 1, 2, 7, "!", "X", 7],
+		[2, 4, 1, 3, 6, "!", 5, 4, 6, "X"],[8, "!", 3, 2, 5, "X", 5, 4, 1, 7],[4, 1, 5, 3, 2, 2, "!", 1, "X", 6],
+		[6, 6, "X", 8, 4, 4, 8, 7, "!", 3]]
+		original = mask.dup
+		mask.make_next_assignment
+		expect(mask).to eq(original)
+	end
+
+	it "assigns correct zero when a row requires most assignments, and it is the first zero in that row" do
+	end
+
+	it "assigns correct zero when a row requires most assignments, and it is not the first zero in that row,
+	 but it has the fewest zeros in its column, no ties" do
+	end
+
+	it "assigns correct zero when a row requires most assignments, and is not the first zero in that row, and
+	 it is tied with another zero in the row for the number of zeros in its column" do
+	end
+
+	it "assigns correct zero when a column requires most assignments, and it is the first zero in that column" do
+	end
+
+	it "assigns correct zero when a column requires most assignments, and it is not the first zero in that column,
+	 but it has the fewest zeros in its row, no ties" do
+	end
+
+	it "assigns correct zero when a column requires most assignments, and is not the first zero in that column, and
+	 it is tied with another zero in the column for the number of zeros in its row" do
+	end
+
+
+
 end
 
 describe Array, ".needy_zeros" do
