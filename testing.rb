@@ -530,6 +530,7 @@ class Array
 
 			# making the assignment might have revealed new needy zeros, assign to them
 			assign_needy_zeros(self)
+			
 		end
 	end
 
@@ -570,7 +571,7 @@ class Array
 
 		reduction_cols = reduction.transpose
 		next_assignment = self.next_assignment
-		check = self.dup
+		check = self.map {|row| row.dup}
 
 		# first try to find the assignment in rows
 		reduction_cols.first.each.with_index do |value, row_id|
@@ -581,6 +582,7 @@ class Array
 				zeros_in_row = reduction[row_id].each.with_index.with_object([]) {|(val,col_id), obj| 
 					obj << [col_id, reduction_cols[col_id].count(0) - 1, reduction[0][col_id][1]] if val == 0
 				}.sort_by {|x| x[1]}
+
 				zeros_in_row = zeros_in_row.select {|x| x[1] == zeros_in_row.first[1]}.sort {|x,y| y[2]<=>x[2]}
 
 				# now get the coordinates of the zero in the mask array
@@ -600,14 +602,17 @@ class Array
 		# if you've changed something in the self array, you want to skip this part, since you want to x_unassignables and repeat
 		# before you make another assignment
 		if check == self
+			
 			reduction.first.each.with_index do |value, col_id|
 				if value == next_assignment
+					
 					# find each zero in the target column; output array of arrays [p,q,r] where p is the row ID of a zero in the
 					# target column, q is the number of other zeros in its row, and r is the number of needed assignments in that row; 
 					# the [p,q,r] arrays are then sorted by ascending q value, then descending r value, then ascending p value
 					zeros_in_column = reduction_cols[col_id].each.with_index.with_object([]) {|(val,row_id), obj| 
 						obj << [row_id, reduction[row_id].count(0) - 1, reduction[row_id][0][1]] if val == 0
 					}.sort_by {|x| x[1]}
+					
 					zeros_in_column = zeros_in_column.select {|x| x[1] == zeros_in_column.first[1]}.sort {|x,y| y[2]<=>x[2]}
 
 					# now get the coordinates of the zero in the mask array
@@ -732,17 +737,30 @@ end
 # 	print "--------------------------------------------------------\n"
 # end
 
-matrix = [[9, 7, 1, 5, 1, 3, 8, 8],[1, 4, 7, 1, 2, 5, 2, 4],[6, 2, 3, 6, 9, 8, 7, 7],[1, 8, 3, 1, 5, 3, 4, 4],
-		[5, 4, 3, 7, 8, 2, 7, 7],[5, 9, 3, 5, 1, 2, 7, 5],[7, 6, 5, 6, 9, 8, 3, 4],[9, 1, 2, 4, 2, 3, 8, 8],
-		[9, 2, 7, 5, 3, 5, 9, 6],[2, 2, 3, 1, 4, 1, 5, 4],[1, 7, 2, 7, 3, 1, 1, 6]]
+# matrix = [[9, 7, 1, 5, 1, 3, 8, 8],[1, 4, 7, 1, 2, 5, 2, 4],[6, 2, 3, 6, 9, 8, 7, 7],[1, 8, 3, 1, 5, 3, 4, 4],
+# 		[5, 4, 3, 7, 8, 2, 7, 7],[5, 9, 3, 5, 1, 2, 7, 5],[7, 6, 5, 6, 9, 8, 3, 4],[9, 1, 2, 4, 2, 3, 8, 8],
+# 		[9, 2, 7, 5, 3, 5, 9, 6],[2, 2, 3, 1, 4, 1, 5, 4],[1, 7, 2, 7, 3, 1, 1, 6]]
 
 
-make_matrix_solveable(matrix)
+# make_matrix_solveable(matrix)
+# 			assign_needy_zeros(matrix).finish_assignment
+# 			solution = matrix.solution?
+# 			matrix.print_readable if solution != true
+# 			expect(solution).to eq(true)
+
+failures = 0
+tests = 0
+	300.times do
+		print "failures: #{failures}\n"
+		print "tests so far: #{tests}\n"
+		tests = tests + 1
+			cols = rand(9)+1
+			rows = rand(9)+1
+			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
+			original = matrix.dup
+			make_matrix_solveable(matrix)
+			original.print_readable
 			assign_needy_zeros(matrix).finish_assignment
 			solution = matrix.solution?
-			matrix.print_readable if solution != true
-			expect(solution).to eq(true)
-
-
-
-
+			failures = failures + 1 if solution != true
+	end
