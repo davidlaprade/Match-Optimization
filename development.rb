@@ -50,7 +50,15 @@ class Hungarian
 		# second step in algorithm
 			# the working matrix is solveable; so make the assignments!
 
-
+		TO SPEED UP ALGORITHM:
+		To speed up the algorithm you had formerly inverted matrices with more rows than columns just for ONE of the fix
+		methods associated with "solveable?" But this caused you problems with "make_matrix_solveable", which was returning
+		unsolveable arrays. But there is no reason why the general strategy of inverting matrices shouldnt work. Evidence: its
+		not as though when you normally run "make_matrix_solveable" on matrices with more columns than rows you get problems. 
+		Rather, algorithm basically always hands you a solveable array. But such matrices surely are equivalent to matrices 
+		with more rows than columns that have been inverted. So, why arent you getting problems with the non-inverted matrices?
+		Suggestion: simply because the entirety of "make_matrix_solveable" is being run on them, not just a single part of it.
+		Thats what you need to do: run ALL of "make_matrix_solveable" on your inverted arrays.
 
 
 			PROBLEM
