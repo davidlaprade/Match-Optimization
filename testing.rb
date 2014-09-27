@@ -42,6 +42,38 @@ def make_matrix_solveable(working_matrix)
 			solveable = working_matrix.solveable?
 		end
 
+		while solveable == "no, too many cols with max assignments"
+			# fix method?
+
+
+				mask = self.map {|row| row.dup}
+				assign_needy_zeros(mask)
+				mask.transpose.select {|col| col.count("!") >= self.max_col_assignment}
+
+
+				[3, 7, 4, 0, 1, 0, 4]
+				[x, 1, 2, 5, 5, !, 6]
+				[5, 2, !, 5, 4, 2, 5]
+				[3, x, 1, 6, !, 4, 5]
+				[6, 4, 6, !, 7, 2, 2]
+				[6, 2, !, 3, 5, 3, 3]
+				[2, 1, 2, x, 1, 2, !]
+				[!, !, x, 2, 1, 1, 0]
+
+				step 1: find zeros causing problem
+				step 2: fix first row by subtract_min_sans_zero_from_rows_to_add_new_column_assignments
+
+				# PROBLEM: how do you know which zero in the problematic columns to change? changing some might
+				# require making fewer overall changes to the matrix
+
+			solveable = working_matrix.solveable?
+		end
+
+		while solveable == "no, too many rows with max assignments"
+			# fix method?
+			solveable = working_matrix.solveable?
+		end
+
 		while solveable == "no, min permitted row assignments > max column assignments possible"
 			working_matrix.make_more_column_assignments_possible
 			solveable = working_matrix.solveable?
@@ -419,7 +451,7 @@ class Array
 			# now see if there are too many rows at the max assignment
 			if mask.select {|row| row.count("!") >= mask.max_row_assignment}.count > max_rows_at_max
 				return "no, too many rows with max assignments"
-			elsif mask.transpose {|col| col.count("!") >= self.max_col_assignment}.count > max_cols_at_max
+			elsif mask.transpose.select {|col| col.count("!") >= self.max_col_assignment}.count > max_cols_at_max
 				return "no, too many cols with max assignments"
 			end
 		end
@@ -794,24 +826,23 @@ print [[1, 8, 5, 0, 1, 2, 5],
 [2, 1, 2, 0, 1, 2, 0],
 [0, 0, 0, 2, 1, 1, 0]].transpose.solveable?
 
-matrix.x_unassignables.print_readable
 
-matrix = [[2, 9, 6, 1, 3, 4, 6],
-			[2, 3, 4, 7, 8, 3, 8],
-			[6, 3, 1, 6, 6, 4, 6],
-			[4, 1, 2, 7, 2, 6, 6],
-			[7, 5, 7, 1, 9, 4, 3],
-			[7, 3, 1, 4, 7, 5, 4],
-			[3, 2, 3, 1, 3, 4, 1],
-			[2, 2, 2, 4, 4, 4, 2]]
-		make_matrix_solveable(matrix)
-		print "solveable!\n"
-		assign_needy_zeros(matrix)
+# matrix = [[2, 9, 6, 1, 3, 4, 6],
+# 			[2, 3, 4, 7, 8, 3, 8],
+# 			[6, 3, 1, 6, 6, 4, 6],
+# 			[4, 1, 2, 7, 2, 6, 6],
+# 			[7, 5, 7, 1, 9, 4, 3],
+# 			[7, 3, 1, 4, 7, 5, 4],
+# 			[3, 2, 3, 1, 3, 4, 1],
+# 			[2, 2, 2, 4, 4, 4, 2]]
+# 		make_matrix_solveable(matrix)
+# 		print "solveable!\n"
+# 		assign_needy_zeros(matrix)
 
-		print "began assignment\n"
-		# matrix.finish_assignment
+# 		print "began assignment\n"
+# 		# matrix.finish_assignment
 
-		print "assigned!\n"
+# 		print "assigned!\n"
 
 # failures = 0
 # tests = 0
@@ -829,14 +860,7 @@ matrix = [[2, 9, 6, 1, 3, 4, 6],
 # 			failures = failures + 1 if solution != true
 # 	end
 
-[1, 8, 5, "!", 1, 2, 5]
-["X", 1, 2, 5, 5, "!", 6]
-[5, 2, "!", 5, 4, 2, 5]
-[3, "X", 1, 6, "!", 4, 5]
-[6, 4, 6, "!", 7, 2, 2]
-[6, 2, "!", 3, 5, 3, 3]
-[2, 1, 2, "X", 1, 2, "!"]
-["!", "!", "X", 2, 1, 1, 0]
+
 
 [1, 8, 5, "!", 1, 2, 5]
 ["X", 1, 2, 5, 5, "!", 6]

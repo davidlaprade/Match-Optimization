@@ -433,13 +433,12 @@ describe Array, "permissible assignment values, min_column_assignment, max_col_a
 				[6, 4, 6, "!", 7, 2, 2],
 				[6, 2, "!", 3, 5, 3, 3],
 				[2, 1, 2, "X", 1, 2, "!"],
-				["!", "!", "X", 2, 1, 1, 0]
+				["!", "!", "X", 2, 1, 1, 0]]
 		expect(array.min_row_assignment).to eq(1)
 		expect(array.max_row_assignment).to eq(1)
 		expect(array.min_col_assignment).to eq(1)
 		expect(array.max_col_assignment).to eq(2)
 	end
-]
 
 	it "yeilds the right values when there are more columns than rows" do
 		array = [[7, 3, 3, 1, 4, 6, 1, 7, 2, 7, 2], [6, 4, 7, 8, 5, 5, 7, 2, 9, 3, 2], [1, 9, 2, 1, 7, 5, 5, 7, 6, 9, 9], 
