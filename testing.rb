@@ -394,11 +394,41 @@ class Array
 			end
 		end
 
+		# ///////////////////////////////////////////////////
+		# PROBLEM
+		# You aren't checking to make sure needy zeros, and needy zeros by extension,
+		# result in there being too many required assignments in a row/col; specifically, that the needy zeros and those
+		# by extension don't force there to be too many rows/col with the max
+		# ////////////////////////////////////////////////////////////////
+
+		num_columns = self[0].count
+		num_rows = self.count
+		if num_columns != num_rows
+			mask = self.map {|row| row.dup}
+			assign_needy_zeros(mask)
+
+			# now, find out how many columns and rows should be at the max in a complete assignment
+			if num_columns > num_rows
+				max_cols_at_max = num_columns
+				max_rows_at_max = num_columns % num_rows
+			elsif num_columns < num_rows
+				max_rows_at_max = num_rows
+				max_cols_at_max = num_rows % num_columns
+			end
+
+			# now see if there are too many rows at the max assignment
+			if mask.select {|row| row.count("!") >= mask.max_row_assignment}.count > max_rows_at_max
+				return "no, too many rows with max assignments"
+			elsif mask.transpose {|col| col.count("!") >= self.max_col_assignment}.count > max_cols_at_max
+				return "no, too many cols with max assignments"
+			end
+		end
+
 		test_cases = self.every_combination_of_its_members
 		test_cases.each do |submatrix|
 			min_row_assignments_permitted = self.min_row_assignment * submatrix.length
 			if min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
-				return ("no, min permitted row assignments > max column assignments possible")
+				return "no, min permitted row assignments > max column assignments possible"
 			end
 		end
 		return "true"
@@ -754,6 +784,15 @@ print [[1, 8, 5, 0, 1, 2, 5],
 [6, 2, 0, 3, 5, 3, 3],
 [2, 1, 2, 0, 1, 2, 0],
 [0, 0, 0, 2, 1, 1, 0]].solveable?
+
+print [[1, 8, 5, 0, 1, 2, 5],
+[0, 1, 2, 5, 5, 0, 6],
+[5, 2, 0, 5, 4, 2, 5],
+[3, 0, 1, 6, 0, 4, 5],
+[6, 4, 6, 0, 7, 2, 2],
+[6, 2, 0, 3, 5, 3, 3],
+[2, 1, 2, 0, 1, 2, 0],
+[0, 0, 0, 2, 1, 1, 0]].transpose.solveable?
 
 matrix.x_unassignables.print_readable
 

@@ -1897,7 +1897,7 @@ describe Array, ".solveable?" do
 		expect(array.solveable?).to eq("no, not enough zeros in columns")
 	end
 
-	it "returns failure code when run on array in which lonely zeros force too many rows to adopt the max possible" do
+	it "returns failure code when run on array in which lonely zeros force too many cols to adopt the max possible" do
         array = [[1, 8, 5, 0, 1, 2, 5],
 				[0, 1, 2, 5, 5, 0, 6],
 				[5, 2, 0, 5, 4, 2, 5],
@@ -1906,8 +1906,21 @@ describe Array, ".solveable?" do
 				[6, 2, 0, 3, 5, 3, 3],
 				[2, 1, 2, 0, 1, 2, 0],
 				[0, 0, 0, 2, 1, 1, 0]]
-		expect(array.solveable?).to_not eq("true")
+		expect(array.solveable?).to eq("no, too many cols with max assignments")
 	end
+
+	it "returns failure code when run on array in which lonely zeros force too many rows to adopt the max possible" do
+        array = [[1, 8, 5, 0, 1, 2, 5],
+				[0, 1, 2, 5, 5, 0, 6],
+				[5, 2, 0, 5, 4, 2, 5],
+				[3, 0, 1, 6, 0, 4, 5],
+				[6, 4, 6, 0, 7, 2, 2],
+				[6, 2, 0, 3, 5, 3, 3],
+				[2, 1, 2, 0, 1, 2, 0],
+				[0, 0, 0, 2, 1, 1, 0]].transpose
+		expect(array.solveable?).to eq("no, too many rows with max assignments")
+	end
+
 
 	# min_row_assmts_permitted > max_column_assmts_possible for any submatrix
 
