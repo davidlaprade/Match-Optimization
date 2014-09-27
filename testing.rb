@@ -525,12 +525,11 @@ class Array
 	# returns finished mask assignment object; changes mask array
 	def finish_assignment
 		# repeat until there are no more zeros in the mask array
+
 		while self.flatten(1).include?(0) == true
 			self.make_next_assignment
-
 			# making the assignment might have revealed new needy zeros, assign to them
 			assign_needy_zeros(self)
-			
 		end
 	end
 
@@ -748,6 +747,17 @@ end
 # 			matrix.print_readable if solution != true
 # 			expect(solution).to eq(true)
 
+matrix = [[1, 8, 5, "!", 1, 2, 5],
+["X", 1, 2, 5, 5, "!", 6],
+[5, 2, "!", 5, 4, 2, 5],
+[3, "X", 1, 6, "!", 4, 5],
+[6, 4, 6, "!", 7, 2, 2],
+[6, 2, "!", 3, 5, 3, 3],
+[2, 1, 2, "X", 1, 2, "!"],
+["!", "!", "X", 2, 1, 1, 0]]
+
+matrix.x_unassignables.print_readable
+
 matrix = [[2, 9, 6, 1, 3, 4, 6],
 			[2, 3, 4, 7, 8, 3, 8],
 			[6, 3, 1, 6, 6, 4, 6],
@@ -758,34 +768,12 @@ matrix = [[2, 9, 6, 1, 3, 4, 6],
 			[2, 2, 2, 4, 4, 4, 2]]
 		make_matrix_solveable(matrix)
 		print "solveable!\n"
-		assign_needy_zeros(matrix).finish_assignment
+		assign_needy_zeros(matrix)
+
+		print "began assignment\n"
+		# matrix.finish_assignment
 
 		print "assigned!\n"
-
-		[[5, 2, 2, 3, 1, 8, 5, 9, 5],
-[5, 4, 4, 4, 1, 7, 6, 2, 9],
-[6, 7, 7, 7, 5, 9, 5, 7, 8],
-[4, 8, 7, 1, 7, 4, 9, 9, 1],
-[2, 5, 4, 6, 4, 9, 1, 4, 2],
-[6, 7, 1, 7, 6, 1, 9, 9, 2],
-[7, 5, 7, 2, 6, 5, 1, 2, 7],
-[7, 5, 9, 8, 7, 7, 4, 5, 7]]
-
-[[9, 1, 1, 2, 5, 2, 9, 9, 5, 2, 1, 6, 3],
-			[9, 8, 9, 7, 8, 8, 2, 1, 2, 9, 6, 2, 3],
-			[7, 5, 8, 4, 8, 8, 9, 9, 5, 6, 1, 8, 9],
-			[6, 6, 5, 6, 1, 6, 9, 9, 4, 2, 8, 8, 6],
-			[3, 1, 9, 5, 3, 3, 5, 6, 9, 2, 9, 7, 4],
-			[5, 4, 8, 4, 1, 4, 8, 8, 9, 7, 8, 2, 7],
-			[5, 9, 3, 8, 1, 1, 7, 6, 3, 7, 4, 1, 2],
-			[3, 9, 5, 7, 5, 9, 7, 7, 5, 4, 3, 5, 4],
-			[5, 3, 2, 3, 7, 5, 7, 9, 4, 2, 8, 6, 4],
-			[9, 8, 2, 5, 9, 2, 2, 4, 7, 3, 5, 3, 2],
-			[5, 8, 5, 1, 7, 2, 1, 4, 4, 5, 9, 5, 1],
-			[3, 2, 9, 3, 6, 2, 6, 9, 1, 3, 1, 4, 8],
-			[2, 4, 8, 7, 8, 5, 2, 9, 2, 8, 4, 8, 6],
-			[1, 2, 7, 2, 3, 8, 7, 9, 2, 6, 5, 5, 7],
-			[8, 1, 1, 5, 4, 8, 8, 1, 8, 6, 5, 9, 7]]
 
 # failures = 0
 # tests = 0
@@ -802,3 +790,21 @@ matrix = [[2, 9, 6, 1, 3, 4, 6],
 # 			solution = matrix.solution?
 # 			failures = failures + 1 if solution != true
 # 	end
+
+[1, 8, 5, "!", 1, 2, 5]
+["X", 1, 2, 5, 5, "!", 6]
+[5, 2, "!", 5, 4, 2, 5]
+[3, "X", 1, 6, "!", 4, 5]
+[6, 4, 6, "!", 7, 2, 2]
+[6, 2, "!", 3, 5, 3, 3]
+[2, 1, 2, "X", 1, 2, "!"]
+["!", "!", "X", 2, 1, 1, 0]
+
+[1, 8, 5, "!", 1, 2, 5]
+["X", 1, 2, 5, 5, "!", 6]
+[5, 2, "!", 5, 4, 2, 5]
+[3, "X", 1, 6, "!", 4, 5]
+[6, 4, 6, "!", 7, 2, 2]
+[6, 2, "!", 3, 5, 3, 3]
+[2, 1, 2, "X", 1, 2, "!"]
+["!", "!", "X", 2, 1, 1, 0]

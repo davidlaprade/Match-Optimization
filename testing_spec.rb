@@ -10,6 +10,29 @@ require 'testing'
 
 # temporarily breaking the above rule so that I focus on this issue first; it does not depend on problems with other methods; rather, the
 # problem has to do with how I'm trying to speed up the algorithm by transposing non-square arrays
+describe Array, ".x_unassignables" do
+
+	it "X-s out zero in row with max assignments when dimensions are uneven" do
+		matrix = [[1, 8, 5, "!", 1, 2, 5],
+				["X", 1, 2, 5, 5, "!", 6],
+				[5, 2, "!", 5, 4, 2, 5],
+				[3, "X", 1, 6, "!", 4, 5],
+				[6, 4, 6, "!", 7, 2, 2],
+				[6, 2, "!", 3, 5, 3, 3],
+				[2, 1, 2, "X", 1, 2, "!"],
+				["!", "!", "X", 2, 1, 1, 0]]
+		expect(matrix.x_unassignables).to eq([[1, 8, 5, "!", 1, 2, 5],
+											["X", 1, 2, 5, 5, "!", 6],
+											[5, 2, "!", 5, 4, 2, 5],
+											[3, "X", 1, 6, "!", 4, 5],
+											[6, 4, 6, "!", 7, 2, 2],
+											[6, 2, "!", 3, 5, 3, 3],
+											[2, 1, 2, "X", 1, 2, "!"],
+											["!", "!", "X", 2, 1, 1, "X"]])
+	end
+
+end
+
 describe Array, ".finish_assignment" do
 
 	it "does not add too many assignments in rows" do
