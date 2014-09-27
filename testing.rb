@@ -45,26 +45,32 @@ def make_matrix_solveable(working_matrix)
 		while solveable == "no, too many cols with max assignments"
 			# fix method?
 
-
-				mask = self.map {|row| row.dup}
+				# step 0: create mask to make assignments to needy zeros
+				mask = working_matrix.map {|row| row.dup}
 				assign_needy_zeros(mask)
-				mask.transpose.select {|col| col.count("!") >= self.max_col_assignment}
+				mask_cols = mask.transpose
+
+				# step 1: find columns with max assignments in mask
+				# step 2: find assigned zeros in those columns
+				# step 3: rank those zeros by: increasing row_min_sans_zero value
+				problem_zeros = mask_cols.each.with_index.with_object([]) {|(col, col_id), obj| 
+					obj << col_id if col.count("!") >= working_matrix.max_col_assignment
+				}
+				.each.with_object([]) {|col_id,obj| mask_cols[col_id].each.with_index {|value, row_id|
+						obj << [row_id, col_id, (working_matrix[row_id]-[0]).min] if value == "!"
+					}
+				}.sort_by {|x| [x[2],x[0],x[1]]}
 
 
-				[3, 7, 4, 0, 1, 0, 4]
-				[x, 1, 2, 5, 5, !, 6]
-				[5, 2, !, 5, 4, 2, 5]
-				[3, x, 1, 6, !, 4, 5]
-				[6, 4, 6, !, 7, 2, 2]
-				[6, 2, !, 3, 5, 3, 3]
-				[2, 1, 2, x, 1, 2, !]
-				[!, !, x, 2, 1, 1, 0]
+				# step 4: fix first zero identified in problem_zeros; subtract min sans zero from from each member of its row,
+				# add to zeros; replace result with the working_matrix array
+				sub = problem_zeros.first[2]
+				working_matrix.map!.with_index {|row, row_id| 
+					row_id == problem_zeros.first[0] ? row.map {|value| value - sub
+						}.map {|value| value < 0 ? value + 2*sub : value} : row }
 
-				step 1: find zeros causing problem
-				step 2: fix first row by subtract_min_sans_zero_from_rows_to_add_new_column_assignments
 
-				# PROBLEM: how do you know which zero in the problematic columns to change? changing some might
-				# require making fewer overall changes to the matrix
+
 
 			solveable = working_matrix.solveable?
 		end
@@ -808,23 +814,32 @@ end
 # 			matrix.print_readable if solution != true
 # 			expect(solution).to eq(true)
 
-print [[1, 8, 5, 0, 1, 2, 5],
+array = [[1, 8, 5, 0, 1, 2, 5],
 [0, 1, 2, 5, 5, 0, 6],
 [5, 2, 0, 5, 4, 2, 5],
 [3, 0, 1, 6, 0, 4, 5],
 [6, 4, 6, 0, 7, 2, 2],
 [6, 2, 0, 3, 5, 3, 3],
 [2, 1, 2, 0, 1, 2, 0],
-[0, 0, 0, 2, 1, 1, 0]].solveable?
+[0, 0, 0, 2, 1, 1, 0]]
 
-print [[1, 8, 5, 0, 1, 2, 5],
-[0, 1, 2, 5, 5, 0, 6],
-[5, 2, 0, 5, 4, 2, 5],
-[3, 0, 1, 6, 0, 4, 5],
-[6, 4, 6, 0, 7, 2, 2],
-[6, 2, 0, 3, 5, 3, 3],
-[2, 1, 2, 0, 1, 2, 0],
-[0, 0, 0, 2, 1, 1, 0]].transpose.solveable?
+print array.solveable?
+print "\n"
+
+make_matrix_solveable(array).print_readable
+assign_needy_zeros(array).finish_assignment
+print "solution? #{array.solution?}"
+array.print_readable
+
+
+# print [[1, 8, 5, 0, 1, 2, 5],
+# [0, 1, 2, 5, 5, 0, 6],
+# [5, 2, 0, 5, 4, 2, 5],
+# [3, 0, 1, 6, 0, 4, 5],
+# [6, 4, 6, 0, 7, 2, 2],
+# [6, 2, 0, 3, 5, 3, 3],
+# [2, 1, 2, 0, 1, 2, 0],
+# [0, 0, 0, 2, 1, 1, 0]].transpose.solveable?
 
 
 # matrix = [[2, 9, 6, 1, 3, 4, 6],
@@ -862,11 +877,11 @@ print [[1, 8, 5, 0, 1, 2, 5],
 
 
 
-[1, 8, 5, "!", 1, 2, 5]
-["X", 1, 2, 5, 5, "!", 6]
-[5, 2, "!", 5, 4, 2, 5]
-[3, "X", 1, 6, "!", 4, 5]
-[6, 4, 6, "!", 7, 2, 2]
-[6, 2, "!", 3, 5, 3, 3]
-[2, 1, 2, "X", 1, 2, "!"]
-["!", "!", "X", 2, 1, 1, 0]
+# [1, 8, 5, "!", 1, 2, 5]
+# ["X", 1, 2, 5, 5, "!", 6]
+# [5, 2, "!", 5, 4, 2, 5]
+# [3, "X", 1, 6, "!", 4, 5]
+# [6, 4, 6, "!", 7, 2, 2]
+# [6, 2, "!", 3, 5, 3, 3]
+# [2, 1, 2, "X", 1, 2, "!"]
+# ["!", "!", "X", 2, 1, 1, 0]
