@@ -425,6 +425,22 @@ describe Array, "permissible assignment values, min_column_assignment, max_col_a
 		expect(array.max_col_assignment).to eq(2)
 	end
 
+	it "yeilds the right values when there are more rows than columns" do
+		array = [[1, 8, 5, "!", 1, 2, 5],
+				["X", 1, 2, 5, 5, "!", 6],
+				[5, 2, "!", 5, 4, 2, 5],
+				[3, "X", 1, 6, "!", 4, 5],
+				[6, 4, 6, "!", 7, 2, 2],
+				[6, 2, "!", 3, 5, 3, 3],
+				[2, 1, 2, "X", 1, 2, "!"],
+				["!", "!", "X", 2, 1, 1, 0]
+		expect(array.min_row_assignment).to eq(1)
+		expect(array.max_row_assignment).to eq(1)
+		expect(array.min_col_assignment).to eq(1)
+		expect(array.max_col_assignment).to eq(2)
+	end
+]
+
 	it "yeilds the right values when there are more columns than rows" do
 		array = [[7, 3, 3, 1, 4, 6, 1, 7, 2, 7, 2], [6, 4, 7, 8, 5, 5, 7, 2, 9, 3, 2], [1, 9, 2, 1, 7, 5, 5, 7, 6, 9, 9], 
 			[3, 2, 1, 2, 2, 3, 5, 6, 3, 9, 5], [9, 2, 8, 2, 1, 7, 8, 8, 2, 3, 3], [8, 4, 3, 6, 1, 8, 7, 2, 9, 5, 9], 
@@ -1881,6 +1897,17 @@ describe Array, ".solveable?" do
 		expect(array.solveable?).to eq("no, not enough zeros in columns")
 	end
 
+	it "returns failure code when run on array in which lonely zeros force too many rows to adopt the max possible" do
+        array = [[1, 8, 5, 0, 1, 2, 5],
+				[0, 1, 2, 5, 5, 0, 6],
+				[5, 2, 0, 5, 4, 2, 5],
+				[3, 0, 1, 6, 0, 4, 5],
+				[6, 4, 6, 0, 7, 2, 2],
+				[6, 2, 0, 3, 5, 3, 3],
+				[2, 1, 2, 0, 1, 2, 0],
+				[0, 0, 0, 2, 1, 1, 0]]
+		expect(array.solveable?).to_not eq("true")
+	end
 
 	# min_row_assmts_permitted > max_column_assmts_possible for any submatrix
 

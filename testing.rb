@@ -431,17 +431,16 @@ class Array
 	# if there are, it replaces those zeros with "X"s in the array, then returns the changed array object
 	def x_unassignables
 		# first check to see if there are zeros in ROWS with the max number of assignments; add Xs accordingly
-		self.map! {|row| row.count("!") == self.max_row_assignment ?
+		self.map! {|row| row.count("!") >= self.max_row_assignment ?
 			row.map {|value| value == 0 ? "X":value} : row
 		}
 
 		# now do the same thing for COLUMNS
 		self.replace(
-			self.transpose.map {|col| col.count("!") == self.max_col_assignment ?
+			self.transpose.map {|col| col.count("!") >= self.max_col_assignment ?
 				col.map {|value| value == 0 ? "X":value} : col
 			}.transpose
 		)
-
 		return self
 	end
 
@@ -747,14 +746,14 @@ end
 # 			matrix.print_readable if solution != true
 # 			expect(solution).to eq(true)
 
-matrix = [[1, 8, 5, "!", 1, 2, 5],
-["X", 1, 2, 5, 5, "!", 6],
-[5, 2, "!", 5, 4, 2, 5],
-[3, "X", 1, 6, "!", 4, 5],
-[6, 4, 6, "!", 7, 2, 2],
-[6, 2, "!", 3, 5, 3, 3],
-[2, 1, 2, "X", 1, 2, "!"],
-["!", "!", "X", 2, 1, 1, 0]]
+print [[1, 8, 5, 0, 1, 2, 5],
+[0, 1, 2, 5, 5, 0, 6],
+[5, 2, 0, 5, 4, 2, 5],
+[3, 0, 1, 6, 0, 4, 5],
+[6, 4, 6, 0, 7, 2, 2],
+[6, 2, 0, 3, 5, 3, 3],
+[2, 1, 2, 0, 1, 2, 0],
+[0, 0, 0, 2, 1, 1, 0]].solveable?
 
 matrix.x_unassignables.print_readable
 
