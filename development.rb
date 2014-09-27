@@ -490,6 +490,38 @@ class Array
 		self.zero_fewest_problematic_columns(problematic_columns)
 	end
 
+	# UNTESTED
+	# call on Array object; creates mask array, then assigns to needy zeros in mask; then finds the number of
+	# columns in the mask that have reached the max_col_assignment value; then it finds the assigned zeros in those
+	# columns; then it ranks those zeros by increasing row_min_sans_zero_value; then, for the zero with the lowest
+	# min_sans_zero value in its row, it subtracts the min_sans_zero value from each non-zero in the row of the 
+	# original array, and adds it to each zero; returns the changed array object it was called on
+	def fix_too_many_max_assignments_in_cols
+		# step 0: create mask to make assignments to needy zeros
+		mask = self.map {|row| row.dup}
+		assign_needy_zeros(mask)
+		mask_cols = mask.transpose
+
+		# step 1: find columns with max assignments in mask
+		# step 2: find assigned zeros in those columns
+		# step 3: rank those zeros by: increasing row_min_sans_zero value
+		problem_zeros = mask_cols.each.with_index.with_object([]) {|(col, col_id), obj| 
+			obj << col_id if col.count("!") >= self.max_col_assignment
+		}
+		.each.with_object([]) {|col_id,obj| mask_cols[col_id].each.with_index {|value, row_id|
+				obj << [row_id, col_id, (self[row_id]-[0]).min] if value == "!"
+			}
+		}.sort_by {|x| [x[2],x[0],x[1]]}
+
+
+		# step 4: fix first zero identified in problem_zeros; subtract min sans zero from from each member of its row,
+		# add to zeros; replace result with the self array
+		sub = problem_zeros.first[2]
+		self.map!.with_index {|row, row_id| 
+			row_id == problem_zeros.first[0] ? row.map {|value| value - sub
+				}.map {|value| value < 0 ? value + 2*sub : value} : row }
+	end
+
 	# ARRAY FRIENDLY + TESTED
 	# called on Array object; returns an array of coordinates [n,m] of every lonely zero; a "lonely" zero is one which occurs as the 
 	# sole zero in EITHER its row or its column
