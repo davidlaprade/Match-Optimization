@@ -683,9 +683,11 @@ end
 
 
 failures = 0
+successes = 0
 tests = 0
 	1000.times do
 		print "failures: #{failures}\n"
+		print "successes: #{successes}\n"
 		print "tests so far: #{tests}\n"
 		tests = tests + 1
 			cols = rand(9)+2
@@ -698,4 +700,5 @@ tests = 0
 			matrix.print_readable
 			solution = matrix.solution?
 			failures = failures + 1 if solution != true
+			successes = successes + 1 if solution == true
 	end
