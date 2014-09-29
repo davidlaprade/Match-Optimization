@@ -1,6 +1,4 @@
 require 'matrix'
-require 'pry'
-require 'benchmark'
 
 # passed mask Array object; assigns to needy zeros and extended needy zeros in the mask, then returns the mask
 def assign_needy_zeros(mask)
@@ -47,10 +45,6 @@ def make_matrix_solveable(working_matrix)
 			solveable = working_matrix.solveable?
 		end
 
-		while solveable == "no, too many rows with max assignments"
-			# fix method? def fix_too_many_max_assignments_in_rows
-			solveable = working_matrix.solveable?
-		end
 
 		while solveable == "no, min permitted row assignments > max column assignments possible"
 			working_matrix.make_more_column_assignments_possible
@@ -232,8 +226,7 @@ class Array
 		self.zero_fewest_problematic_columns(problematic_columns)
 	end
 
-	# UNTESTED Test case: [[4],[2],[7],[8],[3]], run make_solveable on it
-	# And another test: [[5, 4],[1, 9],[2, 7],[7, 6],[1, 2],[5, 5],[4, 6],[2, 3]]
+	# UNTESTED
 	# call on Array object; creates mask array, then assigns to needy zeros in mask; then finds the number of
 	# columns in the mask that have reached the max_col_assignment value; then it finds the assigned zeros in those
 	# columns; then it ranks those zeros by increasing row_min_sans_zero_value; then, for the zero with the lowest
@@ -446,36 +439,6 @@ class Array
 		self.lonely_zeros_per_row.each do |array|
 			if array[1] > self.max_row_assignment
 				return "no, too many lonely zeros in rows"
-			end
-		end
-
-		# ///////////////////////////////////////////////////
-		# PROBLEM
-		# You aren't checking to make sure that needy zeros and/or needy zeros by extension don't
-		# result in there being too many required assignments in a row/col; specifically, that the needy zeros and those
-		# by extension don't force there to be too many rows/col with the max
-		# ////////////////////////////////////////////////////////////////
-
-		num_columns = self[0].count
-		num_rows = self.count
-		if num_columns != num_rows
-			mask = self.map {|row| row.dup}
-			assign_needy_zeros(mask)
-
-			# now, find out how many columns and rows should be at the max in a complete assignment
-			if num_columns > num_rows
-				max_cols_at_max = num_columns
-				max_rows_at_max = num_columns % num_rows
-			elsif num_columns < num_rows
-				max_rows_at_max = num_rows
-				max_cols_at_max = num_rows % num_columns
-			end
-
-			# now see if there are too many rows at the max assignment
-			if mask.select {|row| row.count("!") >= mask.max_row_assignment}.count > max_rows_at_max
-				return "no, too many rows with max assignments"
-			elsif mask.transpose.select {|col| col.count("!") >= self.max_col_assignment}.count > max_cols_at_max
-				return "no, too many cols with max assignments"
 			end
 		end
 
@@ -718,158 +681,6 @@ class Array
 end
 
 
-# rows_first_wins = 0
-# cols_first_wins = 0
-# method_works = 0
-
-# 10000.times do
-# 	num_rows = rand(7)+3
-# 	num_columns = num_rows + (rand(7)+3)
-# 	a = Array.new(num_rows) {Array.new(num_columns) {rand(9)+1}}
-# 	original = a.dup
-# 	b = a.dup
-# 	c = a.dup
-
-# 	solutionA = a.zero_each_row.zero_each_column
-# 	diffA = (original.to_m - solutionA.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
-# 	# print "degree of difference when rows are zeroed first: #{diffA}\n"
-
-# 	solutionB = b.zero_each_column.zero_each_row
-# 	diffB = (original.to_m - solutionB.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
-# 	# print "degree of difference when columns are zeroed first: #{diffB}\n"
-# 	# print "--------------\n"
-
-# 	# solutionC = c.zero_rows_and_columns
-# 	# diffC = (original.to_m - solutionC.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+)
-
-# 	rows_first_wins = rows_first_wins + 1 if diffA < diffB
-# 	cols_first_wins = cols_first_wins +1 if diffB < diffA
-# 	# method_works = method_works + 1 if diffC <= diffA && diffC <= diffB
-
-# end
-
-# print "When there are more columns than rows:\n"
-# print "zeroing rows first wins #{100*rows_first_wins/10000}% of the time\n"
-# print "zeroing columns first wins #{100*cols_first_wins/10000}% of the time\n"
-# print "the two tie #{(100*(10000-rows_first_wins-cols_first_wins)/10000)}% of the time\n"
-# print "my combined method works #{100*method_works/10000}% of the time\n"
-
-# array = [[6,0,0,0,0,0],[0,5,6,7,9,3],[4,0,0,0,0,0]]
-# array.print_readable
-# solution = make_matrix_solveable(array)
-# solution.print_readable
-
-# [[5,5],[5,10],[5,15],[5,25],[5,40],[10,5],[10,10],[10,15],[10,25],[10,40],[15,5],[25,5],[40,5]]
-# [[5,5],[7,7],[10,10],[12,12],[15,15],[16,16],[17,17],[18,18],[19,19],[20,20]]
-
-# [[5,5],[5,10],[5,15],[5,25],[5,40],[10,5],[10,10],[10,15],[10,25],[10,40],[15,5],[25,5],[40,5],
-# [40,10],[7,7],[10,10],[12,12],[15,15],[16,16],[17,17],[18,18],[19,19],[20,20]]
-
-# [[5,6],[7,5],[4,7],[9,5],[10,12]]
-
-
-
-# print [[4,0,0,4,1,5,1],[0,4,4,4,6,0,3],[5,1,3,0,0,2,0],[0,4,5,4,6,1,4],[1,2,0,7,7,0,4],[0,8,3,7,5,6,1],
-# 			[2,3,6,5,5,3,0],[6,0,5,6,4,5,0],[3,2,0,6,5,0,0],[1,0,3,7,2,4,1],[6,2,0,7,7,4,5],[8,6,0,0,2,8,7],[8,4,2,7,3,0,5]].solveable?
-
-# array = [[5, 5, 2, 4, 4, 0, 0, 5, 1],[7, 6, 8, 0, 9, 9, 4, 7, 5],[5, 3, 2, 9, 1, 0, 7, 1, 9],[5, 1, 5, 0, 0, 4, 8, 6, 5],
-# [6, 2, 4, 2, 0, 4, 5, 6, 9],[7, 7, 7, 0, 5, 3, 3, 7, 3],[3, 1, 6, 8, 3, 5, 9, 9, 1],[0, 5, 8, 4, 7, 5, 0, 2, 7],
-# [0, 9, 8, 8, 0, 2, 2, 1, 8],[7, 4, 4, 7, 8, 8, 2, 5, 9],[6, 5, 9, 1, 8, 1, 1, 7, 9],[4, 3, 4, 6, 6, 7, 9, 9, 3],
-# [5, 6, 6, 5, 4, 3, 0, 6, 5],[6, 7, 1, 9, 4, 0, 8, 2, 7],[1, 2, 2, 7, 8, 7, 5, 2, 3],[9, 6, 6, 9, 4, 3, 0, 5, 2],
-# [7, 9, 4, 8, 1, 8, 9, 5, 7],[2, 4, 7, 2, 9, 2, 8, 7, 3],[8, 3, 3, 1, 9, 1, 0, 5, 2]]
-# array.print_readable
-# make_matrix_solveable(array)
-# array.print_readable
-# print array.solveable?
-
-	# 1000.times do
-
-	# 		cols = rand(7)+1
-	# 		rows = (2*cols)+rand(4)
-	# 		matrix = Array.new(rows) {Array.new(cols) {rand(10)}}
-	# 		matrix.print_readable
-	# 		print "#{make_matrix_solveable(matrix).solveable?}\n"
-
-	# end
-
-# [[5,8],[13,7],[4,9],[8,8],[10,10],[9,13],[10,42]].each do |v|
-# 	array = Array.new(v[0]){Array.new(v[1]){rand(9)+1}}
-# 	# print "%f\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
-# 	print "original array: #{v[0]}x#{v[1]}\n"
-# 	array.print_readable
-# 	print "solveable array:"
-# 	solution = make_matrix_solveable(array)
-# 	solution.print_readable
-# 	print "Time to get solution: %f seconds\n" % Benchmark.realtime { make_matrix_solveable(array) }.to_f
-# 	print "degree of difference: #{(array.to_m - solution.to_m).collect{|e| e.abs}.to_a.flatten(1).inject(:+) * 100 / array.flatten(1).inject(:+).to_f}\n"
-
-# 	assign_needy_zeros(solution)
-# 	print "assigned lonely zeros:"
-# 	solution.print_readable
-
-# 	print "solution?: #{solution.solution?}\n"
-
-# 	print "problem reduced:"
-# 	solution.reduce_problem.print_readable
-
-# 	print "--------------------------------------------------------\n"
-# end
-
-# matrix = [[9, 7, 1, 5, 1, 3, 8, 8],[1, 4, 7, 1, 2, 5, 2, 4],[6, 2, 3, 6, 9, 8, 7, 7],[1, 8, 3, 1, 5, 3, 4, 4],
-# 		[5, 4, 3, 7, 8, 2, 7, 7],[5, 9, 3, 5, 1, 2, 7, 5],[7, 6, 5, 6, 9, 8, 3, 4],[9, 1, 2, 4, 2, 3, 8, 8],
-# 		[9, 2, 7, 5, 3, 5, 9, 6],[2, 2, 3, 1, 4, 1, 5, 4],[1, 7, 2, 7, 3, 1, 1, 6]]
-
-
-# make_matrix_solveable(matrix)
-# 			assign_needy_zeros(matrix).finish_assignment
-# 			solution = matrix.solution?
-# 			matrix.print_readable if solution != true
-# 			expect(solution).to eq(true)
-
-# array = [[1, 8, 5, 0, 1, 2, 5],
-# [0, 1, 2, 5, 5, 0, 6],
-# [5, 2, 0, 5, 4, 2, 5],
-# [3, 0, 1, 6, 0, 4, 5],
-# [6, 4, 6, 0, 7, 2, 2],
-# [6, 2, 0, 3, 5, 3, 3],
-# [2, 1, 2, 0, 1, 2, 0],
-# [0, 0, 0, 2, 1, 1, 0]]
-
-# print array.solveable?
-# print "\n"
-
-# make_matrix_solveable(array).print_readable
-# assign_needy_zeros(array).finish_assignment
-# print "solution? #{array.solution?}"
-# array.print_readable
-
-
-# print [[1, 8, 5, 0, 1, 2, 5],
-# [0, 1, 2, 5, 5, 0, 6],
-# [5, 2, 0, 5, 4, 2, 5],
-# [3, 0, 1, 6, 0, 4, 5],
-# [6, 4, 6, 0, 7, 2, 2],
-# [6, 2, 0, 3, 5, 3, 3],
-# [2, 1, 2, 0, 1, 2, 0],
-# [0, 0, 0, 2, 1, 1, 0]].transpose.solveable?
-
-
-# matrix = [[2, 9, 6, 1, 3, 4, 6],
-# 			[2, 3, 4, 7, 8, 3, 8],
-# 			[6, 3, 1, 6, 6, 4, 6],
-# 			[4, 1, 2, 7, 2, 6, 6],
-# 			[7, 5, 7, 1, 9, 4, 3],
-# 			[7, 3, 1, 4, 7, 5, 4],
-# 			[3, 2, 3, 1, 3, 4, 1],
-# 			[2, 2, 2, 4, 4, 4, 2]]
-# 		make_matrix_solveable(matrix)
-# 		print "solveable!\n"
-# 		assign_needy_zeros(matrix)
-
-# 		print "began assignment\n"
-# 		# matrix.finish_assignment
-
-# 		print "assigned!\n"
 
 failures = 0
 tests = 0
@@ -877,23 +688,14 @@ tests = 0
 		print "failures: #{failures}\n"
 		print "tests so far: #{tests}\n"
 		tests = tests + 1
-			cols = rand(9)+1
-			rows = rand(9)+1
+			cols = rand(9)+2
+			rows = rand(9)+2
 			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
 			matrix.print_readable
 			make_matrix_solveable(matrix)
 			assign_needy_zeros(matrix).finish_assignment
+			print "Solution:"
+			matrix.print_readable
 			solution = matrix.solution?
 			failures = failures + 1 if solution != true
 	end
-
-
-
-# [1, 8, 5, "!", 1, 2, 5]
-# ["X", 1, 2, 5, 5, "!", 6]
-# [5, 2, "!", 5, 4, 2, 5]
-# [3, "X", 1, 6, "!", 4, 5]
-# [6, 4, 6, "!", 7, 2, 2]
-# [6, 2, "!", 3, 5, 3, 3]
-# [2, 1, 2, "X", 1, 2, "!"]
-# ["!", "!", "X", 2, 1, 1, 0]
