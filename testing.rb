@@ -106,6 +106,18 @@ class Array
 	end
 
 	# UNTESTED
+	def combinatorial_test
+		test_cases = self.every_combination_of_its_members
+		test_cases.each do |submatrix|
+			min_row_assignments_permitted = self.min_row_assignment * submatrix.length
+			if min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
+				return "fail"
+			end
+		end
+		return "pass"
+	end
+
+	# UNTESTED
 	# called on mask Array object; replaces unassignable zeros with "X"s, returns corrected array;
 	def cover_unassignables
 		# The idea is this: when there are enough assignments in a row/column to reach the maximum permissible, then other zeros 
@@ -466,13 +478,8 @@ class Array
 			end
 		end
 
-		test_cases = self.every_combination_of_its_members
-		test_cases.each do |submatrix|
-			min_row_assignments_permitted = self.min_row_assignment * submatrix.length
-			if min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
-				return "no, min permitted row assignments > max column assignments possible"
-			end
-		end
+		return "no, min permitted row assignments > max column assignments possible" if self.combinatorial_test == "fail"
+
 		return "true"
 	end
 

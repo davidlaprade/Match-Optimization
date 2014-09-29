@@ -261,6 +261,31 @@ class Array
 		return self.transpose.length
 	end
 
+	# call on Array object; returns "fail" if there are fewer column assignments possible than would be permitted in a complete
+	# assignment; returns "pass" otherwise; checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
+	# if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix, the parent matrix is unsolveable
+	# run this test last, since calculating every_combination_of_its_members takes a long time for big arrays
+	def combinatorial_test
+		# how this works:
+			# 	populate array of every combination of the matrix_array rows
+			# 	for each member of the combination array:
+			# 		find min row assignments permitted
+			# 		find max column assignments possible
+			# 		check if min_row_assmts_permitted > max_col_assmts_poss
+			# 			return false
+		# this seems to catch all of the cases where min allowable column assignments > max num of possible row assignments
+		# so I didn't write a corresponding test for that
+
+		test_cases = self.every_combination_of_its_members
+		test_cases.each do |submatrix|
+			min_row_assignments_permitted = self.min_row_assignment * submatrix.length
+			if min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
+				return "fail"
+			end
+		end
+		return "pass"
+	end
+
 	# called on array object; returns array of coordinates [p,q] such that each self[p][q] is an extra-lonely zero
 	# an "extra lonely" zero is one which occurs as the only zero in both its row AND column
 	def extra_lonely_zeros
@@ -748,23 +773,7 @@ class Array
 		# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
 		# if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix, the parent matrix is unsolveable
 		# run this test last, since calculating every_combination_of_its_members takes a long time for big arrays
-		test_cases = self.every_combination_of_its_members
-		test_cases.each do |submatrix|
-			min_row_assignments_permitted = self.min_row_assignment * submatrix.length
-			if min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
-				return ("no, min permitted row assignments > max column assignments possible")
-			end
-		end
-
-		# how this ^^ works:
-			# 	populate array of every combination of the matrix_array rows
-			# 	for each member of the combination array:
-			# 		find min row assignments permitted
-			# 		find max column assignments possible
-			# 		check if min_row_assmts_permitted > max_col_assmts_poss
-			# 			return false
-		# this seems to catch all of the cases where min allowable column assignments > max num of possible row assignments
-		# so I didn't write a corresponding test for that
+		return "no, min permitted row assignments > max column assignments possible" if self.combinatorial_test == "fail"
 
 		# if the program hasn't stopped by now
 		return "true"
