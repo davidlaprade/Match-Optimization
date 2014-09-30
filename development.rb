@@ -882,13 +882,11 @@ class Array
 		# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-		# identify the minimum-sans-zero values for each row
-		row_id_plus_row_min = submatrix.get_ids_and_row_mins
-
 		min_row_assignments_permitted = self.min_row_assignment * submatrix.length
 		while min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
 
-			# outputs ordered array of arrays [p,q,r,s,t] such that p is a row_id, s is the row, q is a col_id, t is the column, and
+			# outputs ordered array of arrays [p,q,r,s,t] such that p is a row_id in the submatrix, s is the row in the submatrix, 
+			# q is a col_id in the submatrix, t is the column in the submatrix, and
 			# r is the value at those coordinates such that r is the min value in its column in the submatrix and there are no zeros
 			# in r's column in the submatrix; the arrays are ordered by increasing r value
 			min_vals = submatrix.transpose.each.with_index.with_object([]) {|(col, col_id), obj| 
@@ -935,23 +933,30 @@ class Array
 					end
 				end
 
+			# throw an error if the method has put a negative value in the self array
+			raise 'Results in negative value in self' if !self.flatten(1).select {|val| val < 0}.empty?
+
 			# edit the submatrix to check to see if the problem is fixed
+				# if there are more columns than rows, minimum mutilation has you subtract values in the row
+				if submatrix.column_count > submatrix.row_count
+					target_id = min_vals.first[0]
+					val = min_vals.first[2]
+					submatrix[target_id].map! {|x| x <= val ? 0 : x}.map! {|x| x != 0 ? x - val : x}
+				# if there are as many or more rows than columns, min mutilation has you subtract values in the column
+				else
+					# find the col_id that values need to be subtracted from
+					target_col = min_vals.first[1]
+					val = min_vals.first[2]
 
+					submatrix = submatrix.transpose.map.with_index {|col, col_id|
+						col_id == target_col ? col.map {|x| x <= val ? 0 : x}.map {|x| x != 0 ? x - val : x} : col
+					}.transpose
 
+				end	
 
+			# throw an error if the method has put a negative value in the submatrix array
+			raise 'Results in negative value in submatrix' if !submatrix.flatten(1).select {|val| val < 0}.empty?
 
-
-			# edit the Matrix accordingly
-			row_id = row_id_plus_row_min[0][0]
-			value_to_subtract = row_id_plus_row_min[0][1]
-			self.find_matching_row_then_subtract_value(submatrix[row_id], value_to_subtract)
-			
-			# edit the submatrix to check to see if the problem is fixed
-			submatrix.subtract_value_from_row_in_array(row_id, value_to_subtract)
-
-			# remove the first member of the array, it's been taken care of; move to second
-			# the method has to be run again, since when you alter the submatrix you alter the values in its rows
-			row_id_plus_row_min = submatrix.get_ids_and_row_mins
 
 		end
 		return self
