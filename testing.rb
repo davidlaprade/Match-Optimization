@@ -953,6 +953,17 @@ end
 # 			failures = failures + 1 if solution != true
 # 	end
 
+		matrix = 	[[9, 5, 1, 1, 1, 1, 3],
+					[8, 3, 6, 2, 7, 3, 2],
+					[4, 7, 6, 9, 4, 2, 4],
+					[4, 3, 5, 8, 5, 5, 2],
+					[7, 6, 7, 9, 9, 6, 7],
+					[7, 3, 7, 9, 6, 9, 1]]
+		make_matrix_solveable(matrix)
 
+		assign_needy_zeros(matrix)
+		print "here!"
+		matrix.finish_assignment
+		print matrix.solveable?
 
 
