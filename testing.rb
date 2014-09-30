@@ -19,42 +19,56 @@ def make_matrix_solveable(working_matrix)
 	working_matrix = working_matrix.zero_rows_and_columns
 
 	solveable = working_matrix.solveable?
-	
+	binding.pry
 	while solveable != "true"
 	
 		while solveable == "no, not enough zeros in rows"
+			binding.pry
 			working_matrix = working_matrix.zero_each_row
 			solveable = working_matrix.solveable?
+			binding.pry
 		end
 	
 		while solveable == "no, not enough zeros in columns"
+		binding.pry
 			working_matrix = working_matrix.zero_each_column
 			solveable = working_matrix.solveable?
+		binding.pry
 		end
 	
 		while solveable == "no, too many lonely zeros in columns"
+		binding.pry
 			working_matrix.fix_too_many_lonely_zeros_in_columns
 			solveable = working_matrix.solveable?
+		binding.pry
 		end
 	
 		while solveable == "no, too many lonely zeros in rows"
+		binding.pry
 			working_matrix.fix_too_many_lonely_zeros_in_rows
 			solveable = working_matrix.solveable?
+		binding.pry
 		end
 
 		while solveable == "no, too many cols with max assignments"
+		binding.pry
 			working_matrix.fix_too_many_max_assignments_in_cols
 			solveable = working_matrix.solveable?
+		binding.pry
 		end
 
 		while solveable == "no, too many rows with max assignments"
+		binding.pry
 			# fix method? def fix_too_many_max_assignments_in_rows
 			solveable = working_matrix.solveable?
+		binding.pry
 		end
 
 		while solveable == "no, min permitted row assignments > max column assignments possible"
+		binding.pry
 			working_matrix.make_more_column_assignments_possible
 			solveable = working_matrix.solveable?
+		binding.pry
 		end
 	
 	end
@@ -331,7 +345,9 @@ class Array
 	def make_more_column_assignments_possible
 		problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
 		while !problematic_submatrices.empty?
+			binding.pry
 			self.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(problematic_submatrices.first)
+			binding.pry
 			problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible	
 		end
 		return self
@@ -535,6 +551,7 @@ class Array
 
 	# called on Array; subtracts the value given as second parameter from each member of the row specified, unless zero
 	def subtract_value_from_row_in_array(row_id, value_to_subtract)
+		binding.pry
 		raise 'Row does not exist in array' if row_id >= self.length || row_id < 0
 		raise 'Would result in negative value' if self[row_id].dup.map {|x| x.zero? ? value_to_subtract : x}.min < value_to_subtract
 		self[row_id].map! {|x| !x.zero? ? x-value_to_subtract : x }
@@ -906,18 +923,59 @@ end
 
 # 		print "assigned!\n"
 
-failures = 0
-tests = 0
-	1000.times do
-		print "failures: #{failures}\n"
-		print "tests so far: #{tests}\n"
-		tests = tests + 1
-			cols = rand(9)+1
-			rows = rand(9)+1
-			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
-			matrix.print_readable
-			make_matrix_solveable(matrix)
-			assign_needy_zeros(matrix).finish_assignment
-			solution = matrix.solution?
-			failures = failures + 1 if solution != true
-	end
+# failures = 0
+# tests = 0
+# 	1000.times do
+# 		print "failures: #{failures}\n"
+# 		print "tests so far: #{tests}\n"
+# 		tests = tests + 1
+# 			cols = rand(9)+1
+# 			rows = rand(9)+1
+# 			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
+# 			matrix.print_readable
+# 			make_matrix_solveable(matrix)
+# 			assign_needy_zeros(matrix).finish_assignment
+# 			solution = matrix.solution?
+# 			failures = failures + 1 if solution != true
+# 	end
+
+matrix = [[4, 3, 1, 7, 3],
+			[6, 8, 9, 8, 9],
+			[4, 1, 3, 2, 4],
+			[3, 4, 6, 2, 9],
+			[1, 2, 9, 4, 4],
+			[2, 4, 2, 5, 2],
+			[3, 9, 8, 3, 7],
+			[6, 3, 5, 5, 5],
+			[2, 8, 7, 3, 8]]
+print make_matrix_solveable(matrix).solveable?
+
+matrix as it enters the "min permitted row assignment greater than possible"
+[[3, 2, 0, 6, 2],
+ [0, 2, 3, 2, 3],
+ [3, 0, 2, 1, 3],
+ [1, 2, 4, 0, 7],
+ [0, 1, 8, 3, 3],
+ [0, 2, 0, 3, 0],
+ [0, 6, 5, 0, 4],
+ [3, 0, 2, 2, 2],
+ [1, 5, 4, 0, 5]]
+
+problematic_submatrix 1
+[[0, 2, 3, 2, 3],
+ [1, 2, 4, 0, 7],
+ [0, 1, 8, 3, 3],
+ [0, 6, 5, 0, 4],
+ [1, 5, 4, 0, 5]]
+
+ matrix as it enters the second time
+
+
+problematic submatrix 2
+ [[0, 2, 3, 2, 3],
+  [3, 0, 2, 1, 3],
+  [1, 2, 4, 0, 7],
+  [0, 0, 7, 2, 2],
+  [0, 6, 5, 0, 4],
+  [3, 0, 2, 2, 2],
+  [1, 5, 4, 0, 5]]

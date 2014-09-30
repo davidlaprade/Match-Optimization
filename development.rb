@@ -872,11 +872,74 @@ class Array
 	# the corresponding values in the Array; repeats the process until min_row_permitted <= max_col_assignments_possible
 	# returns the corrected Array object it was called on
 	def subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)
+		# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		# PROBLEM: find the value to subtract based on the contents of the columns, but then subtract the value in the row;
+		# this has a danger: what if the min in the col is larger than the min in the row? in that case, you will
+		# end up with negative values; so why subtract in the row rather than the column?--because it might be the case
+		# that there are other zeros in that column in the full self matrix, and the danger would again arise;
+		# SOLUTION: first check to see which dimension is bigger, rows or columns, then change values in the smaller
+		# dimension, making sure to first reduce all values lower than the value to subtract to zero
+		# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 		# identify the minimum-sans-zero values for each row
 		row_id_plus_row_min = submatrix.get_ids_and_row_mins
 
 		min_row_assignments_permitted = self.min_row_assignment * submatrix.length
 		while min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
+
+			# outputs ordered array of arrays [p,q,r,s,t] such that p is a row_id, s is the row, q is a col_id, t is the column, and
+			# r is the value at those coordinates such that r is the min value in its column in the submatrix and there are no zeros
+			# in r's column in the submatrix; the arrays are ordered by increasing r value
+			min_vals = submatrix.transpose.each.with_index.with_object([]) {|(col, col_id), obj| 
+				obj << [col.index(col.min), col_id, col.min, submatrix[col.index(col.min)]] if !col.include?(0)
+			}.sort_by {|x| x[2]}
+
+			# edit the Matrix accordingly
+				# if there are more columns than rows, minimum mutilation has you subtract values in the row
+				if submatrix.column_count > submatrix.row_count
+					target_id = self.index(min_vals.first[3])
+					val = min_vals.first[2]
+					self.map!.with_index {|row, row_id|
+						row_id == target_id ? row.map {|x| x <= val ? 0 : x
+							}.map {|x| !x.zero? ? x - val : x} : row
+					}
+				# if there are as many or more rows than columns, min mutilation has you subtract values in the column
+				else
+					# this is more difficult, since you only want to change the values in the self array that correspond to
+					# the values in the column in the submatrix array, and by definition that won't include every member of the
+					# column
+
+					# finds the corresponding self row_id of every row in the submatrix, ouputs them in an array
+					row_ids = submatrix.each.with_object([]) {|sub_row, obj|
+						self.each.with_index {|self_row, row_id| 
+							obj << row_id if self_row == sub_row}
+						}
+					}.sort.uniq
+
+					# now find the col_id that values need to be subtracted from
+					target_col = min_vals.first[1]
+					val = min_vals.first[2]
+
+					# now do the subtracting
+					row_ids.each do |row_id|
+						# create a duplicate, since you can't change self
+						dup = self.dup
+						if dup[row_id][target_col] <= val 
+							dup[row_id][target_col] = 0
+						else
+							dup[row_id][target_col] = dup[row_id][target_col] - val
+						end
+						# now replace self with the changed duplicate
+						self.replace(dup)
+					end
+				end
+
+			# edit the submatrix to check to see if the problem is fixed
+
+
+
+
 
 			# edit the Matrix accordingly
 			row_id = row_id_plus_row_min[0][0]
