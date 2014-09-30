@@ -1,4 +1,6 @@
 require 'matrix'
+require 'pry'
+require 'benchmark'
 
 # passed mask Array object; assigns to needy zeros and extended needy zeros in the mask, then returns the mask
 def assign_needy_zeros(mask)
@@ -6,7 +8,7 @@ def assign_needy_zeros(mask)
 	Matrix.columns(mask.transpose)
 	while !mask.needy_zeros.empty?
 		mask.needy_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
-		mask.cover_unassignables
+		mask.x_unassignables
 	end
 	return mask
 end
@@ -21,34 +23,52 @@ def make_matrix_solveable(working_matrix)
 	while solveable != "true"
 	
 		while solveable == "no, not enough zeros in rows"
+			
 			working_matrix = working_matrix.zero_each_row
 			solveable = working_matrix.solveable?
+			
 		end
 	
 		while solveable == "no, not enough zeros in columns"
+		
 			working_matrix = working_matrix.zero_each_column
 			solveable = working_matrix.solveable?
+		
 		end
 	
 		while solveable == "no, too many lonely zeros in columns"
+		
 			working_matrix.fix_too_many_lonely_zeros_in_columns
 			solveable = working_matrix.solveable?
+		
 		end
 	
 		while solveable == "no, too many lonely zeros in rows"
+		
 			working_matrix.fix_too_many_lonely_zeros_in_rows
 			solveable = working_matrix.solveable?
+		
 		end
 
 		while solveable == "no, too many cols with max assignments"
+		
 			working_matrix.fix_too_many_max_assignments_in_cols
 			solveable = working_matrix.solveable?
+		
 		end
 
+		while solveable == "no, too many rows with max assignments"
+		
+			working_matrix.fix_too_many_max_assignments_in_rows
+			solveable = working_matrix.solveable?
+		
+		end
 
 		while solveable == "no, min permitted row assignments > max column assignments possible"
+		
 			working_matrix.make_more_column_assignments_possible
 			solveable = working_matrix.solveable?
+		
 		end
 	
 	end
@@ -57,7 +77,7 @@ def make_matrix_solveable(working_matrix)
 end
 
 class Array
-	# ARRAY FRIENDLY, BUT COULD REFACTOR TO SIMPLIF + TESTED
+	# ARRAY FRIENDLY, BUT COULD REFACTOR TO SIMPLIFY + TESTED
 	# called on Array object, takes column index and value as inputs
 	# outputs Array in which the value provided has been added to each zero in the column and subtracted otherwise
 	def add_value_if_zero_else_subtract_value_in_columns(col_index, value)
@@ -140,13 +160,6 @@ class Array
 	end
 
 	# ARRAY FRIENDLY + TESTED
-	def get_ids_and_row_mins
-		col_wo_zeros = []
-		self.array_columns.find_all {|column| !column.include?(0)}.each {|col| col.each_with_index {|v,i| col_wo_zeros << [i, v]} }
-		return col_wo_zeros.uniq.sort_by {|x| [x[1],x[0]]}
-	end
-
-	# ARRAY FRIENDLY + TESTED
 	def get_problematic_rows_per_problematic_column
 		problematic_rows = []
 		self.lonely_zeros_per_column.each do |array|
@@ -209,11 +222,6 @@ class Array
 		return self.each_with_index.map {|x,i| self.combination(i+1).to_a}.flatten(1).drop(self.length).uniq
 	end
 
-	# ARRAY FRIENDL + TESTED
-	def find_matching_row_then_subtract_value(row_to_match, value_to_subtract)
-		return self.map! {|row| row==row_to_match ? row.map {|value| value!=0 ? value - value_to_subtract : value}  : row}
-	end
-
 	# ARRAY FRIENDLY + TESTED
 	def fix_too_many_lonely_zeros_in_columns
 		problematic_rows = self.get_problematic_rows_per_problematic_column
@@ -227,6 +235,39 @@ class Array
 	end
 
 	# UNTESTED
+	# call on Array object; creates mask array, then assigns to needy zeros in mask; then finds the number of
+	# rows in the mask that have reached the max_row_assignment value; then it finds the assigned zeros in those
+	# rows; then it ranks those zeros by increasing col_min_sans_zero_value; then, for the zero with the lowest
+	# min_sans_zero value in its column, it subtracts the min_sans_zero value from each non-zero in that column of the 
+	# original array, and adds it to each zero; returns the changed array object it was called on
+	def fix_too_many_max_assignments_in_rows
+		# step 0: create mask and make assignments to needy zeros
+		mask = self.map {|row| row.dup}
+		assign_needy_zeros(mask)
+		mask_cols = mask.transpose
+
+		# step 1: find rows with max assignments in mask
+		# step 2: find assigned zeros in those rows
+		# step 3: rank those zeros by: increasing col_min_sans_zero value
+		problem_zeros = mask.each.with_index.with_object([]) {|(row, row_id), obj| 
+			obj << row_id if row.count("!") >= self.max_row_assignment
+		}.each.with_object([]) {|row_id,obj| mask[row_id].each.with_index {|value, col_id|
+				obj << [row_id, col_id, (self.transpose[col_id]-[0]).min] if value == "!"
+			}
+		}.sort_by {|x| [x[2],x[0],x[1]]}
+
+
+		# step 4: fix first zero identified in problem_zeros; subtract min sans zero from from each member of its column,
+		# add to zeros; replace result with the self array
+		sub = problem_zeros.first[2]
+		self.replace(self.transpose.map.with_index {|col, col_id| 
+			col_id == problem_zeros.first[1] ? col.map {|value| value - sub
+				}.map {|value| value < 0 ? value + 2*sub : value} : col }.transpose)
+	end
+
+	# UNTESTED Test case: [[4],[2],[7],[8],[3]], run make_solveable on it
+	# And another test: [[5, 4],[1, 9],[2, 7],[7, 6],[1, 2],[5, 5],[4, 6],[2, 3]]
+	# And another: [5, 2],[2, 1],[3, 4],[8, 1]
 	# call on Array object; creates mask array, then assigns to needy zeros in mask; then finds the number of
 	# columns in the mask that have reached the max_col_assignment value; then it finds the assigned zeros in those
 	# columns; then it ranks those zeros by increasing row_min_sans_zero_value; then, for the zero with the lowest
@@ -292,7 +333,9 @@ class Array
 	def make_more_column_assignments_possible
 		problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
 		while !problematic_submatrices.empty?
+			
 			self.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(problematic_submatrices.first)
+			
 			problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible	
 		end
 		return self
@@ -442,6 +485,39 @@ class Array
 			end
 		end
 
+		# ///////////////////////////////////////////////////
+		# PROBLEM
+		# You aren't checking to make sure that needy zeros and/or needy zeros by extension don't
+		# result in there being too many required assignments in a row/col; specifically, that the needy zeros and those
+		# by extension don't force there to be too many rows/col with the max
+		# ////////////////////////////////////////////////////////////////
+		# UNTESTED
+		num_columns = self[0].count
+		num_rows = self.count
+		if num_columns != num_rows
+			# createassign needy zeros
+			mask = self.map {|row| row.dup}
+			assign_needy_zeros(mask)
+
+			# now, find out how many columns and rows should be at the max in a complete assignment
+			if num_columns > num_rows
+				max_cols_at_max = num_columns
+				max_rows_at_max = num_columns % num_rows
+				max_rows_at_max = num_rows if max_rows_at_max == 0
+			elsif num_rows > num_columns
+				max_rows_at_max = num_rows
+				max_cols_at_max = num_rows % num_columns
+				max_cols_at_max = num_columns if max_cols_at_max == 0
+			end
+
+			# now see if there are too many rows at the max assignment
+			if mask.select {|row| row.count("!") >= mask.max_row_assignment}.count > max_rows_at_max
+				return "no, too many rows with max assignments"
+			elsif mask.transpose.select {|col| col.count("!") >= self.max_col_assignment}.count > max_cols_at_max
+				return "no, too many cols with max assignments"
+			end
+		end
+
 		return "no, min permitted row assignments > max column assignments possible" if self.combinatorial_test == "fail"
 
 		return "true"
@@ -449,23 +525,50 @@ class Array
 
 	# ARRAY FRIENDLY + TESTED
 	def subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)
-		row_id_plus_row_min = submatrix.get_ids_and_row_mins
 		min_row_assignments_permitted = self.min_row_assignment * submatrix.length
 		while min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
-			row_id = row_id_plus_row_min[0][0]
-			value_to_subtract = row_id_plus_row_min[0][1]
-			self.find_matching_row_then_subtract_value(submatrix[row_id], value_to_subtract)
-			submatrix.subtract_value_from_row_in_array(row_id, value_to_subtract)
-			row_id_plus_row_min = submatrix.get_ids_and_row_mins
+			min_vals = submatrix.transpose.each.with_index.with_object([]) {|(col, col_id), obj| 
+				obj << [col.index(col.min), col_id, col.min, submatrix[col.index(col.min)]] if !col.include?(0)
+			}.sort_by {|x| x[2]}
+				if submatrix.length > submatrix.first.length
+					target_id = self.index(min_vals.first[3])
+					val = min_vals.first[2]
+					self.map!.with_index {|row, row_id|
+						row_id == target_id ? row.map {|x| x <= val ? 0 : x
+							}.map {|x| !x.zero? ? x - val : x} : row
+					}
+				else
+					row_ids = submatrix.each.with_object([]) {|sub_row, obj|
+						self.each.with_index {|self_row, row_id| 
+							obj << row_id if self_row == sub_row
+						}
+					}.sort.uniq
+					target_col = min_vals.first[1]
+					val = min_vals.first[2]
+					row_ids.each do |row_id|
+						dup = self.dup
+						if dup[row_id][target_col] <= val 
+							dup[row_id][target_col] = 0
+						else
+							dup[row_id][target_col] = dup[row_id][target_col] - val
+						end
+						self.replace(dup)
+					end
+				end
+			raise 'Results in negative value in self' if !self.flatten(1).select {|val| val < 0}.empty?
+				if submatrix.length > submatrix.first.length
+					target_id = min_vals.first[0]
+					val = min_vals.first[2]
+					submatrix[target_id].map! {|x| x <= val ? 0 : x}.map! {|x| x != 0 ? x - val : x}
+				else
+					target_col = min_vals.first[1]
+					val = min_vals.first[2]
+					submatrix = submatrix.transpose.map.with_index {|col, col_id|
+						col_id == target_col ? col.map {|x| x <= val ? 0 : x}.map {|x| x != 0 ? x - val : x} : col
+					}.transpose
+				end	
+			raise 'Results in negative value in submatrix' if !submatrix.flatten(1).select {|val| val < 0}.empty?
 		end
-		return self
-	end
-
-	# called on Array; subtracts the value given as second parameter from each member of the row specified, unless zero
-	def subtract_value_from_row_in_array(row_id, value_to_subtract)
-		raise 'Row does not exist in array' if row_id >= self.length || row_id < 0
-		raise 'Would result in negative value' if self[row_id].dup.map {|x| x.zero? ? value_to_subtract : x}.min < value_to_subtract
-		self[row_id].map! {|x| !x.zero? ? x-value_to_subtract : x }
 		return self
 	end
 
@@ -605,7 +708,6 @@ class Array
 		# Otherwise what can happen is you can end up filling columns/rows to the max, thereby x-ing out crucial zeros too fast
 		# ///////////////////////////////////////////////////////////////////////////
 
-
 		# exit the method if reduce_problem can find no issues
 		reduction = self.reduce_problem
 		return self if reduction == [["X"]]
@@ -681,24 +783,25 @@ class Array
 end
 
 
-
 failures = 0
-successes = 0
 tests = 0
-	1000.times do
+	10000.times do
 		print "failures: #{failures}\n"
-		print "successes: #{successes}\n"
 		print "tests so far: #{tests}\n"
 		tests = tests + 1
-			cols = rand(9)+2
-			rows = rand(9)+2
+			cols = rand(9)+1
+			rows = rand(9)+1
 			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
 			matrix.print_readable
 			make_matrix_solveable(matrix)
 			assign_needy_zeros(matrix).finish_assignment
-			print "Solution:"
-			matrix.print_readable
 			solution = matrix.solution?
 			failures = failures + 1 if solution != true
-			successes = successes + 1 if solution == true
 	end
+
+
+
+
+
+
+
