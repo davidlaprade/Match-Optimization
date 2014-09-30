@@ -549,8 +549,8 @@ class Array
 			}.sort_by {|x| x[2]}
 
 			# edit the Matrix accordingly
-				# if there are more columns than rows, minimum mutilation has you subtract values in the row
-				if submatrix.column_count > submatrix.row_count
+				# if there are more values in columns columns than rows, minimum mutilation has you subtract values in the row
+				if submatrix.length > submatrix.first.length
 					target_id = self.index(min_vals.first[3])
 					val = min_vals.first[2]
 					self.map!.with_index {|row, row_id|
@@ -592,8 +592,8 @@ class Array
 			raise 'Results in negative value in self' if !self.flatten(1).select {|val| val < 0}.empty?
 
 			# edit the submatrix to check to see if the problem is fixed
-				# if there are more columns than rows, minimum mutilation has you subtract values in the row
-				if submatrix.column_count > submatrix.row_count
+				# if there are more values in columns than in rows, minimum mutilation has you subtract values in the row
+				if submatrix.length > submatrix.first.length
 					target_id = min_vals.first[0]
 					val = min_vals.first[2]
 					submatrix[target_id].map! {|x| x <= val ? 0 : x}.map! {|x| x != 0 ? x - val : x}
@@ -1006,7 +1006,5 @@ end
 # 			solution = matrix.solution?
 # 			failures = failures + 1 if solution != true
 # 	end
-
-
 
 

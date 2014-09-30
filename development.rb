@@ -875,9 +875,11 @@ class Array
 		# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		# PROBLEM: find the value to subtract based on the contents of the columns, but then subtract the value in the row;
 		# this has a danger: what if the min in the col is larger than the min in the row? in that case, you will
-		# end up with negative values; so why subtract in the row rather than the column?--because it might be the case
-		# that there are other zeros in that column in the full self matrix, and the danger would again arise;
-		# SOLUTION: first check to see which dimension is bigger, rows or columns, then change values in the smaller
+		# end up with negative values; so why subtract in the row rather than the column?--because the issue at hand is that
+		# there are not enough columns with zeros in the submatrix, so making subtractions in the column would
+		# at best produce new zeros in a single column, and that's not what we want; alternatively, creating a mess of zeros
+		# in a single row is not what is wanted either, since at most only a couple of them can be assigned
+		# SOLUTION: if the first check to see which dimension is bigger, rows or columns, then change values in the smaller
 		# dimension, making sure to first reduce all values lower than the value to subtract to zero
 		# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -894,8 +896,8 @@ class Array
 			}.sort_by {|x| x[2]}
 
 			# edit the Matrix accordingly
-				# if there are more columns than rows, minimum mutilation has you subtract values in the row
-				if submatrix.column_count > submatrix.row_count
+				# if there are more values in columns columns than rows, minimum mutilation has you subtract values in the row
+				if submatrix.length > submatrix.first.length
 					target_id = self.index(min_vals.first[3])
 					val = min_vals.first[2]
 					self.map!.with_index {|row, row_id|
@@ -937,8 +939,8 @@ class Array
 			raise 'Results in negative value in self' if !self.flatten(1).select {|val| val < 0}.empty?
 
 			# edit the submatrix to check to see if the problem is fixed
-				# if there are more columns than rows, minimum mutilation has you subtract values in the row
-				if submatrix.column_count > submatrix.row_count
+				# if there are more values in columns columns than rows, minimum mutilation has you subtract values in the row
+				if submatrix.length > submatrix.first.length
 					target_id = min_vals.first[0]
 					val = min_vals.first[2]
 					submatrix[target_id].map! {|x| x <= val ? 0 : x}.map! {|x| x != 0 ? x - val : x}

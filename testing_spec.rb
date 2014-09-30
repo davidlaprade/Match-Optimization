@@ -1315,16 +1315,26 @@ describe Array, '.subtract_min_sans_zero_from_rows_to_add_new_column_assignments
 		matrix = [[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[0,3,0,4,0,7,0],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]
 		argument = [[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2]]
 		matrix.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(argument)
-		expect(matrix).to eq([[0,0,0,0,4,5,8],[6,7,1,0,1,0,23],
-			[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[0,3,0,4,0,7,0],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]])
+		expect(matrix).to eq([[0, 0, 1, 0, 5, 6, 9],
+							 [5, 7, 1, 0, 1, 0, 23],
+							 [0, 0, 3, 9, 1, 0, 6],
+							 [1, 6, 1, 0, 1, 8, 2],
+							 [0, 3, 0, 4, 0, 7, 0],
+							 [0, 8, 0, 9, 0, 9, 0],
+							 [0, 4, 0, 5, 0, 4, 9]])
 	end
 
 	it "fixes the matrix minimally when submatrix passed in is only one of several problematic submatrices" do
 		matrix = [[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[8,3,9,0,2,7,1],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]
 		argument = [[2,6,1,0,1,8,2],[8,3,9,0,2,7,1]]
 		matrix.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(argument)
-		expect(matrix).to eq([[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],
-			[1,0,3,9,1,0,6],[1,5,0,0,0,7,1],[8,3,9,0,2,7,1],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]])
+		expect(matrix).to eq([[1, 0, 1, 0, 5, 6, 9],
+							  [6, 7, 1, 0, 1, 0, 23],
+							  [1, 0, 3, 9, 1, 0, 6],
+							  [2, 6, 1, 0, 1, 8, 1],
+							  [8, 3, 9, 0, 2, 7, 0],
+							  [0, 8, 0, 9, 0, 9, 0],
+							  [0, 4, 0, 5, 0, 4, 9]])
 	end
 
 	# this test case is interesting for several reasons: first, multiple changes have to be made; second, the first few changes that will be made
@@ -1337,8 +1347,13 @@ describe Array, '.subtract_min_sans_zero_from_rows_to_add_new_column_assignments
 		matrix = [[1,9,7,0,5,6,9],[2,7,7,0,7,9,23],[7,3,3,0,4,9,6],[2,6,7,0,7,8,4],[8,3,9,0,8,7,4],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]
 		argument = [[1,9,7,0,5,6,9],[2,7,7,0,7,9,23],[7,3,3,0,4,9,6],[2,6,7,0,7,8,4],[8,3,9,0,8,7,4]]
 		matrix.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(argument)
-		expect(matrix).to eq([[0,8,6,0,4,5,8],[2,7,7,0,7,9,23],[3,0,0,0,0,5,2],[2,6,7,0,7,8,4],
-			[8,3,9,0,8,7,4],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]])
+		expect(matrix).to eq( [[0, 6, 4, 0, 1, 6, 9],
+							 [1, 4, 4, 0, 3, 9, 23],
+							 [6, 0, 0, 0, 0, 9, 6],
+							 [1, 3, 4, 0, 3, 8, 4],
+							 [7, 0, 6, 0, 4, 7, 4],
+							 [0, 8, 0, 9, 0, 9, 0],
+							 [0, 4, 0, 5, 0, 4, 9]])
 	end
 
 end
@@ -1354,23 +1369,38 @@ describe Array, ".make_more_column_assignments_possible" do
 
 	it "works when the smallest problematic submmatrix is all that has to be changed" do
 		matrix = [[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[0,3,0,4,0,7,0],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]
-		expect(matrix.make_more_column_assignments_possible).to eq([[0,0,0,0,4,5,8],[6,7,1,0,1,0,23],
-			[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[0,3,0,4,0,7,0],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]])
+		expect(matrix.make_more_column_assignments_possible).to eq( [[0, 0, 1, 0, 5, 6, 9],
+																	 [5, 7, 1, 0, 1, 0, 23],
+																	 [0, 0, 3, 9, 1, 0, 6],
+																	 [1, 6, 1, 0, 1, 8, 2],
+																	 [0, 3, 0, 4, 0, 7, 0],
+																	 [0, 8, 0, 9, 0, 9, 0],
+																	 [0, 4, 0, 5, 0, 4, 9]])
 	end
 
 	# should work when there are many problematic submatrices built off the same elements (i.e. which share the same elements)
 	it "works when two overlapping problematic submatrices have to be changed" do
 		matrix = [[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[8,3,9,0,2,7,1],
 			[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]
-		expect(matrix.make_more_column_assignments_possible).to eq([[0,0,0,0,4,5,8],[6,7,1,0,1,0,23],
-				[1,0,3,9,1,0,6],[1,5,0,0,0,7,1],[8,3,9,0,2,7,1],[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]])
+		expect(matrix.make_more_column_assignments_possible).to eq( [[0, 0, 1, 0, 5, 6, 9],
+																	 [5, 7, 1, 0, 1, 0, 23],
+																	 [0, 0, 3, 9, 1, 0, 6],
+																	 [1, 6, 1, 0, 1, 8, 1],
+																	 [8, 3, 9, 0, 2, 7, 0],
+																	 [0, 8, 0, 9, 0, 9, 0],
+																	 [0, 4, 0, 5, 0, 4, 9]])
 	end
 
 	# should work when there are two distinct problematic submatrices (i.e. which do not share any elements)
 	it "works when two distinct problematic submatrices have to be changed" do
 		matrix = [[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[4,3,0,4,0,7,4],[4,8,0,9,0,9,4],[4,4,0,5,0,4,9]]
-		expect(matrix.make_more_column_assignments_possible).to eq([[0,0,0,0,4,5,8],[6,7,1,0,1,0,23],[0,0,2,8,0,0,5],[2,6,1,0,1,8,2],
-			[0,0,0,0,0,3,0],[4,8,0,9,0,9,4],[4,4,0,5,0,4,9]])
+		expect(matrix.make_more_column_assignments_possible).to eq( [[0, 0, 1, 0, 5, 6, 7],
+																	 [5, 7, 1, 0, 1, 0, 21],
+																	 [0, 0, 3, 9, 1, 0, 4],
+																	 [1, 6, 1, 0, 1, 8, 0],
+																	 [4, 0, 0, 4, 0, 7, 2],
+																	 [4, 5, 0, 9, 0, 9, 2],
+																	 [4, 1, 0, 5, 0, 4, 7]])
 	end
 
 	# original algorithm does not handle this case correctly; it changes [2,6,1,0,1,8,2] into [1,6,0,0,0,8,1] and then into [0,4,0,0,0,6,0]
@@ -1379,8 +1409,13 @@ describe Array, ".make_more_column_assignments_possible" do
 	# preferred
 	it "works when two distinct problematic submatrices have to be changed, hard case" do
 		matrix = [[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[4,3,0,4,0,7,4],[4,8,0,9,0,9,4],[4,4,0,5,0,4,9]]
-		expect(matrix.make_more_column_assignments_possible).to eq([[0,0,0,0,4,5,8],[6,7,1,0,1,0,23],[0,0,2,8,0,0,5],[2,6,1,0,1,8,2],
-			[0,0,0,0,0,3,0],[4,8,0,9,0,9,4],[4,4,0,5,0,4,9]])
+		expect(matrix.make_more_column_assignments_possible).to eq( [[0, 0, 1, 0, 5, 6, 7], 
+																	 [5, 7, 1, 0, 1, 0, 21], 
+																	 [0, 0, 3, 9, 1, 0, 4], 
+																	 [1, 6, 1, 0, 1, 8, 0], 
+																	 [4, 0, 0, 4, 0, 7, 2], 
+																	 [4, 5, 0, 9, 0, 9, 2], 
+																	 [4, 1, 0, 5, 0, 4, 7]])
 	end
 
 end
