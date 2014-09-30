@@ -63,7 +63,7 @@ def make_matrix_solveable(working_matrix)
 end
 
 class Array
-	# ARRAY FRIENDLY, BUT COULD REFACTOR TO SIMPLIF + TESTED
+	# ARRAY FRIENDLY, BUT COULD REFACTOR TO SIMPLIFY + TESTED
 	# called on Array object, takes column index and value as inputs
 	# outputs Array in which the value provided has been added to each zero in the column and subtracted otherwise
 	def add_value_if_zero_else_subtract_value_in_columns(col_index, value)
@@ -230,6 +230,37 @@ class Array
 	def fix_too_many_lonely_zeros_in_rows
 		problematic_columns = self.get_problematic_columns_per_problematic_row
 		self.zero_fewest_problematic_columns(problematic_columns)
+	end
+
+	# UNTESTED
+	# call on Array object; creates mask array, then assigns to needy zeros in mask; then finds the number of
+	# rows in the mask that have reached the max_row_assignment value; then it finds the assigned zeros in those
+	# rows; then it ranks those zeros by increasing col_min_sans_zero_value; then, for the zero with the lowest
+	# min_sans_zero value in its column, it subtracts the min_sans_zero value from each non-zero in that column of the 
+	# original array, and adds it to each zero; returns the changed array object it was called on
+	def fix_too_many_max_assignments_in_rows
+		# step 0: create mask and make assignments to needy zeros
+		mask = self.map {|row| row.dup}
+		assign_needy_zeros(mask)
+		mask_cols = mask.transpose
+
+		# step 1: find rows with max assignments in mask
+		# step 2: find assigned zeros in those rows
+		# step 3: rank those zeros by: increasing col_min_sans_zero value
+		problem_zeros = mask.each.with_index.with_object([]) {|(row, row_id), obj| 
+			obj << row_id if row.count("!") >= self.max_row_assignment
+		}.each.with_object([]) {|row_id,obj| mask[row_id].each.with_index {|value, col_id|
+				obj << [row_id, col_id, (self.transpose[col_id]-[0]).min] if value == "!"
+			}
+		}.sort_by {|x| [x[2],x[0],x[1]]}
+
+
+		# step 4: fix first zero identified in problem_zeros; subtract min sans zero from from each member of its column,
+		# add to zeros; replace result with the self array
+		sub = problem_zeros.first[2]
+		self.replace(self.transpose.map.with_index {|col, col_id| 
+			col_id == problem_zeros.first[1] ? col.map {|value| value - sub
+				}.map {|value| value < 0 ? value + 2*sub : value} : col }.transpose)
 	end
 
 	# UNTESTED Test case: [[4],[2],[7],[8],[3]], run make_solveable on it

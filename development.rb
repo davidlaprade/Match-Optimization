@@ -199,6 +199,22 @@ def make_matrix_solveable(working_matrix)
 			# It does not seem possible to get a problematic matrix that will cause this loop to continue infinitely
 			solveable = working_matrix.solveable?
 		end
+
+		while solveable == "no, too many cols with max assignments"
+			# to fix: create mask array, then assign to needy zeros in mask; then find the number of
+			# columns in the mask that have reached the max_col_assignment value; then find the assigned zeros in those
+			# columns; then rank those zeros by increasing row_min_sans_zero_value; then, for the zero with the lowest
+			# min_sans_zero value in its row, subtract the min_sans_zero value from each non-zero in the row of the 
+			# original array, and add it to each zero
+			working_matrix.fix_too_many_max_assignments_in_cols
+			solveable = working_matrix.solveable?
+		end
+
+		while solveable == "no, too many rows with max assignments"
+			working_matrix.fix_too_many_max_assignments_in_rows
+			solveable = working_matrix.solveable?
+		end
+
 		
 		while solveable == "no, min permitted row assignments > max column assignments possible"
 			# to fix: if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix
@@ -513,6 +529,37 @@ class Array
 		# you want to correct the column with the lowest min value first, then the column with the next lowest, then with the next lowest, and so on
 		# point is: you want to minimize the extent to which you have to lower values to get an assignment
 		self.zero_fewest_problematic_columns(problematic_columns)
+	end
+
+	# UNTESTED
+	# call on Array object; creates mask array, then assigns to needy zeros in mask; then finds the number of
+	# rows in the mask that have reached the max_row_assignment value; then it finds the assigned zeros in those
+	# rows; then it ranks those zeros by increasing col_min_sans_zero_value; then, for the zero with the lowest
+	# min_sans_zero value in its column, it subtracts the min_sans_zero value from each non-zero in that column of the 
+	# original array, and adds it to each zero; returns the changed array object it was called on
+	def fix_too_many_max_assignments_in_rows
+		# step 0: create mask and make assignments to needy zeros
+		mask = self.map {|row| row.dup}
+		assign_needy_zeros(mask)
+		mask_cols = mask.transpose
+
+		# step 1: find rows with max assignments in mask
+		# step 2: find assigned zeros in those rows
+		# step 3: rank those zeros by: increasing col_min_sans_zero value
+		problem_zeros = mask.each.with_index.with_object([]) {|(row, row_id), obj| 
+			obj << row_id if row.count("!") >= self.max_row_assignment
+		}.each.with_object([]) {|row_id,obj| mask[row_id].each.with_index {|value, col_id|
+				obj << [row_id, col_id, (self.transpose[col_id]-[0]).min] if value == "!"
+			}
+		}.sort_by {|x| [x[2],x[0],x[1]]}
+
+
+		# step 4: fix first zero identified in problem_zeros; subtract min sans zero from from each member of its column,
+		# add to zeros; replace result with the self array
+		sub = problem_zeros.first[2]
+		self.replace(self.transpose.map.with_index {|col, col_id| 
+			col_id == problem_zeros.first[1] ? col.map {|value| value - sub
+				}.map {|value| value < 0 ? value + 2*sub : value} : col }.transpose)
 	end
 
 	# UNTESTED
