@@ -80,7 +80,7 @@ describe Array, ".finish_assignment" do
 		expect(matrix.solution?).to eq(true)
 	end
 
-	xit "does not get stuck in an infinite loop" do
+	it "does not get stuck in an infinite loop" do
 		matrix = [[2, 9, 6, 1, 3, 4, 6],
 			[2, 3, 4, 7, 8, 3, 8],
 			[6, 3, 1, 6, 6, 4, 6],
@@ -94,7 +94,7 @@ describe Array, ".finish_assignment" do
 		expect(matrix.solution?).to eq(true)
 	end
 
-	xit "does not get stuck in an infinite loop" do
+	it "does not get stuck in an infinite loop" do
 		matrix = [[5, 2, 2, 3, 1, 8, 5, 9, 5],
 			[5, 4, 4, 4, 1, 7, 6, 2, 9],
 			[6, 7, 7, 7, 5, 9, 5, 7, 8],
@@ -108,7 +108,7 @@ describe Array, ".finish_assignment" do
 		expect(matrix.solution?).to eq(true)
 	end
 
-	xit "does not get stuck in an infinite loop" do
+	it "does not get stuck in an infinite loop" do
 		matrix = [[9, 1, 1, 2, 5, 2, 9, 9, 5, 2, 1, 6, 3],
 			[9, 8, 9, 7, 8, 8, 2, 1, 2, 9, 6, 2, 3],
 			[7, 5, 8, 4, 8, 8, 9, 9, 5, 6, 1, 8, 9],
@@ -128,6 +128,19 @@ describe Array, ".finish_assignment" do
 		assign_needy_zeros(matrix).finish_assignment
 		expect(matrix.solution?).to eq(true)
 	end
+
+	it "does not get stuck in an infinite loop" do
+		matrix = 	[[9, 5, 1, 1, 1, 1, 3],
+					[8, 3, 6, 2, 7, 3, 2],
+					[4, 7, 6, 9, 4, 2, 4],
+					[4, 3, 5, 8, 5, 5, 2],
+					[7, 6, 7, 9, 9, 6, 7],
+					[7, 3, 7, 9, 6, 9, 1]]
+		make_matrix_solveable(matrix)
+		assign_needy_zeros(matrix).finish_assignment
+		expect(matrix.solution?).to eq(true)
+	end
+
 
 
 	# 40.times do

@@ -59,7 +59,7 @@ def make_matrix_solveable(working_matrix)
 
 		while solveable == "no, too many rows with max assignments"
 		
-			# fix method? def fix_too_many_max_assignments_in_rows
+			working_matrix.fix_too_many_max_assignments_in_rows
 			solveable = working_matrix.solveable?
 		
 		end
@@ -952,5 +952,7 @@ end
 # 			solution = matrix.solution?
 # 			failures = failures + 1 if solution != true
 # 	end
+
+
 
 
