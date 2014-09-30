@@ -10,6 +10,22 @@ require 'testing'
 
 # temporarily breaking the above rule so that I focus on this issue first; it does not depend on problems with other methods; rather, the
 # problem has to do with how I'm trying to speed up the algorithm by transposing non-square arrays
+
+describe Array, ".fix_too_many_max_assignments_in_cols" do
+# UNTESTED Test case: [[4],[2],[7],[8],[3]], run make_solveable on it
+# And another test: [[5, 4],[1, 9],[2, 7],[7, 6],[1, 2],[5, 5],[4, 6],[2, 3]]
+# And another: [5, 2],[2, 1],[3, 4],[8, 1]
+# call on Array object; creates mask array, then assigns to needy zeros in mask; then finds the number of
+# columns in the mask that have reached the max_col_assignment value; then it finds the assigned zeros in those
+# columns; then it ranks those zeros by increasing row_min_sans_zero_value; then, for the zero with the lowest
+# min_sans_zero value in its row, it subtracts the min_sans_zero value from each non-zero in the row of the 
+# original array, and adds it to each zero; returns the changed array object it was called on
+# def fix_too_many_max_assignments_in_cols
+
+
+end
+
+
 describe Array, ".x_unassignables" do
 
 	it "X-s out zero in row with max assignments when dimensions are uneven" do
@@ -206,6 +222,12 @@ describe "make_matrix_solveable" do
 	[8, 1, 0, 5, 8, 5],[8, 9, 4, 6, 4, 6],[9, 3, 4, 1, 7, 0],[7, 1, 9, 9, 9, 6],[4, 8, 1, 1, 9, 0],[0, 0, 1, 2, 0, 7]]
 		expect(make_matrix_solveable(matrix).solveable?).to eq("true")
 	end
+
+	it "should not throw a RuntimeError" do
+		matrix = [[4, 7, 5, 8, 7, 2, 3, 4],[8, 4, 3, 4, 6, 5, 8, 7],[6, 6, 7, 4, 5, 8, 7, 7],[4, 1, 9, 7, 5, 4, 6, 5]]
+		expect(make_matrix_solveable(matrix).solveable?).to eq("true")
+	end
+
 
 	it "yeilds a solveable array when called on an array bordered by low values" do
 		matrix = [[1,1,1,1,1,1],[1,4,5,6,3,1],[1,9,3,8,5,1],[1,5,8,7,3,1],[1,3,9,5,7,1],[1,1,1,1,1,1]]

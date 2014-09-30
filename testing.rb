@@ -265,6 +265,7 @@ class Array
 
 	# UNTESTED Test case: [[4],[2],[7],[8],[3]], run make_solveable on it
 	# And another test: [[5, 4],[1, 9],[2, 7],[7, 6],[1, 2],[5, 5],[4, 6],[2, 3]]
+	# And another: [5, 2],[2, 1],[3, 4],[8, 1]
 	# call on Array object; creates mask array, then assigns to needy zeros in mask; then finds the number of
 	# columns in the mask that have reached the max_col_assignment value; then it finds the assigned zeros in those
 	# columns; then it ranks those zeros by increasing row_min_sans_zero_value; then, for the zero with the lowest
@@ -486,10 +487,11 @@ class Array
 		# result in there being too many required assignments in a row/col; specifically, that the needy zeros and those
 		# by extension don't force there to be too many rows/col with the max
 		# ////////////////////////////////////////////////////////////////
-
+		# UNTESTED
 		num_columns = self[0].count
 		num_rows = self.count
 		if num_columns != num_rows
+			# createassign needy zeros
 			mask = self.map {|row| row.dup}
 			assign_needy_zeros(mask)
 
@@ -497,9 +499,11 @@ class Array
 			if num_columns > num_rows
 				max_cols_at_max = num_columns
 				max_rows_at_max = num_columns % num_rows
-			elsif num_columns < num_rows
+				max_rows_at_max = num_rows if max_rows_at_max == 0
+			elsif num_rows > num_columns
 				max_rows_at_max = num_rows
 				max_cols_at_max = num_rows % num_columns
+				max_cols_at_max = num_columns if max_cols_at_max == 0
 			end
 
 			# now see if there are too many rows at the max assignment
@@ -917,14 +921,3 @@ tests = 0
 			solution = matrix.solution?
 			failures = failures + 1 if solution != true
 	end
-
-
-
-# [1, 8, 5, "!", 1, 2, 5]
-# ["X", 1, 2, 5, 5, "!", 6]
-# [5, 2, "!", 5, 4, 2, 5]
-# [3, "X", 1, 6, "!", 4, 5]
-# [6, 4, 6, "!", 7, 2, 2]
-# [6, 2, "!", 3, 5, 3, 3]
-# [2, 1, 2, "X", 1, 2, "!"]
-# ["!", "!", "X", 2, 1, 1, 0]

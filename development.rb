@@ -817,6 +817,44 @@ class Array
 			end
 		end
 
+		# ///////////////////////////////////////////////////
+		# PROBLEM
+		# You aren't checking to make sure that needy zeros and/or needy zeros by extension don't
+		# result in there being too many required assignments in a row/col; specifically, that the needy zeros and those
+		# by extension don't force there to be too many rows/col with the max
+		# ////////////////////////////////////////////////////////////////
+		# UNTESTED
+		num_columns = self[0].count
+		num_rows = self.count
+		if num_columns != num_rows
+			# create a mask, assign to needy zeros in mask
+			mask = self.map {|row| row.dup}
+			assign_needy_zeros(mask)
+
+			# now, find out how many columns and rows should be at the max in a complete assignment
+			if num_columns > num_rows
+				max_cols_at_max = num_columns
+				# see corresponding note below for max_cols_at_max to see why this is done
+				max_rows_at_max = num_columns % num_rows
+				max_rows_at_max = num_rows if max_rows_at_max == 0
+			elsif num_rows > num_columns
+				max_rows_at_max = num_rows
+				# suppose there are 5 rows and 1 column, then the 1 column will reach the max_col_assignment;
+				# hence, there should be 1 column at the max; but num_rows % num_cols (5%1) == 0; you need to
+				# build in a condition here so that when the num_cols evenly divides the num_rows the max_cols_at_max
+				# is correct
+				max_cols_at_max = num_rows % num_columns
+				max_cols_at_max = num_columns if max_cols_at_max == 0
+			end
+
+			# now see if there are too many rows at the max assignment
+			if mask.select {|row| row.count("!") >= mask.max_row_assignment}.count > max_rows_at_max
+				return "no, too many rows with max assignments"
+			elsif mask.transpose.select {|col| col.count("!") >= self.max_col_assignment}.count > max_cols_at_max
+				return "no, too many cols with max assignments"
+			end
+		end
+
 		# checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
 		# if min_allowable_row_assmts_permitted is greater than max_column_assmts_possible for any submatrix, the parent matrix is unsolveable
 		# run this test last, since calculating every_combination_of_its_members takes a long time for big arrays
