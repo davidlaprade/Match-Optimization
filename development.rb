@@ -911,7 +911,7 @@ class Array
 					# finds the corresponding self row_id of every row in the submatrix, ouputs them in an array
 					row_ids = submatrix.each.with_object([]) {|sub_row, obj|
 						self.each.with_index {|self_row, row_id| 
-							obj << row_id if self_row == sub_row}
+							obj << row_id if self_row == sub_row
 						}
 					}.sort.uniq
 

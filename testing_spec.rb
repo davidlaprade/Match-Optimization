@@ -204,7 +204,7 @@ describe "make_matrix_solveable" do
 		expect(make_matrix_solveable(matrix).solveable?).to eq("true")
 	end
 
-	xit "should not throw a RuntimeError" do
+	it "should not throw a RuntimeError" do
 		matrix = [[4, 3, 1, 7, 3],
 			[6, 8, 9, 8, 9],
 			[4, 1, 3, 2, 4],

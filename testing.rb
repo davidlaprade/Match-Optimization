@@ -19,56 +19,56 @@ def make_matrix_solveable(working_matrix)
 	working_matrix = working_matrix.zero_rows_and_columns
 
 	solveable = working_matrix.solveable?
-	binding.pry
+	
 	while solveable != "true"
 	
 		while solveable == "no, not enough zeros in rows"
-			binding.pry
+			
 			working_matrix = working_matrix.zero_each_row
 			solveable = working_matrix.solveable?
-			binding.pry
+			
 		end
 	
 		while solveable == "no, not enough zeros in columns"
-		binding.pry
+		
 			working_matrix = working_matrix.zero_each_column
 			solveable = working_matrix.solveable?
-		binding.pry
+		
 		end
 	
 		while solveable == "no, too many lonely zeros in columns"
-		binding.pry
+		
 			working_matrix.fix_too_many_lonely_zeros_in_columns
 			solveable = working_matrix.solveable?
-		binding.pry
+		
 		end
 	
 		while solveable == "no, too many lonely zeros in rows"
-		binding.pry
+		
 			working_matrix.fix_too_many_lonely_zeros_in_rows
 			solveable = working_matrix.solveable?
-		binding.pry
+		
 		end
 
 		while solveable == "no, too many cols with max assignments"
-		binding.pry
+		
 			working_matrix.fix_too_many_max_assignments_in_cols
 			solveable = working_matrix.solveable?
-		binding.pry
+		
 		end
 
 		while solveable == "no, too many rows with max assignments"
-		binding.pry
+		
 			# fix method? def fix_too_many_max_assignments_in_rows
 			solveable = working_matrix.solveable?
-		binding.pry
+		
 		end
 
 		while solveable == "no, min permitted row assignments > max column assignments possible"
-		binding.pry
+		
 			working_matrix.make_more_column_assignments_possible
 			solveable = working_matrix.solveable?
-		binding.pry
+		
 		end
 	
 	end
@@ -345,9 +345,9 @@ class Array
 	def make_more_column_assignments_possible
 		problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible
 		while !problematic_submatrices.empty?
-			binding.pry
+			
 			self.subtract_min_sans_zero_from_rows_to_add_new_column_assignments(problematic_submatrices.first)
-			binding.pry
+			
 			problematic_submatrices = self.get_submatrices_where_min_row_permitted_is_greater_than_max_col_possible	
 		end
 		return self
@@ -537,21 +537,89 @@ class Array
 
 	# ARRAY FRIENDLY + TESTED
 	def subtract_min_sans_zero_from_rows_to_add_new_column_assignments(submatrix)
-		row_id_plus_row_min = submatrix.get_ids_and_row_mins
 		min_row_assignments_permitted = self.min_row_assignment * submatrix.length
 		while min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
-			row_id = row_id_plus_row_min[0][0]
-			value_to_subtract = row_id_plus_row_min[0][1]
-			self.find_matching_row_then_subtract_value(submatrix[row_id], value_to_subtract)
-			submatrix.subtract_value_from_row_in_array(row_id, value_to_subtract)
-			row_id_plus_row_min = submatrix.get_ids_and_row_mins
+
+			# outputs ordered array of arrays [p,q,r,s,t] such that p is a row_id in the submatrix, s is the row in the submatrix, 
+			# q is a col_id in the submatrix, t is the column in the submatrix, and
+			# r is the value at those coordinates such that r is the min value in its column in the submatrix and there are no zeros
+			# in r's column in the submatrix; the arrays are ordered by increasing r value
+			min_vals = submatrix.transpose.each.with_index.with_object([]) {|(col, col_id), obj| 
+				obj << [col.index(col.min), col_id, col.min, submatrix[col.index(col.min)]] if !col.include?(0)
+			}.sort_by {|x| x[2]}
+
+			# edit the Matrix accordingly
+				# if there are more columns than rows, minimum mutilation has you subtract values in the row
+				if submatrix.column_count > submatrix.row_count
+					target_id = self.index(min_vals.first[3])
+					val = min_vals.first[2]
+					self.map!.with_index {|row, row_id|
+						row_id == target_id ? row.map {|x| x <= val ? 0 : x
+							}.map {|x| !x.zero? ? x - val : x} : row
+					}
+				# if there are as many or more rows than columns, min mutilation has you subtract values in the column
+				else
+					# this is more difficult, since you only want to change the values in the self array that correspond to
+					# the values in the column in the submatrix array, and by definition that won't include every member of the
+					# column
+
+					# finds the corresponding self row_id of every row in the submatrix, ouputs them in an array
+					row_ids = submatrix.each.with_object([]) {|sub_row, obj|
+						self.each.with_index {|self_row, row_id| 
+							obj << row_id if self_row == sub_row
+						}
+					}.sort.uniq
+
+					# now find the col_id that values need to be subtracted from
+					target_col = min_vals.first[1]
+					val = min_vals.first[2]
+
+					# now do the subtracting
+					row_ids.each do |row_id|
+						# create a duplicate, since you can't change self
+						dup = self.dup
+						if dup[row_id][target_col] <= val 
+							dup[row_id][target_col] = 0
+						else
+							dup[row_id][target_col] = dup[row_id][target_col] - val
+						end
+						# now replace self with the changed duplicate
+						self.replace(dup)
+					end
+				end
+
+			# throw an error if the method has put a negative value in the self array
+			raise 'Results in negative value in self' if !self.flatten(1).select {|val| val < 0}.empty?
+
+			# edit the submatrix to check to see if the problem is fixed
+				# if there are more columns than rows, minimum mutilation has you subtract values in the row
+				if submatrix.column_count > submatrix.row_count
+					target_id = min_vals.first[0]
+					val = min_vals.first[2]
+					submatrix[target_id].map! {|x| x <= val ? 0 : x}.map! {|x| x != 0 ? x - val : x}
+				# if there are as many or more rows than columns, min mutilation has you subtract values in the column
+				else
+					# find the col_id that values need to be subtracted from
+					target_col = min_vals.first[1]
+					val = min_vals.first[2]
+
+					submatrix = submatrix.transpose.map.with_index {|col, col_id|
+						col_id == target_col ? col.map {|x| x <= val ? 0 : x}.map {|x| x != 0 ? x - val : x} : col
+					}.transpose
+
+				end	
+
+			# throw an error if the method has put a negative value in the submatrix array
+			raise 'Results in negative value in submatrix' if !submatrix.flatten(1).select {|val| val < 0}.empty?
+
+
 		end
 		return self
 	end
 
 	# called on Array; subtracts the value given as second parameter from each member of the row specified, unless zero
 	def subtract_value_from_row_in_array(row_id, value_to_subtract)
-		binding.pry
+		
 		raise 'Row does not exist in array' if row_id >= self.length || row_id < 0
 		raise 'Would result in negative value' if self[row_id].dup.map {|x| x.zero? ? value_to_subtract : x}.min < value_to_subtract
 		self[row_id].map! {|x| !x.zero? ? x-value_to_subtract : x }
@@ -939,43 +1007,6 @@ end
 # 			failures = failures + 1 if solution != true
 # 	end
 
-matrix = [[4, 3, 1, 7, 3],
-			[6, 8, 9, 8, 9],
-			[4, 1, 3, 2, 4],
-			[3, 4, 6, 2, 9],
-			[1, 2, 9, 4, 4],
-			[2, 4, 2, 5, 2],
-			[3, 9, 8, 3, 7],
-			[6, 3, 5, 5, 5],
-			[2, 8, 7, 3, 8]]
-print make_matrix_solveable(matrix).solveable?
-
-matrix as it enters the "min permitted row assignment greater than possible"
-[[3, 2, 0, 6, 2],
- [0, 2, 3, 2, 3],
- [3, 0, 2, 1, 3],
- [1, 2, 4, 0, 7],
- [0, 1, 8, 3, 3],
- [0, 2, 0, 3, 0],
- [0, 6, 5, 0, 4],
- [3, 0, 2, 2, 2],
- [1, 5, 4, 0, 5]]
-
-problematic_submatrix 1
-[[0, 2, 3, 2, 3],
- [1, 2, 4, 0, 7],
- [0, 1, 8, 3, 3],
- [0, 6, 5, 0, 4],
- [1, 5, 4, 0, 5]]
-
- matrix as it enters the second time
 
 
-problematic submatrix 2
- [[0, 2, 3, 2, 3],
-  [3, 0, 2, 1, 3],
-  [1, 2, 4, 0, 7],
-  [0, 0, 7, 2, 2],
-  [0, 6, 5, 0, 4],
-  [3, 0, 2, 2, 2],
-  [1, 5, 4, 0, 5]]
+
