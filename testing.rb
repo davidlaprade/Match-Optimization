@@ -8,7 +8,7 @@ def assign_needy_zeros(mask)
 	Matrix.columns(mask.transpose)
 	while !mask.needy_zeros.empty?
 		mask.needy_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
-		mask.cover_unassignables
+		mask.x_unassignables
 	end
 	return mask
 end
@@ -708,7 +708,6 @@ class Array
 		# Otherwise what can happen is you can end up filling columns/rows to the max, thereby x-ing out crucial zeros too fast
 		# ///////////////////////////////////////////////////////////////////////////
 
-
 		# exit the method if reduce_problem can find no issues
 		reduction = self.reduce_problem
 		return self if reduction == [["X"]]
@@ -937,33 +936,25 @@ end
 
 # 		print "assigned!\n"
 
-# failures = 0
-# tests = 0
-# 	1000.times do
-# 		print "failures: #{failures}\n"
-# 		print "tests so far: #{tests}\n"
-# 		tests = tests + 1
-# 			cols = rand(9)+1
-# 			rows = rand(9)+1
-# 			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
-# 			matrix.print_readable
-# 			make_matrix_solveable(matrix)
-# 			assign_needy_zeros(matrix).finish_assignment
-# 			solution = matrix.solution?
-# 			failures = failures + 1 if solution != true
-# 	end
+failures = 0
+tests = 0
+	10000.times do
+		print "failures: #{failures}\n"
+		print "tests so far: #{tests}\n"
+		tests = tests + 1
+			cols = rand(9)+1
+			rows = rand(9)+1
+			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
+			matrix.print_readable
+			make_matrix_solveable(matrix)
+			assign_needy_zeros(matrix).finish_assignment
+			solution = matrix.solution?
+			failures = failures + 1 if solution != true
+	end
 
-		matrix = 	[[9, 5, 1, 1, 1, 1, 3],
-					[8, 3, 6, 2, 7, 3, 2],
-					[4, 7, 6, 9, 4, 2, 4],
-					[4, 3, 5, 8, 5, 5, 2],
-					[7, 6, 7, 9, 9, 6, 7],
-					[7, 3, 7, 9, 6, 9, 1]]
-		make_matrix_solveable(matrix)
 
-		assign_needy_zeros(matrix)
-		print "here!"
-		matrix.finish_assignment
-		print matrix.solveable?
+
+
+
 
 
