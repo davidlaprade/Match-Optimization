@@ -1,3 +1,15 @@
+# //////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////////////
+#
+# INSTRUCTIONS:
+#
+# To see the algorithm in action, fork this project and run "ruby demo.rb" from the terminal.
+#
+# //////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 require 'matrix'
 
 # passed mask Array object; assigns to needy zeros and extended needy zeros in the mask, then returns the mask
@@ -676,6 +688,16 @@ class Array
 		end
 	end
 
+	# call on Array object, returns an array of coordinates [row_id,col_id]: one for each value in the object that equals the
+	# value passed in as an argument 
+	def find_with_value(value)
+		return self.each.with_index.with_object([]) {|(row, row_id), obj| 
+			row.each.with_index {|val, col_id| 
+				obj<<[row_id, col_id] if val == value
+			}
+		}
+	end
+
 
 	# TESTED
 	# call on mask Array object; run reduce_problem on the object; use result to get
@@ -780,7 +802,10 @@ class Array
 
 end
 
-print "\nTry the algorithm to see how it works!\n\nSuppose you're assigning roles to students in a play, and you want as many students as possible to get roles that they like.\n\n"
+# clear the viewing window
+puts "\e[H\e[2J"
+
+print "Try the algorithm to see how it works!\n\nSuppose you're assigning roles to students in a play, and you want as many students as possible to get roles that they like.\n\n"
 
 # get number of actors
 actors = 0
@@ -818,7 +843,10 @@ while continue != "c"
 	continue = gets.chomp
 end
 
-print "\nNow, assume that each student has ranked the roles in terms of his/her preferences. (Sometimes male students want to play female characters, and vice versa. You don't complain. It's theater.) A student's first choice is designated by 1, his/her second choice by 2, and so on down.\n\n"
+# clear the viewing window
+puts "\e[H\e[2J"
+
+print "Now, assume that each student has ranked the roles in terms of his/her preferences. (Sometimes male students want to play female characters, and vice versa. You don't complain. It's theater.) A student's first choice is designated by 1, his/her second choice by 2, and so on down.\n\n"
 
 print "Let's generate their preferences at random. Supose they are:\n\n"
 
@@ -855,48 +883,91 @@ end
 print "\nTake a minute to try to figure out what the optimal match might be for these students.\n"
 print "Make sure that each role is assigned to exactly one student.\n"
 print "Make sure that each student is assigned to at least one role.\n"
-print "And make sure that no student has more than two roles.\n"
+print "And make sure that the number of roles assigned to each student differs by no more than 1.\n"
+print "(For example, if one student gets 3 roles assigned to him, no student should get only 1 role)\n"
 
-print "\nThink you've found the optimal match?\n\n(Enter 't' to test!)"
+print "\nThink you've found the optimal match? If so, add up all of the preference values for the assignments you selected.\n"
+print "For example, if you assigned #{actor_list.first} to #{role_list.first}, the preference value would be #{array[0][0]}\n\n(Enter 't' to test!)"
 continue = "x"
 while continue != "t"
 	STDOUT.flush  
 	continue = gets.chomp
 end
 
+# clear the viewing window
+puts "\e[H\e[2J"
+
+# print roles as column heads
+actor_list.sort_by {|x| x.length}.last.length.times {print " "}
+print " "
+role_list.each {|name| print "| #{name} "}
+print "\n"
+
+# print actor names and preferences as rows
+actor_list.each.with_index do |actor, actor_id|
+	print "#{actor}:  "
+	n = actor_list.sort_by {|x| x.length}.last.length - actor.length
+	n.times {print " "}
+
+	array[actor_id].each.with_index do |pref,role_id| 
+		print " " if pref.to_s.length != 2 
+		print " #{pref}"
+		role_list[role_id].length.times {print " "}
+	end
+	print "\n"
+end
+
+# run the algorithm
+dup = array.map {|row| row.dup}
 make_matrix_solveable(array)
 assign_needy_zeros(array).finish_assignment
+assignments = array.find_with_value("!")
+
+# output the result
+print "\n\nThe optimal match has:\n\n"
+actor_list.each.with_index do |actor, actor_id|
+	actors_roles = assignments.select {|x| x[0]==actor_id}
+	actors_roles.each do |coordinates|
+		x = coordinates[0]
+		y = coordinates[1]
+		print "#{actor.upcase} playing #{role_list[y].upcase}, his/her #{dup[x][y]} choice\n"
+	end
+end
+
+print "\nAdding up all of the preference values we get: #{assignments.map {|x| x[1]}.inject(:+)}\n"
+print "How did your assignment compare?\n\n\n"
 
 
 
-
-
-array.print_readable
-print array.solution?
-
-print "\nThink you've found the optimal match?\n\n(Enter 't' to test!)"
+print "Still interested?\nRun the algorithm 1000 times on random problems with random values to see how many times it succeeds!\n"
+print "(Enter 'c' to continue, 'q' to quit!)"
 continue = "x"
-while continue != "t"
+while continue != "c" && continue != "q"
 	STDOUT.flush  
 	continue = gets.chomp
 end
 
-failures = 0
-tests = 0
-	10000.times do
-		print "failures: #{failures}\n"
-		print "tests so far: #{tests}\n"
-		tests = tests + 1
-			cols = rand(9)+1
-			rows = rand(9)+1
-			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
-			matrix.print_readable
-			make_matrix_solveable(matrix)
-			assign_needy_zeros(matrix).finish_assignment
-			solution = matrix.solution?
-			failures = failures + 1 if solution != true
-	end
+if continue == "c"
 
+	failures = 0
+	tests = 0
+		10000.times do
+			# clear the viewing window
+			puts "\e[H\e[2J"
+			print "failures: #{failures}\n"
+			print "tests so far: #{tests}\n"
+			tests = tests + 1
+				cols = rand(9)+1
+				rows = rand(9)+1
+				matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
+				make_matrix_solveable(matrix)
+				assign_needy_zeros(matrix).finish_assignment
+				solution = matrix.solution?
+				failures = failures + 1 if solution != true
+		end
+end
+
+print "\nThanks for trying!\n"
 
 
 
