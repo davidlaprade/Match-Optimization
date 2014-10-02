@@ -2,6 +2,8 @@
 
 This is an algorithm to optimize matches. It is a generalized version of the [Hungarian Algorithm](http://en.wikipedia.org/wiki/Hungarian_algorithm), meaning that it can provide optimal matches even when matching sets of different sizes.
 
+To try it for yourself! Fork this project and run ```ruby demo.rb``` from the terminal.
+
 ## Uses
 We encounter matching problems all the time. We encounter them when:
 - assigning roles to members of a team
