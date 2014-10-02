@@ -1,49 +1,4 @@
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-print "Try the algorithm to see how it works!\n\nSuppose you're assigning roles to students in a play, and you want as many students as possible to get roles that they like"
-
-# get number of actors
-actors = 0
-while actors <= 0 || actors > 10
-	print "How many students/actors should there be?\n(To make things easy, pick a number between 1 and 10 inclusive.)\n"  
-	STDOUT.flush  
-	actors = gets.chomp.to_i
-end
-
-# gives actors random names
-names = ["Jason", "Alex", "Sam", "Margaret", "Peter", "Constance", "Oliver", "Harriet", "Francis", "Olivia", "Ellen", "Zach", "George", "Paul", "Tom"]
-actor_list = names.shuffle.take(actors)
-print "Great! Your actors are: #{actor_list.join(", ").to_s}\n\n"
-
-# get # of roles
-roles = 0
-while roles <= 0 || roles > 15 || roles <= actors
-	print "Now, how many roles should there be in the play?\n(To make things easy, pick a number between 1 and 15 inclusive--one that's greater than the number of students)\n"  
-	STDOUT.flush  
-	roles = gets.chomp.to_i
-end
-
-# gives roles random names
-characters = ["Hamlet", "Romeo", "Juliet", "Othello", "Mercutio", "King Lear", "Caesar", "Cleopatra", "Cassius", "Macbeth", "Lady Macbeth", "Cordelia", "Rosaline", "Nurse", "Shylock"]
-role_list = characters.shuffle.take(roles)
-print "Thanks. The roles are: #{role_list.join(", ").to_s}\n\n"
-
-print "Now assume that each student has ranked the roles in terms of his/her preferences. (Sometimes male students want to play female characters, and vice versa. You don't complain. It's theater.) A student's first choice is designated by 1, his/her second choice by 2, and so on down the line.\n"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+require 'matrix'
 
 # passed mask Array object; assigns to needy zeros and extended needy zeros in the mask, then returns the mask
 def assign_needy_zeros(mask)
@@ -825,6 +780,106 @@ class Array
 
 end
 
+print "\nTry the algorithm to see how it works!\n\nSuppose you're assigning roles to students in a play, and you want as many students as possible to get roles that they like.\n\n"
+
+# get number of actors
+actors = 0
+print "How many students/actors should there be?\n(To make things easy, pick a number between 1 and 10 inclusive.)\n"  
+while actors <= 0 || actors > 10
+	STDOUT.flush  
+	actors = gets.chomp.to_i
+end
+
+# gives actors random names
+names = ["Jason", "Alex", "Sam", "Margaret", "Peter", "Constance", "Oliver", "Harriet", "Francis", "Olivia", "Ellen", "Zach", "George", "Paul", "Tom"]
+actor_list = names.shuffle.take(actors)
+print "Great! Your actors are: #{actor_list.join(", ").to_s}\n\n"
+
+# get # of roles
+roles = 0
+print "Now, how many roles should there be in the play?\n(To make things easy, pick a number between 1 and 15 inclusive--one that's greater than the number of students)\n"  
+STDOUT.flush  
+roles = gets.chomp.to_i
+while roles > 15 || roles <= actors
+	print "Ah! Unfortunately, that won't work.\nRemember to pick a number between 1 and 15 inclusive--one that's greater than the number of students you chose (#{actors})\n"
+	STDOUT.flush  
+	roles = gets.chomp.to_i
+end
+
+# gives roles random names
+characters = ["Hamlet", "Romeo", "Juliet", "Othello", "Mercutio", "King Lear", "Caesar", "Cleopatra", "Cassius", "Macbeth", "Lady Macbeth", "Cordelia", "Rosaline", "Nurse", "Shylock"]
+role_list = characters.shuffle.take(roles)
+print "\nThanks! The roles are: #{role_list.join(", ").to_s}\n"
+
+print "(Enter 'c' to continue...)"
+continue = "x"
+while continue != "c"
+	STDOUT.flush  
+	continue = gets.chomp
+end
+
+print "\nNow, assume that each student has ranked the roles in terms of his/her preferences. (Sometimes male students want to play female characters, and vice versa. You don't complain. It's theater.) A student's first choice is designated by 1, his/her second choice by 2, and so on down.\n\n"
+
+print "Let's generate their preferences at random. Supose they are:\n\n"
+
+array = []
+actor_list.each {|actor| array << [*1..roles].shuffle}
+
+# print roles as column heads
+actor_list.sort_by {|x| x.length}.last.length.times {print " "}
+print " "
+role_list.each {|name| print "| #{name} "}
+print "\n"
+
+# print actor names and preferences as rows
+actor_list.each.with_index do |actor, actor_id|
+	print "#{actor}:  "
+	n = actor_list.sort_by {|x| x.length}.last.length - actor.length
+	n.times {print " "}
+
+	array[actor_id].each.with_index do |pref,role_id| 
+		print " " if pref.to_s.length != 2 
+		print " #{pref}"
+		role_list[role_id].length.times {print " "}
+	end
+	print "\n"
+end
+
+print "\n(Enter 'c' to continue...)"
+continue = "x"
+while continue != "c"
+	STDOUT.flush  
+	continue = gets.chomp
+end
+
+print "\nTake a minute to try to figure out what the optimal match might be for these students.\n"
+print "Make sure that each role is assigned to exactly one student.\n"
+print "Make sure that each student is assigned to at least one role.\n"
+print "And make sure that no student has more than two roles.\n"
+
+print "\nThink you've found the optimal match?\n\n(Enter 't' to test!)"
+continue = "x"
+while continue != "t"
+	STDOUT.flush  
+	continue = gets.chomp
+end
+
+make_matrix_solveable(array)
+assign_needy_zeros(array).finish_assignment
+
+
+
+
+
+array.print_readable
+print array.solution?
+
+print "\nThink you've found the optimal match?\n\n(Enter 't' to test!)"
+continue = "x"
+while continue != "t"
+	STDOUT.flush  
+	continue = gets.chomp
+end
 
 failures = 0
 tests = 0
