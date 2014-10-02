@@ -1,6 +1,49 @@
-require 'matrix'
-require 'pry'
-require 'benchmark'
+# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+print "Try the algorithm to see how it works!\n\nSuppose you're assigning roles to students in a play, and you want as many students as possible to get roles that they like"
+
+# get number of actors
+actors = 0
+while actors <= 0 || actors > 10
+	print "How many students/actors should there be?\n(To make things easy, pick a number between 1 and 10 inclusive.)\n"  
+	STDOUT.flush  
+	actors = gets.chomp.to_i
+end
+
+# gives actors random names
+names = ["Jason", "Alex", "Sam", "Margaret", "Peter", "Constance", "Oliver", "Harriet", "Francis", "Olivia", "Ellen", "Zach", "George", "Paul", "Tom"]
+actor_list = names.shuffle.take(actors)
+print "Great! Your actors are: #{actor_list.join(", ").to_s}\n\n"
+
+# get # of roles
+roles = 0
+while roles <= 0 || roles > 15 || roles <= actors
+	print "Now, how many roles should there be in the play?\n(To make things easy, pick a number between 1 and 15 inclusive--one that's greater than the number of students)\n"  
+	STDOUT.flush  
+	roles = gets.chomp.to_i
+end
+
+# gives roles random names
+characters = ["Hamlet", "Romeo", "Juliet", "Othello", "Mercutio", "King Lear", "Caesar", "Cleopatra", "Cassius", "Macbeth", "Lady Macbeth", "Cordelia", "Rosaline", "Nurse", "Shylock"]
+role_list = characters.shuffle.take(roles)
+print "Thanks. The roles are: #{role_list.join(", ").to_s}\n\n"
+
+print "Now assume that each student has ranked the roles in terms of his/her preferences. (Sometimes male students want to play female characters, and vice versa. You don't complain. It's theater.) A student's first choice is designated by 1, his/her second choice by 2, and so on down the line.\n"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # passed mask Array object; assigns to needy zeros and extended needy zeros in the mask, then returns the mask
 def assign_needy_zeros(mask)
