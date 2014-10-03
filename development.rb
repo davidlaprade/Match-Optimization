@@ -210,44 +210,13 @@ def make_matrix_solveable(working_matrix)
 			solveable = working_matrix.solveable?
 		end
 
-		# UNTESTED
+		
 		while solveable == "no, assignments can't be made in columns"
 			# to fix: create duplicate mask array, then assign needy zeros in the mask; get the column ids of any columns that lack zeros 
 			# in the assigned mask; if a column lacks zeros in the mask, create a new zero in that column in the working matrix
 			# by subtracting the min-sans-zero
-
-			# create duplicate mask array, then assign needy zeros in the mask
-			mask = working_matrix.map {|row| row.dup}
-			assign_needy_zeros(mask)
-			mask_cols = mask.transpose
-	
-
-			# get the column and row ids of any columns/rows that lack zeros in the assigned mask
-			cols_wo_assignable = mask_cols.each.with_index.with_object([]) {|(col, col_id), obj| 
-				obj << col_id if !col.include?(0) && !col.include?("!")}
-
-			# if a column lacks zeros in the mask, create a new zero in that column by subtracting the min-sans-zero
-			while !cols_wo_assignable.empty?
-		
-				# fix the first problematic col
-				# remember, the col WILL contain zeros (zero_each_col ensures it above), those zeros are just unassignable
-				working_matrix.replace(working_matrix.transpose.map.with_index {|col, col_id| 
-					col_id == cols_wo_assignable.first ? col.map {|v| !v.zero? ? v - (col - [0]).min : v} : col
-				}.transpose)
-
-		
-				# run assign_needy_zeros again to see if the problem is resolved
-				mask = working_matrix.map {|row| row.dup}
-				assign_needy_zeros(mask)
-				mask_cols = mask.transpose
-
-		
-				# now check to see if this has fixed the problem
-				cols_wo_assignable = mask_cols.each.with_index.with_object([]) {|(col, col_id), obj| 
-					obj << col_id if !col.include?(0) && !col.include?("!")}
-			end
-
-	
+			working_matrix.fix_no_assignables_in_cols
+			# Running the fix method might result in a matrix with the same problem, so run solveable? method again
 			solveable = working_matrix.solveable?
 		end
 			
@@ -510,6 +479,42 @@ class Array
 			rows_wo_assignable = mask.each.with_index.with_object([]) {|(row, row_id), obj| 
 				obj << row_id if !row.include?(0) && !row.include?("!")}
 		end
+		return self
+	end
+
+	# UNTESTED
+	# called on Array object; creates duplicate mask array, then assigns needy zeros in the mask; gets the column ids of any columns that lack zeros 
+	# in the assigned mask; if a column lacks zeros in the mask, creates a new zero in that column in the working matrix
+	# by subtracting the min-sans-zero; returns modified array it was called on	
+	def fix_no_assignables_in_cols
+		# create duplicate mask array, then assign needy zeros in the mask
+		mask = self.map {|row| row.dup}
+		assign_needy_zeros(mask)
+		mask_cols = mask.transpose
+
+		# get the column and row ids of any columns/rows that lack zeros in the assigned mask
+		cols_wo_assignable = mask_cols.each.with_index.with_object([]) {|(col, col_id), obj| 
+			obj << col_id if !col.include?(0) && !col.include?("!")}
+
+		# if a column lacks zeros in the mask, create a new zero in that column by subtracting the min-sans-zero
+		while !cols_wo_assignable.empty?
+	
+			# fix the first problematic col
+			# remember, the col WILL contain zeros (zero_each_col ensures it above), those zeros are just unassignable
+			self.replace(self.transpose.map.with_index {|col, col_id| 
+				col_id == cols_wo_assignable.first ? col.map {|v| !v.zero? ? v - (col - [0]).min : v} : col
+			}.transpose)
+	
+			# run assign_needy_zeros again to see if the problem is resolved
+			mask = self.map {|row| row.dup}
+			assign_needy_zeros(mask)
+			mask_cols = mask.transpose
+
+			# now check to see if this has fixed the problem
+			cols_wo_assignable = mask_cols.each.with_index.with_object([]) {|(col, col_id), obj| 
+				obj << col_id if !col.include?(0) && !col.include?("!")}
+		end
+
 		return self
 	end
 
