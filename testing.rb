@@ -52,21 +52,21 @@ def make_matrix_solveable(working_matrix)
 		
 		end
 
-		while solveable == "no, assignments can't be made in rows"
+		while solveable == "no, enough assignments can't be made in rows"
 			# to fix: create duplicate mask array, then assign needy zeros in the mask; get the row ids of any rows that lack zeros 
 			# in the assigned mask; if a row lacks zeros in the mask, create a new zero in that row in the working matrix by subtracting
 			# the min-sans-zero
-			working_matrix.fix_no_assignables_in_rows
+			working_matrix.fix_assignables_in_rows
 			# Running the fix method might result in a matrix with the same problem, so run solveable? method again
 			solveable = working_matrix.solveable?
 		end
 
 
-		while solveable == "no, assignments can't be made in columns"
+		while solveable == "no, enough assignments can't be made in columns"
 			# to fix: create duplicate mask array, then assign needy zeros in the mask; get the column ids of any columns that lack zeros 
 			# in the assigned mask; if a column lacks zeros in the mask, create a new zero in that column in the working matrix
 			# by subtracting the min-sans-zero
-			working_matrix.fix_no_assignables_in_cols
+			working_matrix.fix_assignables_in_cols
 			# Running the fix method might result in a matrix with the same problem, so run solveable? method again
 			solveable = working_matrix.solveable?
 		end
@@ -324,14 +324,17 @@ class Array
 	# called on Array object; creates duplicate mask array, then assigns needy zeros in the mask; gets the row ids of any rows that lack zeros 
 	# in the assigned mask; if a row lacks zeros in the mask, creates a new zero in that row in the working matrix by subtracting
 	# the min-sans-zero; returns the modified array it was called on
-	def fix_no_assignables_in_rows
+	def fix_assignables_in_rows
 		# create duplicate mask array, then assign needy zeros in the mask
 		mask = self.map {|row| row.dup}
 		assign_needy_zeros(mask)
 
-		# get the row ids of any rows that lack zeros in the assigned mask
+		# throw an error if there is a negative value in the self array
+		raise 'Negative value in self' if !self.flatten(1).select {|val| val < 0}.empty?
+
+		# get the row ids of any rows that lack enough zeros and "!" in the assigned mask to reach the row_min
 		rows_wo_assignable = mask.each.with_index.with_object([]) {|(row, row_id), obj| 
-			obj << row_id if !row.include?(0) && !row.include?("!")}
+			obj << row_id if row.count(0) + row.count("!") < self.min_row_assignment}
 
 		# if a row lacks zeros in the mask, create a new zero in that row by subtracting the min-sans-zero
 		while !rows_wo_assignable.empty?
@@ -352,22 +355,26 @@ class Array
 
 		# throw an error if the method has put a negative value in the self array
 		raise 'Results in negative value in self' if !self.flatten(1).select {|val| val < 0}.empty?
+
 		return self
 	end
 
-	# UNTESTED
+	# TESTED
 	# called on Array object; creates duplicate mask array, then assigns needy zeros in the mask; gets the column ids of any columns that lack zeros 
 	# in the assigned mask; if a column lacks zeros in the mask, creates a new zero in that column in the working matrix
 	# by subtracting the min-sans-zero; returns modified array it was called on	
-	def fix_no_assignables_in_cols
+	def fix_assignables_in_cols
 		# create duplicate mask array, then assign needy zeros in the mask
 		mask = self.map {|row| row.dup}
 		assign_needy_zeros(mask)
 		mask_cols = mask.transpose
 
-		# get the column and row ids of any columns/rows that lack zeros in the assigned mask
+		# throw an error if there is a negative value in the self array
+		raise 'Negative value in self' if !self.flatten(1).select {|val| val < 0}.empty?
+
+		# get the column ids of any columns that lack enough zeros and "!"s' in the assigned mask to reach the col_min
 		cols_wo_assignable = mask_cols.each.with_index.with_object([]) {|(col, col_id), obj| 
-			obj << col_id if !col.include?(0) && !col.include?("!")}
+			obj << col_id if col.count(0) + col.count("!") < self.min_col_assignment}
 
 		# if a column lacks zeros in the mask, create a new zero in that column by subtracting the min-sans-zero
 		while !cols_wo_assignable.empty?
@@ -385,7 +392,7 @@ class Array
 
 			# now check to see if this has fixed the problem
 			cols_wo_assignable = mask_cols.each.with_index.with_object([]) {|(col, col_id), obj| 
-				obj << col_id if !col.include?(0) && !col.include?("!")}
+				obj << col_id if col.count(0) + col.count("!") < self.min_col_assignment}
 		end
 
 		# throw an error if the method has put a negative value in the self array
@@ -586,8 +593,8 @@ class Array
 		mask = self.map {|row| row.dup}
 		assign_needy_zeros(mask)
 
-		return "no, assignments can't be made in rows" if !mask.select {|row| !row.include?(0) && !row.include?("!")}.empty?
-		return "no, assignments can't be made in columns" if !mask.transpose.select {|col| !col.include?(0) && !col.include?("!")}.empty?
+		return "no, enough assignments can't be made in rows" if !mask.select {|row| row.count(0) + row.count("!") < self.min_row_assignment}.empty?
+		return "no, enough assignments can't be made in columns" if !mask.transpose.select {|col| col.count(0) + col.count("!") < self.min_col_assignment}.empty?
 
 		# UNTESTED
 		num_columns = self[0].count
@@ -1046,21 +1053,21 @@ end
 
 
 
-# failures = 0
-# tests = 0
-# 	10000.times do
-# 		clearhome
-# 		tests = tests + 1
-# 		print "failures: #{failures}\n"
-# 		print "tests so far: #{tests}\n"
-# 			cols = rand(9)+1
-# 			rows = rand(9)+1
-# 			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
-# 			make_matrix_solveable(matrix)
-# 			assign_needy_zeros(matrix).finish_assignment
-# 			solution = matrix.solution?
-# 			failures = failures + 1 if solution != true
-# 	end
+failures = 0
+tests = 0
+	10000.times do
+		clearhome
+		tests = tests + 1
+		print "failures: #{failures}\n"
+		print "tests so far: #{tests}\n"
+			cols = rand(9)+1
+			rows = rand(9)+1
+			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
+			make_matrix_solveable(matrix)
+			assign_needy_zeros(matrix).finish_assignment
+			solution = matrix.solution?
+			failures = failures + 1 if solution != true
+	end
 
 
 
@@ -1156,5 +1163,4 @@ end
 # 		matrix.finish_assignment
 # 		print "#{matrix.solution?}\n"
 # end
-
 

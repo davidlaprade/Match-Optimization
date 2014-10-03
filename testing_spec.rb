@@ -159,7 +159,7 @@ describe Array, ".finish_assignment" do
 
 end
 
-describe Array, ".fix_no_assignables_in_cols" do
+describe Array, ".fix_assignables_in_cols" do
 	# create duplicate mask array, then assign needy zeros in the mask; get the column ids of any columns that lack zeros 
 	# in the assigned mask; if a column lacks zeros in the mask, create a new zero in that column in the working matrix
 	# by subtracting the min-sans-zero
@@ -175,11 +175,11 @@ describe Array, ".fix_no_assignables_in_cols" do
 			 [4, 3, 1, 0, 4, 7, 8, 3],
 			 [5, 1, 7, 2, 2, 6, 0, 3]]
 		dup = array.map {|row| row.dup}
-		array.fix_no_assignables_in_cols
+		array.fix_assignables_in_cols
 		expect(array).to_not eq(dup)
 	end
 
-	it "returns the corrected array" do
+	it "returns an array" do
 		array = [[5, 0, 7, 1, 5, 8, 5, 1],
 			 [4, 3, 0, 7, 2, 8, 3, 6],
 			 [2, 6, 6, 0, 2, 0, 4, 2],
@@ -189,18 +189,10 @@ describe Array, ".fix_no_assignables_in_cols" do
 			 [0, 3, 3, 2, 0, 0, 0, 5],
 			 [4, 3, 1, 0, 4, 7, 8, 3],
 			 [5, 1, 7, 2, 2, 6, 0, 3]]
-		expect(array.fix_no_assignables_in_cols).to eq([[4, 0, 7, 1, 5, 8, 5, 1],
-							 [3, 3, 0, 7, 2, 8, 3, 6],
-							 [1, 6, 6, 0, 2, 0, 4, 2],
-							 [0, 8, 4, 0, 1, 6, 8, 0],
-							 [3, 6, 3, 2, 1, 0, 0, 1],
-							 [0, 1, 0, 8, 1, 7, 4, 1],
-							 [0, 3, 3, 2, 0, 0, 0, 5],
-							 [3, 3, 1, 0, 4, 7, 8, 3],
-							 [4, 1, 7, 2, 2, 6, 0, 3]])
+		expect(array.fix_assignables_in_cols.class).to eq(Array)
 	end
 
-	it "resolves the problem when there is a single column that is unassignable" do
+	it "resolves the problem when there are multiple columns that are unassignable" do
 		# the first column ends up unassignable
 		array = [[5, 0, 7, 1, 5, 8, 5, 1],
 			 [4, 3, 0, 7, 2, 8, 3, 6],
@@ -211,55 +203,45 @@ describe Array, ".fix_no_assignables_in_cols" do
 			 [0, 3, 3, 2, 0, 0, 0, 5],
 			 [4, 3, 1, 0, 4, 7, 8, 3],
 			 [5, 1, 7, 2, 2, 6, 0, 3]]
-		array.fix_no_assignables_in_cols
-		expect(array).to eq([[4, 0, 7, 1, 5, 8, 5, 1],
-							 [3, 3, 0, 7, 2, 8, 3, 6],
-							 [1, 6, 6, 0, 2, 0, 4, 2],
-							 [0, 8, 4, 0, 1, 6, 8, 0],
-							 [3, 6, 3, 2, 1, 0, 0, 1],
-							 [0, 1, 0, 8, 1, 7, 4, 1],
+		array.fix_assignables_in_cols
+		expect(array).to eq([[5, 0, 7, 1, 4, 8, 5, 1],
+							 [4, 3, 0, 7, 1, 8, 3, 6],
+							 [2, 6, 6, 0, 1, 0, 4, 2],
+							 [0, 8, 4, 0, 0, 6, 8, 0],
+							 [4, 6, 3, 2, 0, 0, 0, 1],
+							 [1, 1, 0, 8, 0, 7, 4, 1],
 							 [0, 3, 3, 2, 0, 0, 0, 5],
-							 [3, 3, 1, 0, 4, 7, 8, 3],
-							 [4, 1, 7, 2, 2, 6, 0, 3]])
+							 [4, 3, 1, 0, 3, 7, 8, 3],
+							 [5, 1, 7, 2, 1, 6, 0, 3]])
 	end
+
 
 	it "raises an error when the array contains a negative value" do
 		array = [[3,4,0],[7,8,-1],[14,0,11]]
-		expect(array.fix_no_assignables_in_cols).to raise_error(RuntimeError, 'Results in negative value in self')
+		expect(array.fix_assignables_in_cols).to raise_error(RuntimeError, 'Negative value in self')
 	end
 
-	it "works when there are multiple columns that end up unassignable, new columns become unassignable after fixing first problem" do
+	it "works when there are multiple columns that end up unassignable, and the order they are fixed in matters" do
 		# columns 1 and 2 end up unassignable
 		array = [[0,0,0],[7,5,6],[1,1,1]]
 		# this is trickey: here you want to correct column 2 before column 1 not because of the min-sans-zero value, but because of the
 		# SECOND min in the column (5)
-		expect(array.fix_no_assignables_in_cols).to eq([[0,0,0],
+		expect(array.fix_assignables_in_cols).to eq([[0,0,0],
 							 [7,0,6],
 							 [1,1,0]])
 	end
 
 	it "leaves columns alone that have assignable zeros that are not assigned by the assign_needy_zeros method" do
-		# in this example, assign needy zeros leaves columns 1 and 5 without assignments, but the zeros in them remain assignable
-		#            V           V
-		array = [[8, 0, 2, 7, 7, 0, 2, 3],
-				 [4, 4, 4, 0, 5, 0, 0, 6],
-				 [1, 8, 4, 4, 7, 6, 4, 0],
-				 [4, 0, 5, 3, 2, 0, 3, 1],
-				 [8, 5, 2, 4, 3, 2, 6, 0],
-				 [0, 5, 0, 5, 2, 5, 6, 4],
-				 [3, 3, 4, 1, 6, 3, 0, 1],
-				 [0, 5, 3, 1, 0, 3, 1, 0],
-				 [3, 0, 5, 6, 8, 4, 0, 1]]
-		expect(array.fix_no_assignables_in_cols).to eq( [[5, 0, 2, 7, 7, 0, 2, 3],
-														 [1, 4, 4, 0, 5, 0, 0, 6],
-														 [0, 8, 4, 4, 7, 6, 4, 0],
-														 [1, 0, 5, 3, 2, 0, 3, 1],
-														 [5, 5, 2, 4, 3, 2, 6, 0],
-														 [0, 5, 0, 5, 2, 5, 6, 4],
-														 [0, 3, 4, 1, 6, 3, 0, 1],
-														 [0, 5, 3, 1, 0, 3, 1, 0],
-														 [0, 0, 5, 6, 8, 4, 0, 1]])
+		# in this example, assign needy zeros leaves colums 0 and 3 without assignments, but the zeros in them remain assignable
+		array = [[5,0,7,0],
+				 [0,6,5,0],
+				 [0,2,0,7]]
+		expect(array.fix_assignables_in_cols).to eq([[5,0,7,0],
+													 [0,6,5,0],
+													 [0,2,0,7]])
 	end
+
+
 
 
 
