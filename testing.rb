@@ -50,6 +50,80 @@ def make_matrix_solveable(working_matrix)
 		
 		end
 
+		while solveable == "no, assignments can't be made in rows"
+			# to fix: create duplicate mask array, then assign needy zeros in the mask; get the row ids of any rows that lack zeros 
+			# in the assigned mask; if a row lacks zeros in the mask, create a new zero in that row in the working matrix by subtracting
+			# the min-sans-zero
+
+			# create duplicate mask array, then assign needy zeros in the mask
+			mask = working_matrix.map {|row| row.dup}
+			assign_needy_zeros(mask)
+
+			# get the row ids of any rows that lack zeros in the assigned mask
+			rows_wo_assignable = mask.each.with_index.with_object([]) {|(row, row_id), obj| 
+				obj << row_id if !row.include?(0) && !row.include?("!")}
+
+			# if a row lacks zeros in the mask, create a new zero in that row by subtracting the min-sans-zero
+			while !rows_wo_assignable.empty?
+				# fix the first problematic row
+				# remember, the row WILL contain zeros (zero_each_row ensures it above), those zeros are just unassignable
+				working_matrix.map!.with_index {|row, row_id| 
+					row_id == rows_wo_assignable.first ? row.map {|v| !v.zero? ? v - (row - [0]).min : v} : row
+				}
+
+				# run assign_needy_zeros again to see if the problem is resolved
+				mask = working_matrix.map {|row| row.dup}
+				assign_needy_zeros(mask)
+
+				# now check to see if this has fixed the problem
+				rows_wo_assignable = mask.each.with_index.with_object([]) {|(row, row_id), obj| 
+					obj << row_id if !row.include?(0) && !row.include?("!")}
+			end
+
+			solveable = working_matrix.solveable?
+		end
+
+
+		while solveable == "no, assignments can't be made in columns"
+			# to fix: create duplicate mask array, then assign needy zeros in the mask; get the column ids of any columns that lack zeros 
+			# in the assigned mask; if a column lacks zeros in the mask, create a new zero in that column in the working matrix
+			# by subtracting the min-sans-zero
+
+			# create duplicate mask array, then assign needy zeros in the mask
+			mask = working_matrix.map {|row| row.dup}
+			assign_needy_zeros(mask)
+			mask_cols = mask.transpose
+	
+
+			# get the column and row ids of any columns/rows that lack zeros in the assigned mask
+			cols_wo_assignable = mask_cols.each.with_index.with_object([]) {|(col, col_id), obj| 
+				obj << col_id if !col.include?(0) && !col.include?("!")}
+
+			# if a column lacks zeros in the mask, create a new zero in that column by subtracting the min-sans-zero
+			while !cols_wo_assignable.empty?
+		
+				# fix the first problematic col
+				# remember, the col WILL contain zeros (zero_each_col ensures it above), those zeros are just unassignable
+				working_matrix.replace(working_matrix.transpose.map.with_index {|col, col_id| 
+					col_id == cols_wo_assignable.first ? col.map {|v| !v.zero? ? v - (col - [0]).min : v} : col
+				}.transpose)
+
+		
+				# run assign_needy_zeros again to see if the problem is resolved
+				mask = working_matrix.map {|row| row.dup}
+				assign_needy_zeros(mask)
+				mask_cols = mask.transpose
+
+		
+				# now check to see if this has fixed the problem
+				cols_wo_assignable = mask_cols.each.with_index.with_object([]) {|(col, col_id), obj| 
+					obj << col_id if !col.include?(0) && !col.include?("!")}
+			end
+
+	
+			solveable = working_matrix.solveable?
+		end
+
 		while solveable == "no, too many cols with max assignments"
 		
 			working_matrix.fix_too_many_max_assignments_in_cols
@@ -485,12 +559,15 @@ class Array
 			end
 		end
 
-		# ///////////////////////////////////////////////////
-		# PROBLEM
-		# You aren't checking to make sure that needy zeros and/or needy zeros by extension don't
-		# result in there being too many required assignments in a row/col; specifically, that the needy zeros and those
-		# by extension don't force there to be too many rows/col with the max
-		# ////////////////////////////////////////////////////////////////
+		# UNTESTED
+		# checks to make sure assigning needy zeros doesn't prevent columns/rows from having any assignments
+		# create a mask, assign to needy zeros in mask
+		mask = self.map {|row| row.dup}
+		assign_needy_zeros(mask)
+
+		return "no, assignments can't be made in rows" if !mask.select {|row| !row.include?(0) && !row.include?("!")}.empty?
+		return "no, assignments can't be made in columns" if !mask.transpose.select {|col| !col.include?(0) && !col.include?("!")}.empty?
+
 		# UNTESTED
 		num_columns = self[0].count
 		num_rows = self.count
@@ -925,49 +1002,45 @@ end
 # [0, 0, 0, 2, 1, 1, 0]].transpose.solveable?
 
 
-matrix = [[3, 9, 2, 4, 2, 4, 5, 1, 7],
-[9, 2, 9, 4, 9, 7, 3, 3, 6],
-[5, 3, 4, 7, 6, 1, 8, 4, 8],
-[3, 7, 3, 5, 7, 5, 1, 8, 1],
-[4, 9, 9, 1, 2, 9, 2, 3, 2]]
-		make_matrix_solveable(matrix)
-		print "solveable!\n"
-		matrix.print_readable
+# matrix = [[1, 4, 3, 7, 8, 4, 2, 1],
+# [2, 3, 6, 4, 2, 5, 8, 8],
+# [8, 2, 3, 3, 5, 2, 9, 5],
+# [2, 6, 5, 2, 6, 1, 2, 8],
+# [9, 8, 1, 3, 3, 8, 8, 6]]
+# 		print "starts\n"
+# 		make_matrix_solveable(matrix)
+# 		print "solveable!\n"
+# 		matrix.print_readable
 
-		assign_needy_zeros(matrix)
+# 		assign_needy_zeros(matrix)
 
-		print "began assignment\n"
-		# matrix.finish_assignment
+# 		print "began assignment\n"
+# 		matrix.finish_assignment
 
-		print "assigned!\n"
+# 		print "assigned!\n"
 
-		matrix.print_readable
+# 		matrix.print_readable
 
-		print matrix.solution?
-
-		# [x, 7, !, 3, x, 3, 4, !, 6]
-		# [6, !, 7, 3, 7, 6, 2, 2, 5]
-		# [2, 1, 2, 6, 4, !, 7, 3, 7]
-		# [x, 5, 1, 4, 5, 4, !, 7, !]
-		# [1, 7, 7, !, !, 8, 1, 2, 1]
+# 		print matrix.solution?
 
 
-# failures = 0
-# tests = 0
-# 	10000.times do
-		# clearhome
-		# tests = tests + 1
-		# print "failures: #{failures}\n"
-		# print "tests so far: #{tests}\n"
-# 			cols = rand(9)+1
-# 			rows = rand(9)+1
-# 			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
-# 			matrix.print_readable
-# 			make_matrix_solveable(matrix)
-# 			assign_needy_zeros(matrix).finish_assignment
-# 			solution = matrix.solution?
-# 			failures = failures + 1 if solution != true
-# 	end
+
+failures = 0
+tests = 0
+	10000.times do
+		clearhome
+		tests = tests + 1
+		print "failures: #{failures}\n"
+		print "tests so far: #{tests}\n"
+			cols = rand(9)+1
+			rows = rand(9)+1
+			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
+			matrix.print_readable
+			make_matrix_solveable(matrix)
+			assign_needy_zeros(matrix).finish_assignment
+			solution = matrix.solution?
+			failures = failures + 1 if solution != true
+	end
 
 
 
@@ -989,82 +1062,78 @@ matrix = [[3, 9, 2, 4, 2, 4, 5, 1, 7],
 
 
 # ALL Failures://///////////////////////////////////////////
-[3, 8, 3, 6, 1, 9, 6, 8]
-[8, 2, 6, 6, 4, 8, 9, 7]
-[8, 1, 4, 8, 9, 9, 8, 9]
-[9, 9, 4, 8, 1, 7, 3, 8]
-[7, 2, 4, 6, 7, 8, 7, 8]
-[6, 9, 5, 7, 6, 2, 9, 6]
-[4, 9, 3, 9, 5, 4, 2, 7]
-[4, 1, 3, 2, 2, 7, 2, 8]
-[9, 1, 5, 1, 4, 9, 3, 7]
+# [[[3, 8, 3, 6, 1, 9, 6, 8],
+# [8, 2, 6, 6, 4, 8, 9, 7],
+# [8, 1, 4, 8, 9, 9, 8, 9],
+# [9, 9, 4, 8, 1, 7, 3, 8],
+# [7, 2, 4, 6, 7, 8, 7, 8],
+# [6, 9, 5, 7, 6, 2, 9, 6],
+# [4, 9, 3, 9, 5, 4, 2, 7],
+# [4, 1, 3, 2, 2, 7, 2, 8],
+# [9, 1, 5, 1, 4, 9, 3, 7]],
 
+# [[3, 9, 2, 4, 2, 4, 5, 1, 7],
+# [9, 2, 9, 4, 9, 7, 3, 3, 6],
+# [5, 3, 4, 7, 6, 1, 8, 4, 8],
+# [3, 7, 3, 5, 7, 5, 1, 8, 1],
+# [4, 9, 9, 1, 2, 9, 2, 3, 2]],
 
-[3, 9, 2, 4, 2, 4, 5, 1, 7]
-[9, 2, 9, 4, 9, 7, 3, 3, 6]
-[5, 3, 4, 7, 6, 1, 8, 4, 8]
-[3, 7, 3, 5, 7, 5, 1, 8, 1]
-[4, 9, 9, 1, 2, 9, 2, 3, 2]
+# [[7, 1, 8, 2, 9, 9, 6, 4],
+# [6, 4, 1, 8, 6, 9, 4, 9],
+# [6, 9, 9, 3, 8, 3, 7, 7],
+# [2, 9, 5, 1, 5, 7, 9, 3],
+# [6, 7, 4, 3, 5, 1, 1, 4],
+# [3, 2, 1, 9, 5, 8, 5, 4],
+# [3, 5, 5, 4, 5, 2, 2, 9],
+# [6, 4, 2, 1, 8, 8, 9, 6],
+# [8, 3, 9, 4, 7, 8, 2, 7]],
 
+# [[1, 4, 3, 7, 8, 4, 2, 1],
+# [2, 3, 6, 4, 2, 5, 8, 8],
+# [8, 2, 3, 3, 5, 2, 9, 5],
+# [2, 6, 5, 2, 6, 1, 2, 8],
+# [9, 8, 1, 3, 3, 8, 8, 6]],
 
-[7, 1, 8, 2, 9, 9, 6, 4]
-[6, 4, 1, 8, 6, 9, 4, 9]
-[6, 9, 9, 3, 8, 3, 7, 7]
-[2, 9, 5, 1, 5, 7, 9, 3]
-[6, 7, 4, 3, 5, 1, 1, 4]
-[3, 2, 1, 9, 5, 8, 5, 4]
-[3, 5, 5, 4, 5, 2, 2, 9]
-[6, 4, 2, 1, 8, 8, 9, 6]
-[8, 3, 9, 4, 7, 8, 2, 7]
+# [[3, 6, 5, 1, 3, 9, 8, 6, 5],
+# [3, 6, 6, 8, 7, 1, 6, 6, 5],
+# [9, 8, 2, 3, 2, 9, 5, 3, 5],
+# [4, 5, 9, 5, 5, 1, 5, 8, 5],
+# [9, 9, 4, 6, 1, 1, 7, 2, 3]],
 
+# [[6, 7, 7, 8],
+# [2, 7, 3, 3],
+# [1, 3, 9, 9],
+# [1, 1, 9, 1],
+# [1, 6, 3, 2],
+# [8, 2, 7, 7],
+# [1, 7, 2, 9],
+# [5, 5, 8, 5],
+# [5, 9, 6, 7]],
 
-[1, 4, 3, 7, 8, 4, 2, 1]
-[2, 3, 6, 4, 2, 5, 8, 8]
-[8, 2, 3, 3, 5, 2, 9, 5]
-[2, 6, 5, 2, 6, 1, 2, 8]
-[9, 8, 1, 3, 3, 8, 8, 6]
+# [[9, 1, 4, 9, 8, 1, 3, 4],
+# [5, 5, 6, 2, 6, 1, 1, 7],
+# [2, 9, 6, 6, 8, 7, 5, 1],
+# [5, 1, 7, 5, 3, 1, 4, 2],
+# [9, 6, 4, 6, 4, 3, 7, 1],
+# [2, 7, 3, 8, 4, 7, 8, 6],
+# [5, 5, 7, 4, 8, 5, 2, 3],
+# [3, 8, 7, 5, 3, 6, 4, 3],
+# [4, 1, 7, 8, 9, 5, 1, 2]],
 
+# [[5, 1, 3, 9, 4, 5, 3, 9, 3],
+# [8, 8, 3, 8, 3, 1, 1, 3, 9],
+# [2, 8, 2, 7, 5, 1, 1, 4, 4],
+# [6, 3, 7, 5, 4, 7, 4, 6, 2],
+# [6, 3, 4, 5, 9, 4, 6, 7, 5]],
 
-[3, 6, 5, 1, 3, 9, 8, 6, 5]
-[3, 6, 6, 8, 7, 1, 6, 6, 5]
-[9, 8, 2, 3, 2, 9, 5, 3, 5]
-[4, 5, 9, 5, 5, 1, 5, 8, 5]
-[9, 9, 4, 6, 1, 1, 7, 2, 3]
-
-
-[6, 7, 7, 8]
-[2, 7, 3, 3]
-[1, 3, 9, 9]
-[1, 1, 9, 1]
-[1, 6, 3, 2]
-[8, 2, 7, 7]
-[1, 7, 2, 9]
-[5, 5, 8, 5]
-[5, 9, 6, 7]
-
-
-[9, 1, 4, 9, 8, 1, 3, 4]
-[5, 5, 6, 2, 6, 1, 1, 7]
-[2, 9, 6, 6, 8, 7, 5, 1]
-[5, 1, 7, 5, 3, 1, 4, 2]
-[9, 6, 4, 6, 4, 3, 7, 1]
-[2, 7, 3, 8, 4, 7, 8, 6]
-[5, 5, 7, 4, 8, 5, 2, 3]
-[3, 8, 7, 5, 3, 6, 4, 3]
-[4, 1, 7, 8, 9, 5, 1, 2]
-
-
-[5, 1, 3, 9, 4, 5, 3, 9, 3]
-[8, 8, 3, 8, 3, 1, 1, 3, 9]
-[2, 8, 2, 7, 5, 1, 1, 4, 4]
-[6, 3, 7, 5, 4, 7, 4, 6, 2]
-[6, 3, 4, 5, 9, 4, 6, 7, 5]
-
-
-[3, 3, 1, 7, 9, 2, 9, 7, 1]
-[7, 9, 2, 8, 7, 4, 4, 7, 1]
-[4, 8, 1, 1, 6, 9, 8, 1, 7]
-[3, 7, 5, 4, 6, 9, 1, 5, 4]
-[6, 7, 6, 3, 4, 3, 4, 2, 9]
-
+# [[3, 3, 1, 7, 9, 2, 9, 7, 1],
+# [7, 9, 2, 8, 7, 4, 4, 7, 1],
+# [4, 8, 1, 1, 6, 9, 8, 1, 7],
+# [3, 7, 5, 4, 6, 9, 1, 5, 4],
+# [6, 7, 6, 3, 4, 3, 4, 2, 9]]].each do |matrix|
+# 		make_matrix_solveable(matrix)
+# 		assign_needy_zeros(matrix)
+# 		matrix.finish_assignment
+# 		print "#{matrix.solution?}\n"
+# end
 

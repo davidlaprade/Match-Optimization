@@ -200,7 +200,7 @@ def make_matrix_solveable(working_matrix)
 			solveable = working_matrix.solveable?
 		end
 
-
+		# UNTESTED
 		while solveable == "no, assignments can't be made in rows"
 			# to fix: create duplicate mask array, then assign needy zeros in the mask; get the row ids of any rows that lack zeros 
 			# in the assigned mask; if a row lacks zeros in the mask, create a new zero in that row in the working matrix by subtracting
@@ -234,14 +234,14 @@ def make_matrix_solveable(working_matrix)
 			solveable = working_matrix.solveable?
 		end
 
-
+		# UNTESTED
 		while solveable == "no, assignments can't be made in columns"
 			# to fix: create duplicate mask array, then assign needy zeros in the mask; get the column ids of any columns that lack zeros 
 			# in the assigned mask; if a column lacks zeros in the mask, create a new zero in that column in the working matrix
 			# by subtracting the min-sans-zero
 
 			# create duplicate mask array, then assign needy zeros in the mask
-			mask = self.map {|row| row.dup}
+			mask = working_matrix.map {|row| row.dup}
 			assign_needy_zeros(mask)
 			mask_cols = mask.transpose
 
@@ -922,8 +922,8 @@ class Array
 		# create a mask, assign to needy zeros in mask
 		mask = self.map {|row| row.dup}
 		assign_needy_zeros(mask)
-		return "no, assignments can't be made in rows" if !mask.select {|row| row.include?(0)}.empty?
-		return "no, assignments can't be made in columns" if !mask.transpose.select {|col| col.include?(0)}.empty?
+		return "no, assignments can't be made in rows" if !mask.select {|row| !row.include?(0) && !row.include?("!")}.empty?
+		return "no, assignments can't be made in columns" if !mask.transpose.select {|col| !col.include?(0) && !col.include?("!")}.empty?
 
 		# ///////////////////////////////////////////////////
 		# PROBLEM
