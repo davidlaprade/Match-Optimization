@@ -142,13 +142,48 @@ class Array
 
 	# PARTIALLY TESTED
 	def combinatorial_test
-		test_cases = self.every_combination_of_its_members
-		test_cases.each do |submatrix|
-			min_row_assignments_permitted = self.min_row_assignment * submatrix.length
-			if min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
-				return "fail"
-			end
-		end
+ 		columns = self.transpose
+
+ 		columns.each.with_index do |column, col_id|
+ 			# no point running this on columns that don't contain zeros
+ 			if column.include?(0)
+
+	 			# put the col_id in the col_array
+	 			col_array = [col_id]
+
+	 			# find the zeros in that column, put their row_ids in the row_array
+	 			row_array = column.each.with_index.with_object([]) {|(cell, row_id), obj|
+	 				obj << row_id if cell==0}
+
+
+	 			loop do
+	 				# make duplicates of col and row_arrays
+		 			c_dup = col_array.dup
+		 			r_dup = row_array.dup
+
+
+		 			# find the zeros in the rows just identified, add their col_ids to the col_array, only keep unique entries
+		 			row_array.each.with_object(col_array) {|row_id, obj|
+		 				self[row_id].each.with_index {|cell, col_id|
+		 					obj << col_id if cell==0
+		 				}
+		 			}.uniq!
+
+		 			# find the zeros in the cols just identified, add their row_ids to the row_array, only keep unique entries
+		 			col_array.each.with_object(row_array) {|col_id, obj|
+		 				columns[col_id].each.with_index {|cell, row_id|
+		 					obj << row_id if cell==0
+		 				}
+		 			}.uniq!
+
+	
+		 			# if nothing has been added to either col_array or row_array, break the method
+		 			break if col_array == c_dup && row_array == r_dup
+		 		end
+		 		
+		 		return "fail" if col_array.count < row_array.count
+	 		end
+	 	end
 		return "pass"
 	end
 
@@ -1052,22 +1087,21 @@ end
 # 		print matrix.solution?
 
 
-binding.pry
-failures = 0
-tests = 0
-	10000.times do
-		clearhome
-		tests = tests + 1
-		print "failures: #{failures}\n"
-		print "tests so far: #{tests}\n"
-			cols = rand(9)+1
-			rows = rand(9)+1
-			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
-			make_matrix_solveable(matrix)
-			assign_needy_zeros(matrix).finish_assignment
-			solution = matrix.solution?
-			failures = failures + 1 if solution != true
-	end
+# failures = 0
+# tests = 0
+# 	10000.times do
+# 		clearhome
+# 		tests = tests + 1
+# 		print "failures: #{failures}\n"
+# 		print "tests so far: #{tests}\n"
+# 			cols = rand(9)+1
+# 			rows = rand(9)+1
+# 			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
+# 			make_matrix_solveable(matrix)
+# 			assign_needy_zeros(matrix).finish_assignment
+# 			solution = matrix.solution?
+# 			failures = failures + 1 if solution != true
+# 	end
 
 
 

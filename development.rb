@@ -327,42 +327,46 @@ class Array
 		# the algorithm remains extremely slow and costly to memory when you get arrays that are square with sidelengths beyond 15;
 		# (2) another option: the problem here occurs when you have zeros in only n columns, and then occurs in combinations of rows
 		# with n or more members such that each row in the combination contains zeros IN JUST THOSE COLUMNS; so you could do something
-		# like this:
-			(by now each column will contain at least one zero, otherwise solveable? would have dealt with it)
-			
-			take the first column
-				put it in a col_array
-				find the zeros in the column
-					if there are no zeros, break the loop
-				look in the rows that contain those zeros
-					put those rows in a row_array
-				now look in the rows just identified
-					what columns are their zeros in?
-					add those columns to the col_array
-					if there are no columns to add, break the loop
-				now look in those columns...
-					youre repeating at this point
-					once there are no more rows / cols to add to your arrays, stop
-				now count the number of columns in the col_array
-				now count the number of rows in the row_array
-				if the former is less than the latter, you have a failure
+		# like this:		
+			# ALGORITHM SKETCH:;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+			# take the first column
+			# 	(it's guaranteed to have a zero;
+			# 		by now each column will contain at least one zero, otherwise solveable? would have dealt with it)
+			# 	put it in a col_array
+			# 	find the zeros in the column
+			# 		if there are no zeros, break the loop
+			# 	look in the rows that contain those zeros
+			# 		put those rows in a row_array
+			# 	now look in the rows just identified
+			# 		what columns are their zeros in?
+			# 		add those columns to the col_array
+			# 		if there are no columns to add, break the loop
+			# 	now look in those columns...
+			# 		youre repeating at this point
+			# 		once there are no more rows / cols to add to your arrays, stop
+			# 	now count the number of columns in the col_array
+			# 	now count the number of rows in the row_array
+			# 	if the former is less than the latter, you have a failure
 
 
-[[1,0,1,0,5,6],
- [6,7,1,0,1,0],
- [1,0,3,9,1,0],
- [2,6,1,0,1,8]]
+# [[1,0,1,0,5,6],
+#  [6,7,1,0,1,0],
+#  [1,0,3,9,1,0],
+#  [2,6,1,0,1,8]]
 
- 		col_array = []
- 		row_array = []
+
 
  		columns = self.transpose
 
  		columns.each.with_index do |col, col_id|
- 			col_array << col_id
+ 			# no point running this on columns that don't contain zeros
+ 			break if !col.include?(0)
+
+ 			# put the col_id in the col_array
+ 			col_array = [col_id]
 
  			# find the zeros in that column, put their row_ids in the row_array
- 			col.each.with_index.with_object(row_array) {|(cell, row_id), obj|
+ 			row_array = col.each.with_index.with_object([]) {|(cell, row_id), obj|
  				obj << row_id if cell==0}
 
  			loop do
@@ -375,14 +379,14 @@ class Array
 	 				self[row_id].each.with_index {|cell, col_id|
 	 					obj << col_id if cell==0
 	 				}
-	 			}.uniq
+	 			}.uniq!
 
 	 			# find the zeros in the cols just identified, add their row_ids to the row_array, only keep unique entries
 	 			col_array.each.with_object(row_array) {|col_id, obj|
 	 				columns[col_id].each.with_index {|cell, row_id|
 	 					obj << row_id if cell==0
 	 				}
-	 			}.uniq
+	 			}.uniq!
 
 	 			# if nothing has been added to either col_array or row_array, break the method
 	 			break if col_array == c_dup && row_array == r_dup
@@ -395,13 +399,13 @@ class Array
 
 
 
-		test_cases = self.every_combination_of_its_members
-		test_cases.each do |submatrix|
-			min_row_assignments_permitted = self.min_row_assignment * submatrix.length
-			if min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
-				return "fail"
-			end
-		end
+		# test_cases = self.every_combination_of_its_members
+		# test_cases.each do |submatrix|
+		# 	min_row_assignments_permitted = self.min_row_assignment * submatrix.length
+		# 	if min_row_assignments_permitted > submatrix.max_column_assmts_possible(self.max_col_assignment)
+		# 		return "fail"
+		# 	end
+		# end
 		return "pass"
 	end
 
