@@ -333,11 +333,13 @@ class Array
 			take the first column
 				put it in a col_array
 				find the zeros in the column
+					if there are no zeros, break the loop
 				look in the rows that contain those zeros
 					put those rows in a row_array
 				now look in the rows just identified
 					what columns are their zeros in?
 					add those columns to the col_array
+					if there are no columns to add, break the loop
 				now look in those columns...
 					youre repeating at this point
 					once there are no more rows / cols to add to your arrays, stop
@@ -346,18 +348,52 @@ class Array
 				if the former is less than the latter, you have a failure
 
 
-				now what zeros are in those columns?
-				what rows do they occur in?
-				repeat the process above
-				now: if the number of rows is greater than the number of columns, you hvae a failure
-
-
-
-
 [[1,0,1,0,5,6],
  [6,7,1,0,1,0],
  [1,0,3,9,1,0],
  [2,6,1,0,1,8]]
+
+ 		col_array = []
+ 		row_array = []
+
+ 		columns = self.transpose
+
+ 		columns.each.with_index do |col, col_id|
+ 			col_array << col_id
+
+ 			# find the zeros in that column, put their row_ids in the row_array
+ 			col.each.with_index.with_object(row_array) {|(cell, row_id), obj|
+ 				obj << row_id if cell==0}
+
+ 			loop do
+ 				# make duplicates of col and row_arrays
+	 			c_dup = col_array.dup
+	 			r_dup = row_array.dup
+
+	 			# find the zeros in the rows just identified, add their col_ids to the col_array, only keep unique entries
+	 			row_array.each.with_object(col_array) {|row_id, obj|
+	 				self[row_id].each.with_index {|cell, col_id|
+	 					obj << col_id if cell==0
+	 				}
+	 			}.uniq
+
+	 			# find the zeros in the cols just identified, add their row_ids to the row_array, only keep unique entries
+	 			col_array.each.with_object(row_array) {|col_id, obj|
+	 				columns[col_id].each.with_index {|cell, row_id|
+	 					obj << row_id if cell==0
+	 				}
+	 			}.uniq
+
+	 			# if nothing has been added to either col_array or row_array, break the method
+	 			break if col_array == c_dup && row_array == r_dup
+	 		end
+
+	 		return "fail" if col_array.count < row_array.count
+	 	end
+
+
+
+
 
 		test_cases = self.every_combination_of_its_members
 		test_cases.each do |submatrix|
