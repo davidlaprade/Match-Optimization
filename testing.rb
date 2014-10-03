@@ -783,6 +783,12 @@ class Array
 end
 
 
+def clearhome
+	# clear the terminal window
+	puts "\e[H\e[2J"
+end
+
+
 # rows_first_wins = 0
 # cols_first_wins = 0
 # method_works = 0
@@ -936,12 +942,31 @@ end
 
 # 		print "assigned!\n"
 
+# failures = 0
+# tests = 0
+# 	10000.times do
+# 		clearhome
+# 		print "failures: #{failures}\n"
+# 		print "tests so far: #{tests}\n"
+# 		tests = tests + 1
+# 			cols = rand(9)+1
+# 			rows = rand(9)+1
+# 			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
+# 			matrix.print_readable
+# 			make_matrix_solveable(matrix)
+# 			assign_needy_zeros(matrix).finish_assignment
+# 			solution = matrix.solution?
+# 			failures = failures + 1 if solution != true
+# 	end
+
 failures = 0
 tests = 0
-	10000.times do
+	100.times do
+		clearhome
+		tests = tests + 1
 		print "failures: #{failures}\n"
 		print "tests so far: #{tests}\n"
-		tests = tests + 1
+
 			cols = rand(9)+1
 			rows = rand(9)+1
 			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
@@ -951,8 +976,6 @@ tests = 0
 			solution = matrix.solution?
 			failures = failures + 1 if solution != true
 	end
-
-
 
 
 

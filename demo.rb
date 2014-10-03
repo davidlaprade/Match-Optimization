@@ -4,6 +4,8 @@
 # INSTRUCTIONS:
 #
 # To see the algorithm in action, fork this project and run "ruby demo.rb" from the terminal.
+# 
+# Comments can be found in development.rb
 #
 # //////////////////////////////////////////////////////////////////////////////////////////////////////////
 # //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -982,11 +984,11 @@ if continue == "c"
 	failures = 0
 	tests = 0
 		10000.times do
+			tests = tests + 1
 			# clear the viewing window
 			clearhome
 			print "failures: #{failures}\n"
 			print "tests so far: #{tests}\n"
-			tests = tests + 1
 				cols = rand(9)+1
 				rows = rand(9)+1
 				matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
