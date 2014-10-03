@@ -802,51 +802,77 @@ class Array
 
 end
 
+def pause
+	print "(Enter 'c' to continue)"
+	continue = "x"
+	while continue != "c"
+		STDOUT.flush  
+		continue = gets.chomp
+	end
+end
+
+def clearhome
+	# clear the terminal window
+	puts "\e[H\e[2J"
+end
+
 # clear the viewing window
-puts "\e[H\e[2J"
+clearhome
 
 print "Try the algorithm to see how it works!\n\nSuppose you're assigning roles to students in a play, and you want as many students as possible to get roles that they like.\n\n"
 
+pause
+clearhome
+
 # get number of actors
 actors = 0
-print "How many students/actors should there be?\n(To make things easy, pick a number between 1 and 10 inclusive.)\n"  
-while actors <= 0 || actors > 10
+print "How many students/actors should there be?\n(Pick a number between 5 and 10 inclusive.)\n"  
+while actors < 5 || actors > 10
 	STDOUT.flush  
 	actors = gets.chomp.to_i
 end
+
+# clear the viewing window
+clearhome
 
 # gives actors random names
 names = ["Jason", "Alex", "Sam", "Margaret", "Peter", "Constance", "Oliver", "Harriet", "Francis", "Olivia", "Ellen", "Zach", "George", "Paul", "Tom"]
 actor_list = names.shuffle.take(actors)
 print "Great! Your actors are: #{actor_list.join(", ").to_s}\n\n"
 
+pause
+
+# clear the viewing window
+clearhome
+
 # get # of roles
 roles = 0
-print "Now, how many roles should there be in the play?\n(To make things easy, pick a number between 1 and 15 inclusive--one that's greater than the number of students)\n"  
+print "Now, how many roles should there be in the play?\n(Pick a number between #{actors + 1} and 15 inclusive)\n"  
 STDOUT.flush  
 roles = gets.chomp.to_i
 while roles > 15 || roles <= actors
-	print "Ah! Unfortunately, that won't work.\nRemember to pick a number between 1 and 15 inclusive--one that's greater than the number of students you chose (#{actors})\n"
+	print "Ah! Unfortunately, that won't work.\nRemember to pick a number between #{actors + 1} and 15 inclusive\n"
 	STDOUT.flush  
 	roles = gets.chomp.to_i
 end
+
+# clear the viewing window
+clearhome
 
 # gives roles random names
 characters = ["Hamlet", "Romeo", "Juliet", "Othello", "Mercutio", "King Lear", "Caesar", "Cleopatra", "Cassius", "Macbeth", "Lady Macbeth", "Cordelia", "Rosaline", "Nurse", "Shylock"]
 role_list = characters.shuffle.take(roles)
 print "\nThanks! The roles are: #{role_list.join(", ").to_s}\n"
 
-print "(Enter 'c' to continue...)"
-continue = "x"
-while continue != "c"
-	STDOUT.flush  
-	continue = gets.chomp
-end
+pause
 
 # clear the viewing window
-puts "\e[H\e[2J"
+clearhome
 
-print "Now, assume that each student has ranked the roles in terms of his/her preferences. (Sometimes male students want to play female characters, and vice versa. You don't complain. It's theater.) A student's first choice is designated by 1, his/her second choice by 2, and so on down.\n\n"
+print "Now, assume that each student has ranked the roles in terms of his/her preferences.\nA student's first choice is designated by 1, his/her second choice by 2, and so on down.\n\n"
+
+pause
+clearhome
 
 print "Let's generate their preferences at random. Supose they are:\n\n"
 
@@ -873,29 +899,32 @@ actor_list.each.with_index do |actor, actor_id|
 	print "\n"
 end
 
-print "\n(Enter 'c' to continue...)"
-continue = "x"
-while continue != "c"
-	STDOUT.flush  
-	continue = gets.chomp
-end
+print "\n"
+pause
 
 print "\nTake a minute to try to figure out what the optimal match might be for these students.\n"
-print "Make sure that each role is assigned to exactly one student.\n"
-print "Make sure that each student is assigned to at least one role.\n"
-print "And make sure that the number of roles assigned to each student differs by no more than 1.\n"
-print "(For example, if one student gets 3 roles assigned to him, no student should get only 1 role)\n"
+print "--Make sure that each role is assigned to exactly one student.\n"
+print "--Make sure that each student is assigned to at least one role.\n"
+print "--And make sure that roles are distributed as evenly as possible.\n"
+print "  (For example, if one student gets 3 roles assigned to him, no student should get only 1 role)\n\n"
 
-print "\nThink you've found the optimal match? If so, add up all of the preference values for the assignments you selected.\n"
-print "For example, if you assigned #{actor_list.first} to #{role_list.first}, the preference value would be #{array[0][0]}\n\n(Enter 't' to test!)"
+print "It's not obvious, right? Seems like this might take a while to figure out...\n"
+
+pause
+clearhome
+
+print "That's why I wrote this algorithm!\n\n"
+
+
+print "(Enter 's' to solve the problem using the algorithm)"
 continue = "x"
-while continue != "t"
+while continue != "s"
 	STDOUT.flush  
 	continue = gets.chomp
 end
 
 # clear the viewing window
-puts "\e[H\e[2J"
+clearhome
 
 # print roles as column heads
 actor_list.sort_by {|x| x.length}.last.length.times {print " "}
@@ -937,7 +966,8 @@ end
 print "\nAdding up all of the preference values we get: #{assignments.map {|x| x[1]}.inject(:+)}\n"
 print "How did your assignment compare?\n\n\n"
 
-
+pause
+clearhome
 
 print "Still interested?\nRun the algorithm 1000 times on random problems with random values to see how many times it succeeds!\n"
 print "(Enter 'c' to continue, 'q' to quit!)"
@@ -953,7 +983,7 @@ if continue == "c"
 	tests = 0
 		10000.times do
 			# clear the viewing window
-			puts "\e[H\e[2J"
+			clearhome
 			print "failures: #{failures}\n"
 			print "tests so far: #{tests}\n"
 			tests = tests + 1
