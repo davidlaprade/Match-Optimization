@@ -54,32 +54,8 @@ def make_matrix_solveable(working_matrix)
 			# to fix: create duplicate mask array, then assign needy zeros in the mask; get the row ids of any rows that lack zeros 
 			# in the assigned mask; if a row lacks zeros in the mask, create a new zero in that row in the working matrix by subtracting
 			# the min-sans-zero
-
-			# create duplicate mask array, then assign needy zeros in the mask
-			mask = working_matrix.map {|row| row.dup}
-			assign_needy_zeros(mask)
-
-			# get the row ids of any rows that lack zeros in the assigned mask
-			rows_wo_assignable = mask.each.with_index.with_object([]) {|(row, row_id), obj| 
-				obj << row_id if !row.include?(0) && !row.include?("!")}
-
-			# if a row lacks zeros in the mask, create a new zero in that row by subtracting the min-sans-zero
-			while !rows_wo_assignable.empty?
-				# fix the first problematic row
-				# remember, the row WILL contain zeros (zero_each_row ensures it above), those zeros are just unassignable
-				working_matrix.map!.with_index {|row, row_id| 
-					row_id == rows_wo_assignable.first ? row.map {|v| !v.zero? ? v - (row - [0]).min : v} : row
-				}
-
-				# run assign_needy_zeros again to see if the problem is resolved
-				mask = working_matrix.map {|row| row.dup}
-				assign_needy_zeros(mask)
-
-				# now check to see if this has fixed the problem
-				rows_wo_assignable = mask.each.with_index.with_object([]) {|(row, row_id), obj| 
-					obj << row_id if !row.include?(0) && !row.include?("!")}
-			end
-
+			working_matrix.fix_no_assignables_in_rows
+			# Running the fix method might result in a matrix with the same problem, so run solveable? method again
 			solveable = working_matrix.solveable?
 		end
 
@@ -371,6 +347,38 @@ class Array
 		self.map!.with_index {|row, row_id| 
 			row_id == problem_zeros.first[0] ? row.map {|value| value - sub
 				}.map {|value| value < 0 ? value + 2*sub : value} : row }
+	end
+
+	# UNTESTED
+	# called on Array object; creates duplicate mask array, then assigns needy zeros in the mask; gets the row ids of any rows that lack zeros 
+	# in the assigned mask; if a row lacks zeros in the mask, creates a new zero in that row in the working matrix by subtracting
+	# the min-sans-zero; returns the modified array it was called on
+	def fix_no_assignables_in_rows
+		# create duplicate mask array, then assign needy zeros in the mask
+		mask = self.map {|row| row.dup}
+		assign_needy_zeros(mask)
+
+		# get the row ids of any rows that lack zeros in the assigned mask
+		rows_wo_assignable = mask.each.with_index.with_object([]) {|(row, row_id), obj| 
+			obj << row_id if !row.include?(0) && !row.include?("!")}
+
+		# if a row lacks zeros in the mask, create a new zero in that row by subtracting the min-sans-zero
+		while !rows_wo_assignable.empty?
+			# fix the first problematic row
+			# remember, the row WILL contain zeros (zero_each_row ensures it above), those zeros are just unassignable
+			self.map!.with_index {|row, row_id| 
+				row_id == rows_wo_assignable.first ? row.map {|v| !v.zero? ? v - (row - [0]).min : v} : row
+			}
+
+			# run assign_needy_zeros again to see if the problem is resolved
+			mask = self.map {|row| row.dup}
+			assign_needy_zeros(mask)
+
+			# now check to see if this has fixed the problem
+			rows_wo_assignable = mask.each.with_index.with_object([]) {|(row, row_id), obj| 
+				obj << row_id if !row.include?(0) && !row.include?("!")}
+		end
+		return self
 	end
 
 	# ARRAY FRIENDLY + TESTED
@@ -1025,22 +1033,22 @@ end
 
 
 
-failures = 0
-tests = 0
-	10000.times do
-		clearhome
-		tests = tests + 1
-		print "failures: #{failures}\n"
-		print "tests so far: #{tests}\n"
-			cols = rand(9)+1
-			rows = rand(9)+1
-			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
-			matrix.print_readable
-			make_matrix_solveable(matrix)
-			assign_needy_zeros(matrix).finish_assignment
-			solution = matrix.solution?
-			failures = failures + 1 if solution != true
-	end
+# failures = 0
+# tests = 0
+# 	10000.times do
+# 		clearhome
+# 		tests = tests + 1
+# 		print "failures: #{failures}\n"
+# 		print "tests so far: #{tests}\n"
+# 			cols = rand(9)+1
+# 			rows = rand(9)+1
+# 			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
+# 			matrix.print_readable
+# 			make_matrix_solveable(matrix)
+# 			assign_needy_zeros(matrix).finish_assignment
+# 			solution = matrix.solution?
+# 			failures = failures + 1 if solution != true
+# 	end
 
 
 
