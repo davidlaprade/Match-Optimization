@@ -322,6 +322,43 @@ class Array
 		# this seems to catch all of the cases where min allowable column assignments > max num of possible row assignments
 		# so I didn't write a corresponding test for that
 
+		# this method seems to be the single slowest, most costly method in the whole algorithm; steps towards speeding it up:
+		# (1) I could just invert when there are a lot of rows; but this doesn't solve the issue, it just pushes it back;
+		# the algorithm remains extremely slow and costly to memory when you get arrays that are square with sidelengths beyond 15;
+		# (2) another option: the problem here occurs when you have zeros in only n columns, and then occurs in combinations of rows
+		# with n or more members such that each row in the combination contains zeros IN JUST THOSE COLUMNS; so you could do something
+		# like this:
+			(by now each column will contain at least one zero, otherwise solveable? would have dealt with it)
+			
+			take the first column
+				put it in a col_array
+				find the zeros in the column
+				look in the rows that contain those zeros
+					put those rows in a row_array
+				now look in the rows just identified
+					what columns are their zeros in?
+					add those columns to the col_array
+				now look in those columns...
+					youre repeating at this point
+					once there are no more rows / cols to add to your arrays, stop
+				now count the number of columns in the col_array
+				now count the number of rows in the row_array
+				if the former is less than the latter, you have a failure
+
+
+				now what zeros are in those columns?
+				what rows do they occur in?
+				repeat the process above
+				now: if the number of rows is greater than the number of columns, you hvae a failure
+
+
+
+
+[[1,0,1,0,5,6],
+ [6,7,1,0,1,0],
+ [1,0,3,9,1,0],
+ [2,6,1,0,1,8]]
+
 		test_cases = self.every_combination_of_its_members
 		test_cases.each do |submatrix|
 			min_row_assignments_permitted = self.min_row_assignment * submatrix.length

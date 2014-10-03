@@ -1052,7 +1052,7 @@ end
 # 		print matrix.solution?
 
 
-
+binding.pry
 failures = 0
 tests = 0
 	10000.times do

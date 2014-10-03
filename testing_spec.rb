@@ -1841,6 +1841,7 @@ describe Array, ".combinatorial_test" do
 		expect(matrix.combinatorial_test).to eq("fail")
 	end
 
+	# this test is largely uninteresting
 	it "returns failure code when run on [[1,7,1,3,5,6,9],[6,7,1,5,1,5,23],[1,3,3,9,1,9,6],[2,6,1,9,1,8,2],[0,3,0,4,0,7,0],
 					[0,8,0,9,0,9,0],[0,4,0,5,0,4,9]]" do
 		matrix = [[1,0,1,7,5,6,9],[6,7,1,0,1,0,23],[1,7,3,9,1,9,6],[2,6,1,9,1,0,2],[0,3,0,4,0,7,0],
