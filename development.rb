@@ -200,6 +200,77 @@ def make_matrix_solveable(working_matrix)
 			solveable = working_matrix.solveable?
 		end
 
+
+		while solveable == "no, assignments can't be made in rows"
+			# to fix: create duplicate mask array, then assign needy zeros in the mask; get the row ids of any rows that lack zeros 
+			# in the assigned mask; if a row lacks zeros in the mask, create a new zero in that row in the working matrix by subtracting
+			# the min-sans-zero
+
+			# create duplicate mask array, then assign needy zeros in the mask
+			mask = working_matrix.map {|row| row.dup}
+			assign_needy_zeros(mask)
+
+			# get the row ids of any rows that lack zeros in the assigned mask
+			rows_wo_assignable = mask.each.with_index.with_object([]) {|(row, row_id), obj| 
+				obj << row_id if !row.include?(0)}
+
+			# if a row lacks zeros in the mask, create a new zero in that row by subtracting the min-sans-zero
+			while !rows_wo_assignable.empty?
+				# fix the first problematic row
+				# remember, the row WILL contain zeros (zero_each_row ensures it above), those zeros are just unassignable
+				working_matrix.map!.with_index {|row, row_id| 
+					row_id == rows_wo_assignable.first ? row.map {|v| !v.zero? ? v - (row - [0]).min : v} : row
+				}
+
+				# run assign_needy_zeros again to see if the problem is resolved
+				mask = working_matrix.map {|row| row.dup}
+				assign_needy_zeros(mask)
+
+				# now check to see if this has fixed the problem
+				rows_wo_assignable = mask.each.with_index.with_object([]) {|(row, row_id), obj| 
+					obj << row_id if !row.include?(0)}
+			end
+
+			solveable = working_matrix.solveable?
+		end
+
+
+		while solveable == "no, assignments can't be made in columns"
+			# to fix: create duplicate mask array, then assign needy zeros in the mask; get the column ids of any columns that lack zeros 
+			# in the assigned mask; if a column lacks zeros in the mask, create a new zero in that column in the working matrix
+			# by subtracting the min-sans-zero
+
+			# create duplicate mask array, then assign needy zeros in the mask
+			mask = self.map {|row| row.dup}
+			assign_needy_zeros(mask)
+			mask_cols = mask.transpose
+
+			# get the column and row ids of any columns/rows that lack zeros in the assigned mask
+			cols_wo_assignable = mask_cols.each.with_index.with_object([]) {|(col, col_id), obj| 
+				obj << col_id if !col.include?(0)}
+
+			# if a column lacks zeros in the mask, create a new zero in that column by subtracting the min-sans-zero
+			while !cols_wo_assignable.empty?
+				# fix the first problematic col
+				# remember, the col WILL contain zeros (zero_each_col ensures it above), those zeros are just unassignable
+				working_matrix.replace(working_matrix.transpose.map.with_index {|col, col_id| 
+					col_id == cols_wo_assignable.first ? col.map {|v| !v.zero? ? v - (col - [0]).min : v} : col
+				}.transpose)
+
+				# run assign_needy_zeros again to see if the problem is resolved
+				mask = working_matrix.map {|row| row.dup}
+				assign_needy_zeros(mask)
+				mask_cols = mask.transpose
+
+				# now check to see if this has fixed the problem
+				cols_wo_assignable = mask_cols.each.with_index.with_object([]) {|(col, col_id), obj| 
+					obj << col_id if !col.include?(0)}
+			end
+
+			solveable = working_matrix.solveable?
+		end
+			
+
 		while solveable == "no, too many cols with max assignments"
 			# to fix: create mask array, then assign to needy zeros in mask; then find the number of
 			# columns in the mask that have reached the max_col_assignment value; then find the assigned zeros in those
@@ -832,7 +903,7 @@ class Array
 		end
 
 		# REALLY THIS SHOULD BE TOO MANY NEEDY ZEROS IN COLUMNS; THAT'S THE MORE GENERAL PROBLEM, LONELY ZEROS AND EVEN
-		# EXTRA LONELY ZEROS ARE JUST SPECIFIC INSTANCES OF THIS WIDER ISSUE
+		# EXTRA-LONELY ZEROS ARE JUST SPECIFIC INSTANCES OF THIS WIDER ISSUE
 		# checks to see if there are too many lonely zeros in any column
 		self.lonely_zeros_per_column.each do |array|
 			if array[1] > self.max_col_assignment
@@ -846,6 +917,13 @@ class Array
 				return "no, too many lonely zeros in rows"
 			end
 		end
+
+		# checks to make sure assigning needy zeros doesn't prevent columns/rows from having any assignments
+		# create a mask, assign to needy zeros in mask
+		mask = self.map {|row| row.dup}
+		assign_needy_zeros(mask)
+		return "no, assignments can't be made in rows" if !mask.select {|row| row.include?(0)}.empty?
+		return "no, assignments can't be made in columns" if !mask.transpose.select {|col| col.include?(0)}.empty?
 
 		# ///////////////////////////////////////////////////
 		# PROBLEM
