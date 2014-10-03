@@ -135,7 +135,11 @@ def assign_needy_zeros(mask)
 	# are too many lonely zeros in the third row; hence, the solveable? method will catch the issue; the point is: needy zeros only 
 	# cause a problem problem if they occur in multiple rows/columns, and they only overlap in multiple rows/columns if there are 
 	# other problems elsewhere in the array (e.g. columns/rows without zeros, or too many lonely zeros) that solveable? catches
-		mask.needy_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
+
+		# it's important to assign to just one needy zero at a time, then x_unassignables; if this method is called on an unsolveable
+		# array--as it is in the solveable? method--there is no gaurantee that all needy zeros are actually assignable zeros
+		coord = mask.needy_zeros.first
+		mask[coord[0]][coord[1]] = "!"
 
 		# Making assignments to needy zeros will often prevent you from making assignments to other zeros. When there are enough needy zeros
 		# in a row/column to reach the maximum number of assignments for that row/column, then other zeros which occur in that row/column cannot
@@ -479,6 +483,10 @@ class Array
 			rows_wo_assignable = mask.each.with_index.with_object([]) {|(row, row_id), obj| 
 				obj << row_id if !row.include?(0) && !row.include?("!")}
 		end
+
+		# throw an error if the method has put a negative value in the self array
+		raise 'Results in negative value in self' if !self.flatten(1).select {|val| val < 0}.empty?
+
 		return self
 	end
 
@@ -514,6 +522,9 @@ class Array
 			cols_wo_assignable = mask_cols.each.with_index.with_object([]) {|(col, col_id), obj| 
 				obj << col_id if !col.include?(0) && !col.include?("!")}
 		end
+
+		# throw an error if the method has put a negative value in the self array
+		raise 'Results in negative value in self' if !self.flatten(1).select {|val| val < 0}.empty?
 
 		return self
 	end

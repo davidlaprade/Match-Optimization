@@ -159,6 +159,111 @@ describe Array, ".finish_assignment" do
 
 end
 
+describe Array, ".fix_no_assignables_in_cols" do
+	# create duplicate mask array, then assign needy zeros in the mask; get the column ids of any columns that lack zeros 
+	# in the assigned mask; if a column lacks zeros in the mask, create a new zero in that column in the working matrix
+	# by subtracting the min-sans-zero
+
+	it "changes the array it's called on" do
+		array = [[5, 0, 7, 1, 5, 8, 5, 1],
+			 [4, 3, 0, 7, 2, 8, 3, 6],
+			 [2, 6, 6, 0, 2, 0, 4, 2],
+			 [0, 8, 4, 0, 1, 6, 8, 0],
+			 [4, 6, 3, 2, 1, 0, 0, 1],
+			 [1, 1, 0, 8, 1, 7, 4, 1],
+			 [0, 3, 3, 2, 0, 0, 0, 5],
+			 [4, 3, 1, 0, 4, 7, 8, 3],
+			 [5, 1, 7, 2, 2, 6, 0, 3]]
+		dup = array.map {|row| row.dup}
+		array.fix_no_assignables_in_cols
+		expect(array).to_not eq(dup)
+	end
+
+	it "returns the corrected array" do
+		array = [[5, 0, 7, 1, 5, 8, 5, 1],
+			 [4, 3, 0, 7, 2, 8, 3, 6],
+			 [2, 6, 6, 0, 2, 0, 4, 2],
+			 [0, 8, 4, 0, 1, 6, 8, 0],
+			 [4, 6, 3, 2, 1, 0, 0, 1],
+			 [1, 1, 0, 8, 1, 7, 4, 1],
+			 [0, 3, 3, 2, 0, 0, 0, 5],
+			 [4, 3, 1, 0, 4, 7, 8, 3],
+			 [5, 1, 7, 2, 2, 6, 0, 3]]
+		expect(array.fix_no_assignables_in_cols).to eq([[4, 0, 7, 1, 5, 8, 5, 1],
+							 [3, 3, 0, 7, 2, 8, 3, 6],
+							 [1, 6, 6, 0, 2, 0, 4, 2],
+							 [0, 8, 4, 0, 1, 6, 8, 0],
+							 [3, 6, 3, 2, 1, 0, 0, 1],
+							 [0, 1, 0, 8, 1, 7, 4, 1],
+							 [0, 3, 3, 2, 0, 0, 0, 5],
+							 [3, 3, 1, 0, 4, 7, 8, 3],
+							 [4, 1, 7, 2, 2, 6, 0, 3]])
+	end
+
+	it "resolves the problem when there is a single column that is unassignable" do
+		# the first column ends up unassignable
+		array = [[5, 0, 7, 1, 5, 8, 5, 1],
+			 [4, 3, 0, 7, 2, 8, 3, 6],
+			 [2, 6, 6, 0, 2, 0, 4, 2],
+			 [0, 8, 4, 0, 1, 6, 8, 0],
+			 [4, 6, 3, 2, 1, 0, 0, 1],
+			 [1, 1, 0, 8, 1, 7, 4, 1],
+			 [0, 3, 3, 2, 0, 0, 0, 5],
+			 [4, 3, 1, 0, 4, 7, 8, 3],
+			 [5, 1, 7, 2, 2, 6, 0, 3]]
+		array.fix_no_assignables_in_cols
+		expect(array).to eq([[4, 0, 7, 1, 5, 8, 5, 1],
+							 [3, 3, 0, 7, 2, 8, 3, 6],
+							 [1, 6, 6, 0, 2, 0, 4, 2],
+							 [0, 8, 4, 0, 1, 6, 8, 0],
+							 [3, 6, 3, 2, 1, 0, 0, 1],
+							 [0, 1, 0, 8, 1, 7, 4, 1],
+							 [0, 3, 3, 2, 0, 0, 0, 5],
+							 [3, 3, 1, 0, 4, 7, 8, 3],
+							 [4, 1, 7, 2, 2, 6, 0, 3]])
+	end
+
+	it "raises an error when the array contains a negative value" do
+		array = [[3,4,0],[7,8,-1],[14,0,11]]
+		expect(array.fix_no_assignables_in_cols).to raise_error(RuntimeError, 'Results in negative value in self')
+	end
+
+	it "works when there are multiple columns that end up unassignable, new columns become unassignable after fixing first problem" do
+		# columns 1 and 2 end up unassignable
+		array = [[0,0,0],[7,5,6],[1,1,1]]
+		# this is trickey: here you want to correct column 2 before column 1 not because of the min-sans-zero value, but because of the
+		# SECOND min in the column (5)
+		expect(array.fix_no_assignables_in_cols).to eq([[0,0,0],
+							 [7,0,6],
+							 [1,1,0]])
+	end
+
+	it "leaves columns alone that have assignable zeros that are not assigned by the assign_needy_zeros method" do
+		# in this example, assign needy zeros leaves columns 1 and 5 without assignments, but the zeros in them remain assignable
+		#            V           V
+		array = [[8, 0, 2, 7, 7, 0, 2, 3],
+				 [4, 4, 4, 0, 5, 0, 0, 6],
+				 [1, 8, 4, 4, 7, 6, 4, 0],
+				 [4, 0, 5, 3, 2, 0, 3, 1],
+				 [8, 5, 2, 4, 3, 2, 6, 0],
+				 [0, 5, 0, 5, 2, 5, 6, 4],
+				 [3, 3, 4, 1, 6, 3, 0, 1],
+				 [0, 5, 3, 1, 0, 3, 1, 0],
+				 [3, 0, 5, 6, 8, 4, 0, 1]]
+		expect(array.fix_no_assignables_in_cols).to eq( [[5, 0, 2, 7, 7, 0, 2, 3],
+														 [1, 4, 4, 0, 5, 0, 0, 6],
+														 [0, 8, 4, 4, 7, 6, 4, 0],
+														 [1, 0, 5, 3, 2, 0, 3, 1],
+														 [5, 5, 2, 4, 3, 2, 6, 0],
+														 [0, 5, 0, 5, 2, 5, 6, 4],
+														 [0, 3, 4, 1, 6, 3, 0, 1],
+														 [0, 5, 3, 1, 0, 3, 1, 0],
+														 [0, 0, 5, 6, 8, 4, 0, 1]])
+	end
+
+
+
+end
 
 describe "make_matrix_solveable" do
 
@@ -1021,47 +1126,6 @@ describe Array, "array_columns" do
 
 end
 
-describe Array, ".subtract_value_from_row_in_array" do
-	# def subtract_value_from_row_in_array(row_id, value_to_subtract)
-	# called on Array; subtracts the value given as second parameter from each member of the row specified, unless zero
-
-	# raises error when passed a non-existent row_id that is too high
-	it "returns RuntimeError when called on [[9,6,3],[8,6,2],[7,4,1]] and passed 4, 23" do
-		array = [[9,6,3],[8,6,2],[7,4,1]]
-		expect {array.subtract_value_from_row_in_array(4,23)}.to raise_error(RuntimeError, 'Row does not exist in array')
-	end
-
-	# raises error when passed a non-existent row_id that is too low
-	it "returns RuntimeError when called on [[9,6,3],[8,6,2],[7,4,1]] and passed -4, 23" do
-		array = [[9,6,3],[8,6,2],[7,4,1]]
-		expect {array.subtract_value_from_row_in_array(-4,23)}.to raise_error(RuntimeError, 'Row does not exist in array')
-	end
-
-	# changes nothing when passed existing row ID and value_to_subtract of zero
-	it "returns [[19,16,13],[8,6,2],[7,4,1]] when called on [[19,16,13],[8,6,2],[7,4,1]] and passed 1, 0" do
-		array = [[19,16,13],[8,6,2],[7,4,1]]
-		expect(array.subtract_value_from_row_in_array(1,0)).to eq([[19,16,13],[8,6,2],[7,4,1]])
-	end
-
-	# changes nothing when row only includes zeros
-	it "returns [[19,16,13],[0,0,0],[7,4,1]] when called on [[19,16,13],[0,0,0],[7,4,1]] and passed 1, 5" do
-		array = [[19,16,13],[0,0,0],[7,4,1]]
-		expect(array.subtract_value_from_row_in_array(1,5)).to eq([[19,16,13],[0,0,0],[7,4,1]])
-	end
-
-	# changes everything when row includes no zeros
-	it "returns [[6,3,0],[8,6,2],[7,4,1]] when called on [[19,16,13],[8,6,2],[7,4,1]] and passed 0, 13" do
-		array = [[19,16,13],[8,6,2],[7,4,1]]
-		expect(array.subtract_value_from_row_in_array(0,13)).to eq([[6,3,0],[8,6,2],[7,4,1]])
-	end
-
-	# raises error when result of subtracting is negative
-	it "returns RuntimeError when called on [[9,6,3],[8,6,2],[7,4,1]] and passed 1, 3" do
-		array = [[9,6,3],[8,6,2],[7,4,1]]
-		expect {array.subtract_value_from_row_in_array(1,3)}.to raise_error(RuntimeError, 'Would result in negative value')
-	end
-
-end
 
 describe Object, "assign_needy_zeros(mask)" do
 	# pass a mask Array object; assigns to lonely zeros and extended lonely zeros in the mask, then returns the mask
@@ -1173,6 +1237,12 @@ describe Object, "assign_needy_zeros(mask)" do
 		expect(array).to eq([["X","!",9,9,1,"!",7,"X"],["!",6,7,8,9,1,2,"!"],["X","X","X","!","!",1,2,"X"],["X","X","!",2,4,6,"!","X"]])
 	end
 
+	it "marks X's after each assignment" do
+		array = [[0,0,0],[7,5,6],[1,1,1]]
+		assign_needy_zeros(array)
+		expect(array).to eq([["!","X","X"],[7,5,6],[1,1,1]])
+	end
+
 	# it "does not add assignments over the max allowable for columns" do
 	# end
 
@@ -1182,64 +1252,6 @@ describe Object, "assign_needy_zeros(mask)" do
 
 end
 
-describe Array, ".get_ids_and_row_mins" do
-	# called on submatrix Array; finds columns that do not contain zeros; outputs an ordered array of ALL arrays [p,q] where 
-	# p is the index of a row in the submatrix, and q is a value in that row such that no zeros occur in that value's column
-	# in the submatrix; the arrays are ordered by increasing q value, then by increasing row index
-
-	it "works with no zeros in any columns, elements already in order" do
-		submatrix = [[1,3,5],[2,4,6]]
-		expect(submatrix.get_ids_and_row_mins).to eq([[0,1],[1,2],[0,3],[1,4],[0,5],[1,6]])
-	end
-
-	it "works with no zeros in any columns, elements not in order" do
-		submatrix = [[1,2,3],[4,5,6]]
-		expect(submatrix.get_ids_and_row_mins).to eq([[0,1],[0,2],[0,3],[1,4],[1,5],[1,6]])
-	end
-
-	it "does not include elements in columns which contain zeros, when there is only one zero" do
-		submatrix = [[10,0,3],[4,15,6]]
-		expect(submatrix.get_ids_and_row_mins).to eq([[0,3],[1,4],[1,6],[0,10]])
-	end
-
-	it "does not include elements in columns which contain zeros, when there are multiple zeros" do
-		submatrix = [[10,21,0],[0,15,6]]
-		expect(submatrix.get_ids_and_row_mins).to eq([[1,15],[0,21]])
-	end
-
-	it "only outputs unique elements of columns without zero, rows do not share values" do
-		submatrix = [[1,2,5],[4,4,0]]
-		expect(submatrix.get_ids_and_row_mins).to eq([[0,1],[0,2],[1,4]])
-	end
-
-	it "only outputs unique elements per row, rows share values" do
-		submatrix = [[1,2,4],[4,0,4]]
-		expect(submatrix.get_ids_and_row_mins).to eq([[0,1],[0,4],[1,4]])
-	end
-
-	it "works on a big array" do
-		submatrix = [[1,0,1,0,5,6,9],[6,7,1,0,1,0,23],[1,0,3,9,1,0,6],[2,6,1,0,1,8,2],[9,3,0,4,0,7,10],[8,8,0,9,0,9,4],[10,4,0,5,0,4,9]]
-		expect(submatrix.get_ids_and_row_mins).to eq([[0,1],[2,1],[3,2],[5,4],[1,6],[2,6],[5,8],[0,9],[4,9],[6,9],[4,10],[6,10],[1,23]])
-	end
-
-	it "works when there is only one row" do
-		submatrix = [[23,5,0,7,8,9]]
-		expect(submatrix.get_ids_and_row_mins).to eq([[0,5],[0,7],[0,8],[0,9],[0,23]])
-	end
-
-	it "works when there is only one column, contains zeros" do
-		submatrix = [[23],[0],[4],[0],[15]]
-		expect(submatrix.get_ids_and_row_mins).to eq([])
-	end
-
-	it "works when there is only one column, no zeros" do
-		submatrix = [[23],[1],[4],[1],[15]]
-		expect(submatrix.get_ids_and_row_mins).to eq([[1,1],[3,1],[2,4],[4,15],[0,23]])
-	end
-
-
-
-end
 
 describe Array, "zero_rows_and_columns" do
 	# call on Array object; return Array object which has been normalized in rows and in columns

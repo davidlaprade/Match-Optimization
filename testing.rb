@@ -2,12 +2,14 @@ require 'matrix'
 require 'pry'
 require 'benchmark'
 
+
 # passed mask Array object; assigns to needy zeros and extended needy zeros in the mask, then returns the mask
 def assign_needy_zeros(mask)
 	raise "Wrong kind of argument, requires an array" if mask.class != Array
 	Matrix.columns(mask.transpose)
 	while !mask.needy_zeros.empty?
-		mask.needy_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
+		coord = mask.needy_zeros.first
+		mask[coord[0]][coord[1]] = "!"
 		mask.x_unassignables
 	end
 	return mask
@@ -347,6 +349,9 @@ class Array
 			rows_wo_assignable = mask.each.with_index.with_object([]) {|(row, row_id), obj| 
 				obj << row_id if !row.include?(0) && !row.include?("!")}
 		end
+
+		# throw an error if the method has put a negative value in the self array
+		raise 'Results in negative value in self' if !self.flatten(1).select {|val| val < 0}.empty?
 		return self
 	end
 
@@ -382,6 +387,9 @@ class Array
 			cols_wo_assignable = mask_cols.each.with_index.with_object([]) {|(col, col_id), obj| 
 				obj << col_id if !col.include?(0) && !col.include?("!")}
 		end
+
+		# throw an error if the method has put a negative value in the self array
+		raise 'Results in negative value in self' if !self.flatten(1).select {|val| val < 0}.empty?
 
 		return self
 	end
@@ -1038,21 +1046,21 @@ end
 
 
 
-failures = 0
-tests = 0
-	10000.times do
-		clearhome
-		tests = tests + 1
-		print "failures: #{failures}\n"
-		print "tests so far: #{tests}\n"
-			cols = rand(9)+1
-			rows = rand(9)+1
-			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
-			make_matrix_solveable(matrix)
-			assign_needy_zeros(matrix).finish_assignment
-			solution = matrix.solution?
-			failures = failures + 1 if solution != true
-	end
+# failures = 0
+# tests = 0
+# 	10000.times do
+# 		clearhome
+# 		tests = tests + 1
+# 		print "failures: #{failures}\n"
+# 		print "tests so far: #{tests}\n"
+# 			cols = rand(9)+1
+# 			rows = rand(9)+1
+# 			matrix = Array.new(rows) {Array.new(cols) {rand(9)+1}}
+# 			make_matrix_solveable(matrix)
+# 			assign_needy_zeros(matrix).finish_assignment
+# 			solution = matrix.solution?
+# 			failures = failures + 1 if solution != true
+# 	end
 
 
 
@@ -1148,4 +1156,5 @@ tests = 0
 # 		matrix.finish_assignment
 # 		print "#{matrix.solution?}\n"
 # end
+
 
