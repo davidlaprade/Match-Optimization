@@ -1507,56 +1507,6 @@ describe Array, ".get_submatrices_where_min_row_permitted_is_greater_than_max_co
 end
 
 
-describe Array, ".find_matching_row_then_subtract_value" do
-	# called on Array; finds all rows matching the row_to_match (data type: array) given as first parameter;
-	# subtracts input value from each member of each row matching the row_array, skips over zeros
-	# returns corrected Array object
-	# PARAMETERS (row_to_match, value_to_subtract)
-
-	# it should work when passed a Matrix with just one row
-	it "returns Matrix[[0,0,0,2]] when called on Matrix[[2,2,0,4]] and passed [2,2,0,4] and 2" do
-		matrix = [[2,2,0,4]]
-		matrix.find_matching_row_then_subtract_value([2,2,0,4],2)
-		expect(matrix).to eq([[0,0,0,2]])
-	end
-
-	# it should work when passed the same row in a larger Matrix
-	it "returns [[0,0,0,4],[7,8,9,2],[3,3,1,9]] when called on [[2,2,0,4],[7,8,9,2],[3,3,1,9]] and passed [2,2,0,4] and 2" do
-		matrix = [[2,2,0,4],[7,8,9,2],[3,3,1,9]]
-		matrix.find_matching_row_then_subtract_value([2,2,0,4],2)
-		expect(matrix).to eq([[0,0,0,2],[7,8,9,2],[3,3,1,9]])
-	end
-
-	# it should work when the row isn't the first row in a larger Matrix
-	it "returns [[7,8,9,2],[0,0,0,4],[3,3,1,9]] when called on [[7,8,9,2],[2,2,0,4],[3,3,1,9]] and passed [2,2,0,4] and 2" do
-		matrix = [[7,8,9,2],[2,2,0,4],[3,3,1,9]]
-		matrix.find_matching_row_then_subtract_value([2,2,0,4],2)
-		expect(matrix).to eq([[7,8,9,2],[0,0,0,2],[3,3,1,9]])
-	end
-
-	# it shouldn't change anything when passed a row it doesn't contain, but is passed a row CLOSE to a row it contains
-	it "returns [[7,8,9,2],[2,2,0,4],[3,3,1,9]] when called on [[7,8,9,2],[2,2,0,4],[3,3,1,9]] and passed [2,0,4] and 2" do
-		matrix = [[7,8,9,2],[2,2,0,4],[3,3,1,9]]
-		matrix.find_matching_row_then_subtract_value([2,0,4],2)
-		expect(matrix).to eq([[7,8,9,2],[2,2,0,4],[3,3,1,9]])
-	end
-
-	# it shouldn't change anything when passed a row it doesn't contain, but is passed a row CLOSE to a row it contains
-	it "returns [[7,8,9,2],[2,2,0,4],[3,3,1,9]] when called on [[7,8,9,2],[2,2,0,4],[3,3,1,9]] and passed [2,2,0,4,1] and 2" do
-		matrix = [[7,8,9,2],[2,2,0,4],[3,3,1,9]]
-		matrix.find_matching_row_then_subtract_value([2,0,4],2)
-		expect(matrix).to eq([[7,8,9,2],[2,2,0,4],[3,3,1,9]])
-	end
-
-	# it shouldn't change anything when passed a value of zero, along with a row it does contain
-	it "returns [[7,8,9,2],[2,2,0,4],[3,3,1,9]] when called on [[7,8,9,2],[2,2,0,4],[3,3,1,9]] and passed [2,2,0,4] and 0" do
-		matrix = [[7,8,9,2],[2,2,0,4],[3,3,1,9]]
-		matrix.find_matching_row_then_subtract_value([2,0,4],2)
-		expect(matrix).to eq([[7,8,9,2],[2,2,0,4],[3,3,1,9]])
-	end
-
-end
-
 describe Array, ".add_value_if_zero_else_subtract_value_in_columns" do
 
 	# called on Array object, takes column index and value as inputs
