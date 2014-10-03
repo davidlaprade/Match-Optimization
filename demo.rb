@@ -19,7 +19,8 @@ def assign_needy_zeros(mask)
 	raise "Wrong kind of argument, requires an array" if mask.class != Array
 	Matrix.columns(mask.transpose)
 	while !mask.needy_zeros.empty?
-		mask.needy_zeros.each {|coord| mask[coord[0]][coord[1]] = "!" }
+		coord = mask.needy_zeros.first
+		mask[coord[0]][coord[1]] = "!"
 		mask.x_unassignables
 	end
 	return mask
@@ -60,6 +61,25 @@ def make_matrix_solveable(working_matrix)
 			working_matrix.fix_too_many_lonely_zeros_in_rows
 			solveable = working_matrix.solveable?
 		
+		end
+
+		while solveable == "no, enough assignments can't be made in rows"
+			# to fix: create duplicate mask array, then assign needy zeros in the mask; get the row ids of any rows that lack zeros 
+			# in the assigned mask; if a row lacks zeros in the mask, create a new zero in that row in the working matrix by subtracting
+			# the min-sans-zero
+			working_matrix.fix_assignables_in_rows
+			# Running the fix method might result in a matrix with the same problem, so run solveable? method again
+			solveable = working_matrix.solveable?
+		end
+
+
+		while solveable == "no, enough assignments can't be made in columns"
+			# to fix: create duplicate mask array, then assign needy zeros in the mask; get the column ids of any columns that lack zeros 
+			# in the assigned mask; if a column lacks zeros in the mask, create a new zero in that column in the working matrix
+			# by subtracting the min-sans-zero
+			working_matrix.fix_assignables_in_cols
+			# Running the fix method might result in a matrix with the same problem, so run solveable? method again
+			solveable = working_matrix.solveable?
 		end
 
 		while solveable == "no, too many cols with max assignments"
@@ -234,6 +254,17 @@ class Array
 		return self.each_with_index.map {|x,i| self.combination(i+1).to_a}.flatten(1).drop(self.length).uniq
 	end
 
+
+	# call on Array object, returns an array of coordinates [row_id,col_id]: one for each value in the object that equals the
+	# value passed in as an argument 
+	def find_with_value(value)
+		return self.each.with_index.with_object([]) {|(row, row_id), obj| 
+			row.each.with_index {|val, col_id| 
+				obj<<[row_id, col_id] if val == value
+			}
+		}
+	end
+
 	# ARRAY FRIENDLY + TESTED
 	def fix_too_many_lonely_zeros_in_columns
 		problematic_rows = self.get_problematic_rows_per_problematic_column
@@ -309,6 +340,87 @@ class Array
 		self.map!.with_index {|row, row_id| 
 			row_id == problem_zeros.first[0] ? row.map {|value| value - sub
 				}.map {|value| value < 0 ? value + 2*sub : value} : row }
+	end
+
+	# UNTESTED
+	# called on Array object; creates duplicate mask array, then assigns needy zeros in the mask; gets the row ids of any rows that lack zeros 
+	# in the assigned mask; if a row lacks zeros in the mask, creates a new zero in that row in the working matrix by subtracting
+	# the min-sans-zero; returns the modified array it was called on
+	def fix_assignables_in_rows
+		# create duplicate mask array, then assign needy zeros in the mask
+		mask = self.map {|row| row.dup}
+		assign_needy_zeros(mask)
+
+		# throw an error if there is a negative value in the self array
+		raise 'Negative value in self' if !self.flatten(1).select {|val| val < 0}.empty?
+
+		# get the row ids of any rows that lack enough zeros and "!" in the assigned mask to reach the row_min
+		rows_wo_assignable = mask.each.with_index.with_object([]) {|(row, row_id), obj| 
+			obj << row_id if row.count(0) + row.count("!") < self.min_row_assignment}
+
+		# if a row lacks zeros in the mask, create a new zero in that row by subtracting the min-sans-zero
+		while !rows_wo_assignable.empty?
+			# fix the first problematic row
+			# remember, the row WILL contain zeros (zero_each_row ensures it above), those zeros are just unassignable
+			self.map!.with_index {|row, row_id| 
+				row_id == rows_wo_assignable.first ? row.map {|v| !v.zero? ? v - (row - [0]).min : v} : row
+			}
+
+			# run assign_needy_zeros again to see if the problem is resolved
+			mask = self.map {|row| row.dup}
+			assign_needy_zeros(mask)
+
+			# now check to see if this has fixed the problem
+			rows_wo_assignable = mask.each.with_index.with_object([]) {|(row, row_id), obj| 
+				obj << row_id if !row.include?(0) && !row.include?("!")}
+		end
+
+		# throw an error if the method has put a negative value in the self array
+		raise 'Results in negative value in self' if !self.flatten(1).select {|val| val < 0}.empty?
+
+		return self
+	end
+
+	# TESTED
+	# called on Array object; creates duplicate mask array, then assigns needy zeros in the mask; gets the column ids of any columns that lack zeros 
+	# in the assigned mask; if a column lacks zeros in the mask, creates a new zero in that column in the working matrix
+	# by subtracting the min-sans-zero; returns modified array it was called on	
+	def fix_assignables_in_cols
+		# create duplicate mask array, then assign needy zeros in the mask
+		mask = self.map {|row| row.dup}
+		assign_needy_zeros(mask)
+		mask_cols = mask.transpose
+
+		# throw an error if there is a negative value in the self array
+		raise 'Negative value in self' if !self.flatten(1).select {|val| val < 0}.empty?
+
+		# get the column ids of any columns that lack enough zeros and "!"s' in the assigned mask to reach the col_min
+		cols_wo_assignable = mask_cols.each.with_index.with_object([]) {|(col, col_id), obj| 
+			obj << col_id if col.count(0) + col.count("!") < self.min_col_assignment}
+
+		# if a column lacks zeros in the mask, create a new zero in that column by subtracting the min-sans-zero
+		while !cols_wo_assignable.empty?
+	
+			# fix the first problematic col
+			# remember, the col WILL contain zeros (zero_each_col ensures it above), those zeros are just unassignable
+			self.replace(self.transpose.map.with_index {|col, col_id| 
+				col_id == cols_wo_assignable.first ? col.map {|v| !v.zero? ? v - (col - [0]).min : v} : col
+			}.transpose)
+	
+			# run assign_needy_zeros again to see if the problem is resolved
+			mask = self.map {|row| row.dup}
+			assign_needy_zeros(mask)
+			mask_cols = mask.transpose
+
+			# now check to see if this has fixed the problem
+			cols_wo_assignable = mask_cols.each.with_index.with_object([]) {|(col, col_id), obj| 
+				obj << col_id if col.count(0) + col.count("!") < self.min_col_assignment}
+		end
+
+		# throw an error if the method has put a negative value in the self array
+		raise 'Results in negative value in self' if !self.flatten(1).select {|val| val < 0}.empty?
+
+		return self
 	end
 
 	# ARRAY FRIENDLY + TESTED
@@ -497,12 +609,15 @@ class Array
 			end
 		end
 
-		# ///////////////////////////////////////////////////
-		# PROBLEM
-		# You aren't checking to make sure that needy zeros and/or needy zeros by extension don't
-		# result in there being too many required assignments in a row/col; specifically, that the needy zeros and those
-		# by extension don't force there to be too many rows/col with the max
-		# ////////////////////////////////////////////////////////////////
+		# UNTESTED
+		# checks to make sure assigning needy zeros doesn't prevent columns/rows from having any assignments
+		# create a mask, assign to needy zeros in mask
+		mask = self.map {|row| row.dup}
+		assign_needy_zeros(mask)
+
+		return "no, enough assignments can't be made in rows" if !mask.select {|row| row.count(0) + row.count("!") < self.min_row_assignment}.empty?
+		return "no, enough assignments can't be made in columns" if !mask.transpose.select {|col| col.count(0) + col.count("!") < self.min_col_assignment}.empty?
+
 		# UNTESTED
 		num_columns = self[0].count
 		num_rows = self.count
@@ -690,16 +805,6 @@ class Array
 		end
 	end
 
-	# call on Array object, returns an array of coordinates [row_id,col_id]: one for each value in the object that equals the
-	# value passed in as an argument 
-	def find_with_value(value)
-		return self.each.with_index.with_object([]) {|(row, row_id), obj| 
-			row.each.with_index {|val, col_id| 
-				obj<<[row_id, col_id] if val == value
-			}
-		}
-	end
-
 
 	# TESTED
 	# call on mask Array object; run reduce_problem on the object; use result to get
@@ -803,6 +908,7 @@ class Array
 
 
 end
+
 
 def pause
 	print "(Enter 'c' to continue)"
@@ -998,6 +1104,8 @@ if continue == "c"
 				failures = failures + 1 if solution != true
 		end
 end
+
+print "\nSuccess rate: #{(tests-failures)/(0.01*tests.to_f)}%"
 
 print "\nThanks for trying!\n"
 
