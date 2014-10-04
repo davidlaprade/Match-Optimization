@@ -1198,3 +1198,4 @@ end
 # 		print "#{matrix.solution?}\n"
 # end
 
+binding.pry
