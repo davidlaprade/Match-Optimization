@@ -356,6 +356,10 @@ class Array
 
 
 
+	# what you want to do is this: test each ROW; find a zero in that row (doesn't matter which), then run the rest of the test as is;
+	# because of how the test works, there is no need to go through each column for a given row; once you've found one zero, it will
+	# identify the rest; but there is a need to go through each row
+		# No, this won't be able to see the problematic rows in the examples in quick_spec....
  		columns = self.transpose
 
  		columns.each.with_index do |col, col_id|
