@@ -1077,7 +1077,7 @@ print "How did your assignment compare?\n\n\n"
 pause
 clearhome
 
-print "Still interested?\nRun the algorithm 1000 times on random problems with random values to see how many times it succeeds!\n"
+print "Still interested?\nRun the algorithm 10000 times on random problems with random values to see how many times it succeeds!\n"
 print "(Enter 'c' to continue, 'q' to quit!)"
 continue = "x"
 while continue != "c" && continue != "q"

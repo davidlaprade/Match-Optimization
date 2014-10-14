@@ -6,9 +6,6 @@ require 'testing'
 # IS DISPLAYED FIRST WHEN I RUN RSPEC
 # ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-# temporarily breaking the above rule so that I focus on this issue first; it does not depend on problems with other methods; rather, the
-# problem has to do with how I'm trying to speed up the algorithm by transposing non-square arrays
-
 describe Array, ".combinatorial_test" do
 	# call on Array object; returns "fail" if there are fewer column assignments possible than would be permitted in a complete
 	# assignment; returns "pass" otherwise; checks to see if the minimum allowable row assignments is greater than the maximum number of column assignments
@@ -67,9 +64,8 @@ describe Array, ".combinatorial_test" do
 		matrix = [  [1,0,1,0,5,6],
 					[2,6,1,7,0,8],
 					[6,7,1,0,1,0],
-					[0,1,1,1,1,1],
+					[0,1,0,1,1,1],
 					[1,0,3,9,1,0],
-					[2,6,0,9,1,8],
 					[2,6,1,0,1,8]]
 		expect(matrix.combinatorial_test).to eq("fail")
 	end
