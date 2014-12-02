@@ -11,7 +11,6 @@
 # //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
 require 'matrix'
 
 # passed mask Array object; assigns to needy zeros and extended needy zeros in the mask, then returns the mask
