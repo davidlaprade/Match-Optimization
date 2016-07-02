@@ -7,6 +7,7 @@ To try it for yourself! Fork this project and run ```ruby demo.rb``` from the te
 ## Uses
 We encounter matching problems all the time. We encounter them when:
 - trying to find the shortest trip through several points
+- doing a seating arrangement for a wedding reception/party
 - assigning roles to members of a team
 - assigning jobs to workers based on rates of pay, or speed of work
 - matching actors to parts in a play
